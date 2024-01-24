@@ -8,9 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {"email"}))
@@ -19,8 +17,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
+
 public class User implements UserDetails {
     @Id
     @Column(unique = true, nullable = false)
@@ -54,10 +51,21 @@ public class User implements UserDetails {
             @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles;
+    private Set<Role> roles  = new HashSet<>();
 
+    @OneToMany(targetEntity=CarEntity.class,cascade = CascadeType.ALL , fetch = FetchType.LAZY, mappedBy = "user")
+    List<CarEntity> userCars = new ArrayList<>();
 
-    //List<CarEntity> personsCars;
+    public void addCar(CarEntity car){
+        userCars.add(car);
+        car.setUser(this);
+    }
+
+    public void removeCar(CarEntity car){
+        userCars.remove(car);
+        car.setUser(null);
+    }
+
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -102,5 +110,12 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getFirstName(){
+        return this.firstName;
+    }
+    public void setFirstName(String firstName){
+         this.firstName = firstName;
     }
 }

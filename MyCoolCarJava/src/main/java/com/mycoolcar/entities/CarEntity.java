@@ -1,20 +1,20 @@
 package com.mycoolcar.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Table(name = "car")
+@Table(name = "cars")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
+
 public class CarEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String brand;
@@ -25,14 +25,21 @@ public class CarEntity {
 
     private String description;
 
-    @ManyToOne
-    PersonEntity personEntity;
+    private String image;
 
-    public CarEntity(String brand, String model, int productYear, String description, PersonEntity personEntity) {
+    private int rate;
+
+    @ManyToOne(targetEntity=User.class, fetch = FetchType.LAZY)
+    @JsonIgnore
+    User user;
+
+    public CarEntity(String brand, String model, int productYear, String description, String image) {
         this.brand = brand;
         this.model = model;
         this.productYear = productYear;
         this.description = description;
-        this.personEntity = personEntity;
+        this.image = image;
+
     }
+
 }

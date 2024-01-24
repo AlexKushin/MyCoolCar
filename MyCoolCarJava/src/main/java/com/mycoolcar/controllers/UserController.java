@@ -1,18 +1,22 @@
 package com.mycoolcar.controllers;
 
 import com.mycoolcar.dtos.UserCreationDto;
+import com.mycoolcar.entities.CarEntity;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.services.UserService;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Optional;
-
+@Slf4j
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins="http://localhost:4200")
 public class UserController {
 
     private final UserService userService;
@@ -22,10 +26,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostConstruct
+    /*@PostConstruct
     public void initRolesAndUsers() {
         userService.initRolesAndUsers();
-    }
+    }*/
 
     @PostMapping("/persons")
     public ResponseEntity<User> registerNewPerson(@RequestBody UserCreationDto userCreationDto) {
@@ -56,8 +60,16 @@ public class UserController {
         return "this URL is only accessible for Admin";
     }
 
+
     @GetMapping({"/user"})
-    public String forUser() {
-        return "this URL is only accessible for User";
+    public User getUser() {
+        Optional<User> user = userService.getByEmail("user@gmail.com");
+        return user.get();
+    }
+    @GetMapping({"/me"})
+    public ResponseEntity<User> getMe(Principal principal) {
+        Optional<User> user = userService.getByUsername(principal.getName());
+        return user.isEmpty()? new ResponseEntity<>(HttpStatus.CONFLICT)
+                : new ResponseEntity<>(user.get(), HttpStatus.OK);
     }
 }

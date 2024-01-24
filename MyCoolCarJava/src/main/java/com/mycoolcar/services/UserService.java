@@ -6,19 +6,18 @@ import com.mycoolcar.entities.Role;
 import com.mycoolcar.exceptions.PersonFoundException;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.RoleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-
+@Slf4j
 @Service
 public class UserService  implements UserDetailsService {
     public static final String ROLE_ADMIN = "ADMIN";
@@ -32,22 +31,16 @@ public class UserService  implements UserDetailsService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
     }
-    /*@Bean
-    PasswordEncoder bcryptPasswordEncoder(){
-        return new BCryptPasswordEncoder();
-    }*/
 
     public void initRolesAndUsers() {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         Role adminRole = new Role();
         adminRole.setRoleName(ROLE_ADMIN);
         adminRole.setRoleDescription("admin role");
-      //  adminRole.setId(1L);
         roleRepository.save(adminRole);
         Role userRole = new Role();
         userRole.setRoleName(ROLE_USER);
         userRole.setRoleDescription("user role");
-      //  userRole.setId(2L);
         roleRepository.save(userRole);
 
 
@@ -72,8 +65,11 @@ public class UserService  implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Optional<User> get(String email) {
+    public Optional<User> getByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+    public Optional<User> getByUsername(String username) {
+        return userRepository.findUserByFirstName(username);
     }
 
     public Optional<User> registerNewUser(UserCreationDto userCreationDto) {
@@ -87,7 +83,8 @@ public class UserService  implements UserDetailsService {
         newUser.setEmail(userCreationDto.email());
         newUser.setPassword(encoder.encode(userCreationDto.password()));
         Set<Role> personRoles = newUser.getRoles();
-        personRoles.add(roleRepository.findByRoleName(ROLE_USER));
+        Role role = roleRepository.findByRoleName(ROLE_USER);
+        personRoles.add(role);
         newUser.setRoles(personRoles);
         return Optional.of(userRepository.save(newUser));
     }
@@ -99,5 +96,8 @@ public class UserService  implements UserDetailsService {
 
     public UserDetails loadUserById(long id) {
         return userRepository.findById(id).orElseThrow(/*() -> new ResourceNotFoundException("User", "id", id)*/);
+    }
+    public User save(User user){
+        return userRepository.save(user);
     }
 }
