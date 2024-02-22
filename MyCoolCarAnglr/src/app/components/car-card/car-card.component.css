@@ -1,0 +1,13 @@
+.slide {
+  width: 80%;
+  height: 100%;
+  border-radius: 10px;
+  background-size: cover;
+  background-position: center;
+  max-height: 400px;
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+}
