@@ -2,7 +2,11 @@ package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.Null;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "cars")
 @Entity
@@ -10,7 +14,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class CarEntity {
 
     @Id
@@ -25,20 +28,25 @@ public class CarEntity {
 
     private String description;
 
-    private String image;
+    private String mainImageUrl;
+
+    private String[] imagesUrl;
 
     private int rate;
 
-    @ManyToOne(targetEntity=User.class, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = CarLogbook.class, cascade = CascadeType.ALL)
+    @Null
+    private CarLogbook logbook;
+
+    @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     @JsonIgnore
     User user;
 
-    public CarEntity(String brand, String model, int productYear, String description, String image) {
+    public CarEntity(String brand, String model, int productYear, String description) {
         this.brand = brand;
         this.model = model;
         this.productYear = productYear;
         this.description = description;
-        this.image = image;
 
     }
 
