@@ -55,11 +55,13 @@ public class JwtSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/user").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS,"/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
+                        .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(
