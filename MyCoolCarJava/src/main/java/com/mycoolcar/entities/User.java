@@ -2,7 +2,10 @@ package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,9 +42,9 @@ public class User implements UserDetails {
     @Column(length = 60)
     private String password;
 
-  //  private boolean isUsing2FA;
+    //  private boolean isUsing2FA;
 
-   // private String secret;
+    // private String secret;
 
     //todo: read about CascadeTypes https://www.baeldung.com/jpa-cascade-types
 
@@ -51,17 +54,33 @@ public class User implements UserDetails {
             @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles  = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(targetEntity=CarEntity.class,cascade = CascadeType.ALL , fetch = FetchType.LAZY, mappedBy = "user")
+    @OneToMany(targetEntity = CarEntity.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
     List<CarEntity> userCars = new ArrayList<>();
 
-    public void addCar(CarEntity car){
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "user_clubs",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
+    List<CarClub> userClubs = new ArrayList<>();
+
+   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+   @JoinTable(name = "user_subscribed_cars",
+           joinColumns =
+           @JoinColumn(name = "user_id", referencedColumnName = "id"),
+           inverseJoinColumns =
+           @JoinColumn(name = "car_id", referencedColumnName = "id"))
+    List<CarEntity> subscribedCars = new ArrayList<>();
+
+    public void addCar(CarEntity car) {
         userCars.add(car);
         car.setUser(this);
     }
 
-    public void removeCar(CarEntity car){
+    public void removeCar(CarEntity car) {
         userCars.remove(car);
         car.setUser(null);
     }
@@ -112,10 +131,11 @@ public class User implements UserDetails {
         return true;
     }
 
-    public String getFirstName(){
+    public String getFirstName() {
         return this.firstName;
     }
-    public void setFirstName(String firstName){
-         this.firstName = firstName;
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 }
