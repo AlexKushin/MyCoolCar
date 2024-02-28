@@ -3,7 +3,7 @@ package com.mycoolcar.services;
 import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.Role;
-import com.mycoolcar.exceptions.PersonFoundException;
+import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +72,9 @@ public class UserService  implements UserDetailsService {
         return userRepository.findUserByFirstName(username);
     }
 
-    public Optional<User> registerNewUser(UserCreationDto userCreationDto) {
+    public Optional<User> registerNewUser(UserCreationDto userCreationDto) throws UserAlreadyExistException{
         userRepository.findByEmail(userCreationDto.email()).ifPresent(person -> {
-            throw new PersonFoundException("User with ID: " + person.getEmail() + " is already exists");
+            throw new UserAlreadyExistException("User with ID: " + person.getEmail() + " is already exists");
         });
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         User newUser = new User();

@@ -6,6 +6,7 @@ import com.mycoolcar.entities.User;
 import com.mycoolcar.services.PostService;
 import com.mycoolcar.services.UserService;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,8 +39,8 @@ public class UserController {
         userService.initRolesAndUsers();
     }
 
-    @PostMapping("/persons")
-    public ResponseEntity<User> registerNewUser(@RequestBody UserCreationDto userCreationDto) {
+    @PostMapping("/user/registration")
+    public ResponseEntity<User> registerNewUser(@Valid @RequestBody  UserCreationDto userCreationDto) {
         Optional<User> result = userService.registerNewUser(userCreationDto);
         return result.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(result.get(), HttpStatus.CREATED);

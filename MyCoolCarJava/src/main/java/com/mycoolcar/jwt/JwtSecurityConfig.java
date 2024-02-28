@@ -6,7 +6,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,8 +41,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class JwtSecurityConfig {
 
-    @Autowired
-    UserService userService;
+   /* @Autowired
+    UserService userService;*/
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
@@ -51,7 +50,7 @@ public class JwtSecurityConfig {
         return httpSecurity
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authenticate").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/persons").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/user/registration").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/user").permitAll()
@@ -73,7 +72,7 @@ public class JwtSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() {
+    public AuthenticationManager authenticationManager(UserService userService) {
         var authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setPasswordEncoder(bcryptPasswordEncoder());
         authenticationProvider.setUserDetailsService(userService);
