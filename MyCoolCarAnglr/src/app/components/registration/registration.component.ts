@@ -17,7 +17,7 @@ export class RegistrationComponent {
     private userService: UserService
   ) {
   }
-  user: NewUser = new NewUser('firstname', 'lastname', 'email', 'password');
+  user: NewUser = new NewUser('', '', '', '', '');
 
 
 

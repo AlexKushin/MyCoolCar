@@ -1,4 +1,4 @@
-import {Car} from "./car";
+
 
 export class NewUser {
 
@@ -6,28 +6,11 @@ export class NewUser {
     public firstName: string,
     public lastName : string,
     public email: string,
-    public password: string
+    public password: string,
+    public matchingPassword: string
 
-  ) {
-  }
+  ) {}
 }
 
-/*export class User {
-  firstName!: string;
-  lastName!: string;
-  email!: string;
-  password!: string;
-  cars!: Car[]
-  constructor(
-    _firstName: string,
-    _lastName: string,
-    _email: string,
-    _password: string,
-    _cars: Car[]
-  ) {
-  }
-
-
-}*/
 
 

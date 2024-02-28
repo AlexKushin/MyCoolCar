@@ -16,7 +16,7 @@ export class UserService {
 
   registerNewUser(newUser: NewUser){
     console.log(newUser)
-    return this.http.post(`${API_URL}/api/persons`, newUser);
+    return this.http.post(`${API_URL}/api/user/registration`, newUser);
   }
   getCurrentUser(){
     return this.http.get(`${API_URL}/api/me`);

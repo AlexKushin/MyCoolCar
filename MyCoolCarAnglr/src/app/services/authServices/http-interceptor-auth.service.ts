@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
+import {HttpHandler, HttpInterceptor, HttpParams, HttpRequest} from "@angular/common/http";
 import {AuthenticationService} from "./authentication.service";
 
 @Injectable({
@@ -12,9 +12,6 @@ export class HttpInterceptorAuthService  implements HttpInterceptor {
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    // let username = "AlexKushyn";
-    // let password = "password";
-    // let basicAuthHeaderString = "Basic " + window.btoa(username + ":" + password)
     let basicAuthHeaderString = this.basicAuthService.getAuthenticatedToken();
     let username = this.basicAuthService.getAuthenticatedUser();
 
@@ -25,6 +22,9 @@ export class HttpInterceptorAuthService  implements HttpInterceptor {
         }
       })
     }
+    req = req.clone({setParams:{
+      local: 'pl_PL'
+      }})
     return next.handle(req);
   }
 
