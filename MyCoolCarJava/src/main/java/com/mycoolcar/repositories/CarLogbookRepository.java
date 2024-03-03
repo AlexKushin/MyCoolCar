@@ -1,6 +1,6 @@
 package com.mycoolcar.repositories;
 
-import com.mycoolcar.entities.CarEntity;
+import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.CarLogbook;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,5 +11,5 @@ public interface CarLogbookRepository extends JpaRepository <CarLogbook, Long> {
 
      Optional <CarLogbook> findById (Long id);
 
-     List<CarLogbook> findAllByCarIn(List<CarEntity> subscribedCars);
+     List<CarLogbook> findAllByCarIn(List<Car> subscribedCars);
 }

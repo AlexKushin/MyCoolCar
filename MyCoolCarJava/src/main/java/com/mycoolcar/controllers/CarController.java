@@ -1,7 +1,7 @@
 package com.mycoolcar.controllers;
 
 import com.mycoolcar.dtos.CarCreationDto;
-import com.mycoolcar.entities.CarEntity;
+import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.services.CarService;
 import com.mycoolcar.services.GoogleFileServiceImpl;
@@ -43,17 +43,17 @@ public class CarController {
     }
 
     @PostMapping("cars")
-    public ResponseEntity<CarEntity> postCar(Principal principal,
-                                             @RequestPart("files[]") MultipartFile[] images,
-                                             @RequestPart("mainImage") MultipartFile mainImage,
-                                             @RequestParam("brand") String carBrand,
-                                             @RequestParam("model") String carModel,
-                                             @RequestParam("productYear") Integer carProductYear,
-                                             @RequestParam("description") String carDescription) throws IOException {
+    public ResponseEntity<Car> postCar(Principal principal,
+                                       @RequestPart("files[]") MultipartFile[] images,
+                                       @RequestPart("mainImage") MultipartFile mainImage,
+                                       @RequestParam("brand") String carBrand,
+                                       @RequestParam("model") String carModel,
+                                       @RequestParam("productYear") Integer carProductYear,
+                                       @RequestParam("description") String carDescription) throws IOException {
 
         Optional<User> userOptional = userService.getByUsername(principal.getName());
 
-        CarEntity newCar = new CarEntity(carBrand, carModel,
+        Car newCar = new Car(carBrand, carModel,
                 carProductYear, carDescription);
         if(!mainImage.isEmpty()){
             String mainImageUrl = fileService.uploadFile(mainImage);
