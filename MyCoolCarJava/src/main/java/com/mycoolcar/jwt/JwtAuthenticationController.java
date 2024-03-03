@@ -28,23 +28,13 @@ public class JwtAuthenticationController {
     @PostMapping("/authenticate")
     public ResponseEntity<JwtTokenResponse> generateToken(
             @RequestBody JwtTokenRequest jwtTokenRequest) {
-        log.info("jwtTokenRequest = {}", jwtTokenRequest);
-
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
                         jwtTokenRequest.username(),
                         jwtTokenRequest.password());
-        log.info("authenticationToken = {}", authenticationToken);
         Authentication authentication =
                 authenticationManager.authenticate(authenticationToken);
-        log.info("authentication.getAuthorities = {}", authentication.getAuthorities());
-        log.info("authentication.isAuthenticated() = {}", authentication.isAuthenticated());
-        log.info("authentication.getCredentials() = {}", authentication.getCredentials());
-        log.info("authentication.getName() = {}", authentication.getName());
-        log.info("authentication.getDetails() = {}", authentication.getDetails());
-        log.info("authentication.getPrincipal() = {}", authentication.getPrincipal());
         String token = tokenService.generateToken(authentication);
-        log.info("token = {}", token);
         return ResponseEntity.ok(new JwtTokenResponse(token));
     }
 }

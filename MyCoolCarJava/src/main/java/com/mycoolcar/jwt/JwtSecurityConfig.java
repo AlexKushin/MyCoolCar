@@ -41,8 +41,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class JwtSecurityConfig {
 
-   /* @Autowired
-    UserService userService;*/
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
@@ -54,6 +52,7 @@ public class JwtSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/user").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/registration/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS,"/**")
