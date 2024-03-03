@@ -8,13 +8,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Table(name = "cars")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class CarEntity {
+public class Car implements Serializable {
+
+    private static final long serialVersionUID = -9147379439939477588L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +46,7 @@ public class CarEntity {
     @JsonIgnore
     User user;
 
-    public CarEntity(String brand, String model, int productYear, String description) {
+    public Car(String brand, String model, int productYear, String description) {
         this.brand = brand;
         this.model = model;
         this.productYear = productYear;

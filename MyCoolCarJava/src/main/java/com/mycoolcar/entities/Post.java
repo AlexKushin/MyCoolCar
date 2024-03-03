@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -14,7 +15,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
-public class Post {
+public class Post implements Serializable {
+
+    private static final long serialVersionUID = -6747914979222144881L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

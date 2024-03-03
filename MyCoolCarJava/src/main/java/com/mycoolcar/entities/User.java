@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {"email"}))
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+public class User implements UserDetails, Serializable {
 
-public class User implements UserDetails {
+    private static final long serialVersionUID = -2338113688315793511L;
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,18 +35,12 @@ public class User implements UserDetails {
 
     private String lastName;
 
-    //private String profilePictureUrl;
-
     private String email;
 
     @Column(length = 60)
     private String password;
 
-    //  private boolean isUsing2FA;
-
-    // private String secret;
-
-    //todo: read about CascadeTypes https://www.baeldung.com/jpa-cascade-types
+    private boolean enabled;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(name = "user_roles",
@@ -56,8 +50,8 @@ public class User implements UserDetails {
             @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(targetEntity = CarEntity.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
-    List<CarEntity> userCars = new ArrayList<>();
+    @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
+    List<Car> userCars = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(name = "user_clubs",
@@ -73,14 +67,19 @@ public class User implements UserDetails {
            @JoinColumn(name = "user_id", referencedColumnName = "id"),
            inverseJoinColumns =
            @JoinColumn(name = "car_id", referencedColumnName = "id"))
-    List<CarEntity> subscribedCars = new ArrayList<>();
+    List<Car> subscribedCars = new ArrayList<>();
 
-    public void addCar(CarEntity car) {
+
+    public User() {
+        super();
+        this.enabled = false;
+    }
+    public void addCar(Car car) {
         userCars.add(car);
         car.setUser(this);
     }
 
-    public void removeCar(CarEntity car) {
+    public void removeCar(Car car) {
         userCars.remove(car);
         car.setUser(null);
     }

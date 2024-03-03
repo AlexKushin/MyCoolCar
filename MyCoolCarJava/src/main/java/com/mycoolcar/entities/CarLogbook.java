@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.List;
 
 @Table(name = "car_logbooks")
@@ -16,8 +16,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-public class CarLogbook {
+public class CarLogbook implements Serializable {
 
+    private static final long serialVersionUID = -2914519862840904910L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,9 +26,9 @@ public class CarLogbook {
     private List<CarLogPost> carLogPosts;
 
 
-    @OneToOne(targetEntity=CarEntity.class,cascade=CascadeType.ALL)
+    @OneToOne(targetEntity= Car.class,cascade=CascadeType.ALL)
     @JsonIgnore
-    private CarEntity car;
+    private Car car;
 
     public void addCarLog(CarLogPost carLog){
         carLogPosts.add(carLog);
