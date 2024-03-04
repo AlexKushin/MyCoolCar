@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NewUser} from "../../models/newUser";
 import {UserService} from "../../services/user.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-registration',
@@ -14,6 +15,7 @@ import {UserService} from "../../services/user.service";
 export class RegistrationComponent {
 
   constructor(
+    private router: Router,
     private userService: UserService
   ) {
   }
@@ -27,6 +29,7 @@ export class RegistrationComponent {
     this.userService.registerNewUser(this.user).subscribe(
       data => {
         console.log(data)
+        this.router.navigate(["registration/confirm"])
       }
     )
   }

@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import {Car} from "../models/car";
 import {API_URL} from "../app.constants";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpRequest} from "@angular/common/http";
 import {NewUser} from "../models/newUser";
 import {User} from "../models/user";
+import {Observable} from "rxjs";
+import {Response} from "../models/response";
 
 @Injectable({
   providedIn: 'root'
@@ -20,5 +22,9 @@ export class UserService {
   }
   getCurrentUser(){
     return this.http.get(`${API_URL}/api/me`);
+  }
+
+  confirmRegistration(token: String):Observable<Response>{
+    return this.http.get<Response>(`${API_URL}/api/registration/confirm?token=`+token);
   }
 }
