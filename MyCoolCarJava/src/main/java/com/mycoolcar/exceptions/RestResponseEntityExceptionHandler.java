@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,13 +15,10 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 @AllArgsConstructor
@@ -32,7 +28,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return new ResponseEntity<>(new ApiError(status.value(), "Malformed JSON Request", ex.getMessage()), status);
+        return new ResponseEntity<>(new ApiResponse("Malformed JSON Request", ex.getMessage()), status);
     }
 
 
@@ -40,38 +36,59 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Locale locale = getLocaleFromRequest(request);
-        List<String> errors = new ArrayList<>();
+        String errorsStr = ex.getBindingResult().getAllErrors().stream().map(e -> {
+            if (e instanceof FieldError) {
+                try {
+                    return """
+                            {"field":" + %s ","message":"%s"}
+                            """
+                            .formatted(((FieldError) e).getField(), messageSource
+                                    .getMessage(e.getCode() + ".user." + ((FieldError) e).getField(), null, locale));
 
-        for (ObjectError error : ex.getBindingResult().getAllErrors()) {
-            String errorMessage;
-            try {
-                if (error.getCode() != null && !error.getCode().equals("PasswordMatches")) {
-                    FieldError fieldError = (FieldError) error;
-                    errorMessage = messageSource
-                            .getMessage(error.getCode() + ".user." + fieldError.getField(), null, locale);
-                } else {
-                    errorMessage = messageSource
-                            .getMessage("PasswordMatches.user", null, locale);
+                } catch (NoSuchMessageException exception) {
+                    return """
+                            {"field":" + %s ","defaultMessage":"%s"}
+                            """
+                            .formatted(((FieldError) e).getField(), e.getDefaultMessage());
                 }
-            } catch (NoSuchMessageException e) {
-                errorMessage = error.getDefaultMessage();
+            } else {
+                try {
+                    return """
+                            {"object":" + %s ","message":"%s"}
+                            """
+                            .formatted(e.getObjectName(), messageSource
+                                    .getMessage(e.getCode() + ".user", null, locale));
+                } catch (NoSuchMessageException exception) {
+                    return """
+                            {"object":" + %s ","defaultMessage":"%s"}
+                            """
+                            .formatted(e.getObjectName(), e.getDefaultMessage());
+                }
+
             }
-            errors.add(errorMessage);
-        }
-        ApiError apiError = new ApiError(status.value(), "Method Argument Not Valid", new Date(), ex.getMessage(), errors);
-        return new ResponseEntity<>(apiError, NOT_ACCEPTABLE);
+        }).collect(Collectors.joining(","));
+        ApiResponse apiResponse = new ApiResponse(errorsStr, "Method Argument Not Valid");
+        return handleExceptionInternal(ex, apiResponse, new HttpHeaders(), NOT_ACCEPTABLE, request);
     }
 
 
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatusCode status, WebRequest request) {
-        return new ResponseEntity<>(new ApiError(status.value(), "No Handler Found", ex.getMessage()), status);
+        ApiResponse error = new ApiResponse("No Handler Found", ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
     }
 
     @ExceptionHandler(UserAlreadyExistException.class)
-    protected ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        return new ResponseEntity<>(new ApiError(BAD_REQUEST.value(), "User already exists", ex.getMessage()), BAD_REQUEST);
+    protected ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex, final WebRequest request) {
+        ApiResponse error = new ApiResponse("User already exists", ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), CONFLICT, request);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, final WebRequest request) {
+        ApiResponse error = new ApiResponse("Resource not found", ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
     }
 
 
