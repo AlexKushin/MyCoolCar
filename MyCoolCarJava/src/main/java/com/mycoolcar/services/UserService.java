@@ -1,17 +1,19 @@
 package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.UserCreationDto;
-import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.Role;
-import com.mycoolcar.exceptions.PersonFoundException;
-import com.mycoolcar.repositories.UserRepository;
+import com.mycoolcar.entities.User;
+import com.mycoolcar.entities.VerificationToken;
+import com.mycoolcar.exceptions.ResourceNotFoundException;
+import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.repositories.RoleRepository;
+import com.mycoolcar.repositories.UserRepository;
+import com.mycoolcar.repositories.VerificationTokenRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,35 +21,38 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
-public class UserService  implements UserDetailsService {
+public class UserService implements UserDetailsService, IUserService {
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_USER = "USER";
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
+    private final PasswordEncoder passwordEncoder;
+    private final VerificationTokenRepository verificationTokenRepository;
+
+
+
     @Autowired
     public UserService(UserRepository userRepository,
-                       RoleRepository roleRepository) {
+                       RoleRepository roleRepository,
+                       PasswordEncoder passwordEncoder,
+                       VerificationTokenRepository verificationTokenRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.verificationTokenRepository = verificationTokenRepository;
     }
-    /*@Bean
-    PasswordEncoder bcryptPasswordEncoder(){
-        return new BCryptPasswordEncoder();
-    }*/
 
     public void initRolesAndUsers() {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         Role adminRole = new Role();
         adminRole.setRoleName(ROLE_ADMIN);
         adminRole.setRoleDescription("admin role");
-      //  adminRole.setId(1L);
         roleRepository.save(adminRole);
         Role userRole = new Role();
         userRole.setRoleName(ROLE_USER);
         userRole.setRoleDescription("user role");
-      //  userRole.setId(2L);
         roleRepository.save(userRole);
 
 
@@ -55,7 +60,7 @@ public class UserService  implements UserDetailsService {
         admin.setFirstName("admin");
         admin.setLastName("admin");
         admin.setEmail("admin@gmail.com");
-        admin.setPassword(encoder.encode("password"));
+        admin.setPassword(passwordEncoder.encode("password"));
         Set<Role> personRoles = new HashSet<>();
         personRoles.add(adminRole);
         admin.setRoles(personRoles);
@@ -65,39 +70,71 @@ public class UserService  implements UserDetailsService {
         user.setFirstName("user");
         user.setLastName("user");
         user.setEmail("user@gmail.com");
-        user.setPassword(encoder.encode("password"));
+        user.setPassword(passwordEncoder.encode("password"));
         Set<Role> userRoles = new HashSet<>();
         userRoles.add(userRole);
         user.setRoles(userRoles);
         userRepository.save(user);
     }
 
-    public Optional<User> get(String email) {
+    public Optional<User> getByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<User> registerNewUser(UserCreationDto userCreationDto) {
-        userRepository.findByEmail(userCreationDto.email()).ifPresent(person -> {
-            throw new PersonFoundException("User with ID: " + person.getEmail() + " is already exists");
+    public Optional<User> getByUsername(String username) {
+        return userRepository.findUserByFirstName(username);
+    }
+
+    @Override
+    public Optional<User> registerNewUserAccount(UserCreationDto userCreationDto) throws UserAlreadyExistException {
+        userRepository.findByEmail(userCreationDto.email()).ifPresent(user -> {
+            throw new UserAlreadyExistException("User with ID: " + user.getEmail() + " is already exists");
         });
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         User newUser = new User();
         newUser.setFirstName(userCreationDto.firstName());
         newUser.setLastName(userCreationDto.lastName());
         newUser.setEmail(userCreationDto.email());
-        newUser.setPassword(encoder.encode(userCreationDto.password()));
+        newUser.setPassword(passwordEncoder.encode(userCreationDto.password()));
         Set<Role> personRoles = newUser.getRoles();
-        personRoles.add(roleRepository.findByRoleName(ROLE_USER));
+        Role role = roleRepository.findByRoleName(ROLE_USER);
+        personRoles.add(role);
         newUser.setRoles(personRoles);
         return Optional.of(userRepository.save(newUser));
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user was not found")/*createUserIfNotExists()*/);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user was not found"));
     }
 
     public UserDetails loadUserById(long id) {
-        return userRepository.findById(id).orElseThrow(/*() -> new ResourceNotFoundException("User", "id", id)*/);
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User with id =" + id + " not found"));
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+
+    @Override
+    public User getUser(String verificationToken) {
+        return verificationTokenRepository.findByToken(verificationToken).getUser();
+    }
+
+    @Override
+    public void saveRegisteredUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    public void createVerificationTokenForUser(User user, String token) {
+        final VerificationToken myToken = new VerificationToken(token, user);
+        verificationTokenRepository.save(myToken);
+    }
+
+    @Override
+    public VerificationToken getVerificationToken(String verificationToken) {
+        return verificationTokenRepository.findByToken(verificationToken);
     }
 }

@@ -2,26 +2,26 @@ package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {"email"}))
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
+
+    private static final long serialVersionUID = -2338113688315793511L;
     @Id
     @Column(unique = true, nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,18 +35,12 @@ public class User implements UserDetails {
 
     private String lastName;
 
-    //private String profilePictureUrl;
-
     private String email;
 
     @Column(length = 60)
     private String password;
 
-  //  private boolean isUsing2FA;
-
-   // private String secret;
-
-    //todo: read about CascadeTypes https://www.baeldung.com/jpa-cascade-types
+    private boolean enabled;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(name = "user_roles",
@@ -54,10 +48,42 @@ public class User implements UserDetails {
             @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
+    List<Car> userCars = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "user_clubs",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
+    List<CarClub> userClubs = new ArrayList<>();
+
+   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+   @JoinTable(name = "user_subscribed_cars",
+           joinColumns =
+           @JoinColumn(name = "user_id", referencedColumnName = "id"),
+           inverseJoinColumns =
+           @JoinColumn(name = "car_id", referencedColumnName = "id"))
+    List<Car> subscribedCars = new ArrayList<>();
 
 
-    //List<CarEntity> personsCars;
+    public User() {
+        super();
+        this.enabled = false;
+    }
+    public void addCar(Car car) {
+        userCars.add(car);
+        car.setUser(this);
+    }
+
+    public void removeCar(Car car) {
+        userCars.remove(car);
+        car.setUser(null);
+    }
+
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -102,5 +128,13 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 }

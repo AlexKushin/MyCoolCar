@@ -3,14 +3,17 @@ package com.mycoolcar.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Table(name = "roles")
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
-public class Role {
+public class Role implements Serializable {
+
+    private static final long serialVersionUID = 4193405472806426993L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

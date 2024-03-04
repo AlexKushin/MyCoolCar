@@ -1,0 +1,20 @@
+
+<H2>Please, enter confirmation code which we sent you by Email</H2>
+
+
+
+<form class="col-xs-4" [formGroup]="confirmRegistrationForm" (ngSubmit)="onSubmit()">
+
+  <div class="form-group">
+  <label>input code here</label>
+  <input type="text"
+         id="tokenCode"
+         formControlName="tokenCode"
+         name="tokenCode"
+         class="form-control"
+         required="required"
+         minlength="5">
+  </div>
+
+  <button type="submit"  class="btn btn-success">Confirm</button>
+</form>

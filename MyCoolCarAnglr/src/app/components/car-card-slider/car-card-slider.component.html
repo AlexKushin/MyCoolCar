@@ -1,0 +1,18 @@
+<div class="slider" style=" align-content: center">
+  <div>
+    <div (click)="goToPrevious()" class="leftArrow">❰</div>
+    <div (click)="goToNext()" class="rightArrow">❱</div>
+  </div>
+  <div >
+    <app-car-card [car]="getCurrentSlideUrl()"></app-car-card>
+  </div>
+  <div class="dotsContainer">
+    <div
+      *ngFor="let car of cars; let carIndex = index"
+      class="dot"
+      (click)="goToSlide(carIndex)"
+    >
+      ●
+    </div>
+  </div>
+

@@ -1,0 +1,51 @@
+<H1>Registration</H1>
+<div class="container">
+
+  <!-- <div class="alert alert-warning" *ngIf="todoForm.dirty && todoForm.invalid">Enter valid values</div>
+   <div class="alert alert-warning" *ngIf="todoForm.dirty && targetDate.invalid">Enter valid Target date</div>
+   <div class="alert alert-warning" *ngIf="todoForm.dirty && description.invalid">Enter atleast 5 characters in Description</div>
+ -->
+  <form (ngSubmit)=" registerNewUser()" #todoForm="ngForm">
+
+    <label>First Name</label>
+    <input type="text"
+           [(ngModel)]="user.firstName"
+           [ngModelOptions]="{standalone: true}"
+           class="form-control"
+           required="required"
+           minlength="5">
+
+    <label>Last Name</label>
+    <input type="text"
+           [(ngModel)]="user.lastName"
+           [ngModelOptions]="{standalone: true}"
+           class="form-control"
+           required="required"
+           minlength="5">
+
+    <label>EMail</label>
+    <input type="text"
+           [(ngModel)]="user.email"
+           [ngModelOptions]="{standalone: true}"
+           class="form-control"
+           required="required"
+           minlength="5">
+
+    <label>Password</label>
+    <input type="text"
+           [(ngModel)]="user.password"
+           [ngModelOptions]="{standalone: true}"
+           class="form-control"
+           required="required"
+           minlength="5">
+
+    <label>Confirm Password</label>
+    <input type="text"
+           [(ngModel)]="user.matchingPassword"
+           [ngModelOptions]="{standalone: true}"
+           class="form-control"
+           required="required"
+           minlength="5">
+    <button type="submit" class="btn btn-success" >Save</button>
+  </form>
+</div>
