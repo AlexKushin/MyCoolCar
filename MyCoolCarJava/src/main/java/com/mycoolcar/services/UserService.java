@@ -4,8 +4,8 @@ import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
-import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
+import com.mycoolcar.exceptions.UserNotFoundException;
 import com.mycoolcar.repositories.RoleRepository;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.VerificationTokenRepository;
@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService, IUserService {
         userRepository.save(user);
     }
 
-    public Optional<User> getByEmail(String email) {
+    public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -109,7 +109,7 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     public UserDetails loadUserById(long id) {
-        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User with id =" + id + " not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id =" + id + " not found"));
     }
 
     public User save(User user) {
@@ -136,5 +136,10 @@ public class UserService implements UserDetailsService, IUserService {
     @Override
     public VerificationToken getVerificationToken(String verificationToken) {
         return verificationTokenRepository.findByToken(verificationToken);
+    }
+    @Override
+    public void deleteVerificationToken(String token){
+        VerificationToken verToken = getVerificationToken(token);
+        verificationTokenRepository.delete(verToken);
     }
 }

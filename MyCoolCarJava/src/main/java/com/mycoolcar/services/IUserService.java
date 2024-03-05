@@ -18,4 +18,7 @@ public interface IUserService {
     void createVerificationTokenForUser(User user, String token);
 
     VerificationToken getVerificationToken(String verificationToken);
+
+    void deleteVerificationToken(String token);
+
 }
