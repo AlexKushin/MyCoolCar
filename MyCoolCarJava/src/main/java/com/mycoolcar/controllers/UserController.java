@@ -5,6 +5,8 @@ import com.mycoolcar.entities.Post;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.ApiResponse;
+import com.mycoolcar.exceptions.UserNotFoundException;
+import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.registration.OnRegistrationCompleteEvent;
 import com.mycoolcar.services.PostService;
 import com.mycoolcar.services.UserService;
@@ -21,10 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -87,8 +86,24 @@ public class UserController {
         }
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
+        userService.deleteVerificationToken(token);
         String message = messageSource.getMessage("auth.message.confirm", null, locale);
         return new ResponseEntity<>(new ApiResponse(message), HttpStatus.OK);
+    }
+
+    @PostMapping("/user/resetPassword")
+    public ResponseEntity<ApiResponse> resetPassword(HttpServletRequest request,
+                                     @RequestParam("email") String userEmail) {
+        Optional <User> user = userService.findUserByEmail(userEmail);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User with email "+ userEmail + " not found");
+        }
+        String appUrl = getAppUrl(request);
+        eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(),
+                request.getLocale(), appUrl));
+        return new ResponseEntity<>(new ApiResponse(
+                messageSource.getMessage("message.resetPasswordEmail", null,
+                        request.getLocale())), HttpStatus.OK);
     }
 
 
@@ -110,7 +125,7 @@ public class UserController {
 
     @GetMapping({"/user"})
     public User getUser() {
-        Optional<User> user = userService.getByEmail("user@gmail.com");
+        Optional<User> user = userService.findUserByEmail("user@gmail.com");
         return user.get();
     }
 
@@ -132,6 +147,5 @@ public class UserController {
     private String getAppUrl(HttpServletRequest request) {
         return request.getHeader("Origin") + request.getContextPath();
     }
-
 
 }

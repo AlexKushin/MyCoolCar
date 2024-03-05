@@ -1,14 +1,13 @@
 package com.mycoolcar.registration.listener;
 
-
 import com.mycoolcar.entities.User;
-import com.mycoolcar.registration.OnRegistrationCompleteEvent;
+import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.services.IUserService;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
-import org.springframework.lang.NonNull;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,9 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
+public class ResetPasswordListener implements ApplicationListener<OnResetPasswordEvent> {
 
-    private final IUserService service;
+    private final IUserService userService;
 
     private final MessageSource messages;
 
@@ -27,35 +26,34 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
     private final Environment env;
 
     @Autowired
-    public RegistrationListener(IUserService service, MessageSource messageSource, JavaMailSender mailSender, Environment env) {
-        this.service = service;
+    public ResetPasswordListener(IUserService userService, MessageSource messageSource, JavaMailSender mailSender, Environment env) {
+        this.userService = userService;
         this.messages = messageSource;
         this.mailSender = mailSender;
         this.env = env;
     }
-    // API
 
     @Override
-    public void onApplicationEvent(@NonNull final OnRegistrationCompleteEvent event) {
-        this.confirmRegistration(event);
+    public void onApplicationEvent(@NonNull OnResetPasswordEvent event) {
+        this.resetPassword(event);
     }
 
-    private void confirmRegistration(final OnRegistrationCompleteEvent event) {
+    private void resetPassword(final OnResetPasswordEvent event) {
         final User user = event.getUser();
-        final String token = UUID.randomUUID().toString();
-        service.createVerificationTokenForUser(user, token);
-
+        String token = UUID.randomUUID().toString();
+        userService.createVerificationTokenForUser(user, token);
         final SimpleMailMessage email = constructEmailMessage(event, user, token);
         mailSender.send(email);
     }
 
 
-    private SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event, final User user, final String token) {
+    private SimpleMailMessage constructEmailMessage(final OnResetPasswordEvent event, final User user, final String token) {
 
         final String recipientAddress = user.getEmail();
-        final String subject = "Registration Confirmation";
-        final String confirmationUrl = event.getAppUrl() + "/registration/confirm?token=" + token;
-        final String message = messages.getMessage("message.regSuccLink", null, "You registered successfully. To confirm your registration, please click on the below link.", event.getLocale());
+        final String subject = "Reset password";
+        final String confirmationUrl = event.getAppUrl() + "/password/change?token=" + token;
+        final String message = messages.getMessage("message.resetPassword",
+                null, event.getLocale());
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientAddress);
         email.setSubject(subject);
@@ -63,6 +61,5 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         email.setFrom(env.getProperty("support.email"));
         return email;
     }
-
 
 }
