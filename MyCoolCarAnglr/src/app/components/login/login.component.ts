@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {Router} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 import {FormsModule} from '@angular/forms';
 import {AuthenticationService} from "../../services/authServices/authentication.service";
 import {Car} from "../../models/car";
@@ -11,7 +11,7 @@ import {CarCardSliderComponent} from "../car-card-slider/car-card-slider.compone
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, CarCardComponent, CarCardSliderComponent],
+  imports: [CommonModule, FormsModule, CarCardComponent, CarCardSliderComponent, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })

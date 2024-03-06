@@ -90,6 +90,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         ApiResponse error = new ApiResponse("Resource not found", ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
     }
+    @ExceptionHandler(UserNotFoundException.class)
+    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, final WebRequest request) {
+        ApiResponse error = new ApiResponse("User not found", ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
+    }
 
 
     private Locale getLocaleFromRequest(WebRequest request) {

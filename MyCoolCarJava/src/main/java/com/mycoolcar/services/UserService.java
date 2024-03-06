@@ -4,8 +4,8 @@ import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
-import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
+import com.mycoolcar.exceptions.UserNotFoundException;
 import com.mycoolcar.repositories.RoleRepository;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.VerificationTokenRepository;
@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -31,7 +32,6 @@ public class UserService implements UserDetailsService, IUserService {
 
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
-
 
 
     @Autowired
@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService, IUserService {
         userRepository.save(user);
     }
 
-    public Optional<User> getByEmail(String email) {
+    public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -109,7 +109,7 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     public UserDetails loadUserById(long id) {
-        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User with id =" + id + " not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id =" + id + " not found"));
     }
 
     public User save(User user) {
@@ -118,8 +118,8 @@ public class UserService implements UserDetailsService, IUserService {
 
 
     @Override
-    public User getUser(String verificationToken) {
-        return verificationTokenRepository.findByToken(verificationToken).getUser();
+    public Optional<User> getUserByVerificationToken(String verificationToken) {
+        return Optional.of(verificationTokenRepository.findByToken(verificationToken).getUser());
     }
 
     @Override
@@ -136,5 +136,28 @@ public class UserService implements UserDetailsService, IUserService {
     @Override
     public VerificationToken getVerificationToken(String verificationToken) {
         return verificationTokenRepository.findByToken(verificationToken);
+    }
+
+    @Override
+    public void deleteVerificationToken(String token) {
+        VerificationToken verToken = getVerificationToken(token);
+        verificationTokenRepository.delete(verToken);
+    }
+
+    @Override
+    public String validatePasswordResetToken(String token) {
+        final VerificationToken passToken = verificationTokenRepository.findByToken(token);
+        if (passToken == null) {
+            return "invalidToken";
+        }
+        return isTokenExpired(passToken) ? "expired" : null;
+    }
+    private boolean isTokenExpired(VerificationToken passToken) {
+        return passToken.getExpiryDate().isBefore(LocalDateTime.now());
+    }
+
+    public void changeUserPassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
     }
 }

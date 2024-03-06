@@ -1,10 +1,13 @@
 package com.mycoolcar.controllers;
 
+import com.mycoolcar.dtos.NewPasswordDto;
 import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.entities.Post;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.ApiResponse;
+import com.mycoolcar.exceptions.UserNotFoundException;
+import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.registration.OnRegistrationCompleteEvent;
 import com.mycoolcar.services.PostService;
 import com.mycoolcar.services.UserService;
@@ -21,28 +24,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
-
     private final UserService userService;
     private final PostService postService;
-
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messageSource;
-
-
     @Autowired
     public UserController(UserService userService,
                           PostService postService,
-                          ApplicationEventPublisher eventPublisher, MessageSource messageSource) {
+                          ApplicationEventPublisher eventPublisher,
+                          MessageSource messageSource) {
         this.userService = userService;
         this.postService = postService;
         this.eventPublisher = eventPublisher;
@@ -72,23 +69,54 @@ public class UserController {
     public ResponseEntity<ApiResponse> confirmRegistration
             (WebRequest request, @RequestParam("token") String token) {
         final Locale locale = request.getLocale();
+        String result = userService.validatePasswordResetToken(token);
+        if(result != null) {
+            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
+                    "auth.message." + result, null, locale)),HttpStatus.BAD_REQUEST);
+        }
         VerificationToken verificationToken = userService.getVerificationToken(token);
-        if (verificationToken == null) {
-            String message = messageSource.getMessage("auth.message.invalidToken", null, locale);
-            return new ResponseEntity<>(
-                    new ApiResponse(message, "Verification token == null"), HttpStatus.FORBIDDEN);
-        }
         User user = verificationToken.getUser();
-        Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-               String message = messageSource.getMessage("auth.message.expired", null, locale);
-            return new ResponseEntity<>(
-                    new ApiResponse(message, "Invalid verification token"), HttpStatus.FORBIDDEN);
-        }
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
+        userService.deleteVerificationToken(token);
         String message = messageSource.getMessage("auth.message.confirm", null, locale);
         return new ResponseEntity<>(new ApiResponse(message), HttpStatus.OK);
+    }
+
+    @PostMapping("/user/resetPassword")
+    public ResponseEntity<ApiResponse> resetPassword(HttpServletRequest request,
+                                     @RequestParam("email") String userEmail) {
+        Optional <User> user = userService.findUserByEmail(userEmail);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User with email "+ userEmail + " not found");
+        }
+        String appUrl = getAppUrl(request);
+        eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(),
+                request.getLocale(), appUrl));
+        return new ResponseEntity<>(new ApiResponse(
+                messageSource.getMessage("message.resetPasswordEmail", null,
+                        request.getLocale())), HttpStatus.OK);
+    }
+
+    @PostMapping("/user/savePassword")
+    public ResponseEntity<ApiResponse> savePassword(final Locale locale,
+                                                    @Valid @RequestBody NewPasswordDto passwordDto) {
+        String result = userService.validatePasswordResetToken(passwordDto.token());
+
+        if(result != null) {
+            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
+                    "auth.message." + result, null, locale)),HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<User> user = userService.getUserByVerificationToken(passwordDto.token());
+        if(user.isPresent()) {
+            userService.changeUserPassword(user.get(), passwordDto.password());
+            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
+                    "message.resetPasswordSuc", null, locale)), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
+                    "auth.message.invalid", null, locale)), HttpStatus.BAD_REQUEST);
+        }
     }
 
 
@@ -108,30 +136,23 @@ public class UserController {
     }
 
 
-    @GetMapping({"/user"})
-    public User getUser() {
-        Optional<User> user = userService.getByEmail("user@gmail.com");
-        return user.get();
-    }
-
     @GetMapping({"/me"})
     public ResponseEntity<User> getMe(Principal principal) {
         Optional<User> user = userService.getByUsername(principal.getName());
-        return user.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
-                : new ResponseEntity<>(user.get(), HttpStatus.OK);
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
     @GetMapping("user/news")
     public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
         Optional<User> user = userService.getByUsername(principal.getName());
-        return user.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
-                : new ResponseEntity<>(postService.getNewPosts(user.get()), HttpStatus.OK);
+        return user.map(value -> new ResponseEntity<>(postService.getNewPosts(value), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
 
     private String getAppUrl(HttpServletRequest request) {
         return request.getHeader("Origin") + request.getContextPath();
     }
-
 
 }
