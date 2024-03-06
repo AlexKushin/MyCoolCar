@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -31,7 +32,6 @@ public class UserService implements UserDetailsService, IUserService {
 
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
-
 
 
     @Autowired
@@ -118,8 +118,8 @@ public class UserService implements UserDetailsService, IUserService {
 
 
     @Override
-    public User getUser(String verificationToken) {
-        return verificationTokenRepository.findByToken(verificationToken).getUser();
+    public Optional<User> getUserByVerificationToken(String verificationToken) {
+        return Optional.of(verificationTokenRepository.findByToken(verificationToken).getUser());
     }
 
     @Override
@@ -137,9 +137,27 @@ public class UserService implements UserDetailsService, IUserService {
     public VerificationToken getVerificationToken(String verificationToken) {
         return verificationTokenRepository.findByToken(verificationToken);
     }
+
     @Override
-    public void deleteVerificationToken(String token){
+    public void deleteVerificationToken(String token) {
         VerificationToken verToken = getVerificationToken(token);
         verificationTokenRepository.delete(verToken);
+    }
+
+    @Override
+    public String validatePasswordResetToken(String token) {
+        final VerificationToken passToken = verificationTokenRepository.findByToken(token);
+        if (passToken == null) {
+            return "invalidToken";
+        }
+        return isTokenExpired(passToken) ? "expired" : null;
+    }
+    private boolean isTokenExpired(VerificationToken passToken) {
+        return passToken.getExpiryDate().isBefore(LocalDateTime.now());
+    }
+
+    public void changeUserPassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
     }
 }
