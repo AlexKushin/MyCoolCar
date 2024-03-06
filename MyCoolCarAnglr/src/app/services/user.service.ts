@@ -4,6 +4,7 @@ import {HttpClient} from "@angular/common/http";
 import {NewUser} from "../models/newUser";
 import {Observable} from "rxjs";
 import {Response} from "../models/response";
+import {NewPassword} from "../models/new-password";
 
 @Injectable({
   providedIn: 'root'
@@ -30,5 +31,9 @@ export class UserService {
 
   resetPassword(email: String): Observable<Response> {
     return this.http.post<Response>(`${API_URL}/api/user/resetPassword?email=` + email, null);
+  }
+
+  updatePassword(password: NewPassword): Observable<Response> {
+    return this.http.post<Response>(`${API_URL}/api/user/savePassword`, password);
   }
 }
