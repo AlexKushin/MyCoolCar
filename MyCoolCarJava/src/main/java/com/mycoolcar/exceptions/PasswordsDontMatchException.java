@@ -1,6 +1,10 @@
 package com.mycoolcar.exceptions;
 
-public class PasswordsDontMatchException extends RuntimeException{
+import java.io.Serial;
+
+public final class PasswordsDontMatchException extends RuntimeException {
+    @Serial
+    private static final long serialVersionUID = -3494148845909241553L;
 
     public PasswordsDontMatchException(String message) {
         super(message);

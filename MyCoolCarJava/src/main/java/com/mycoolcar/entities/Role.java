@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Table(name = "roles")
 @Entity
@@ -49,5 +50,18 @@ public class Role implements Serializable {
 
     public void setRoleDescription(String roleDescription) {
         this.roleDescription = roleDescription;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Role role)) return false;
+        return Objects.equals(id, role.id) && Objects.equals(roleName, role.roleName)
+                && Objects.equals(roleDescription, role.roleDescription);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, roleName, roleDescription);
     }
 }

@@ -37,13 +37,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                                                                   HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Locale locale = getLocaleFromRequest(request);
         String errorsStr = ex.getBindingResult().getAllErrors().stream().map(e -> {
-            if (e instanceof FieldError) {
+            if (e instanceof FieldError fieldError) {
                 try {
                     return """
                             {"field":" + %s ","message":"%s"}
                             """
-                            .formatted(((FieldError) e).getField(), messageSource
-                                    .getMessage(e.getCode() + ".user." + ((FieldError) e).getField(), null, locale));
+                            .formatted(fieldError.getField(), messageSource
+                                    .getMessage(e.getCode() + ".user." + fieldError.getField(), null, locale));
 
                 } catch (NoSuchMessageException exception) {
                     return """
@@ -88,6 +88,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @ExceptionHandler(ResourceNotFoundException.class)
     protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, final WebRequest request) {
         ApiResponse error = new ApiResponse("Resource not found", ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
+    }
+    @ExceptionHandler(UserNotFoundException.class)
+    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, final WebRequest request) {
+        ApiResponse error = new ApiResponse("User not found", ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
     }
 

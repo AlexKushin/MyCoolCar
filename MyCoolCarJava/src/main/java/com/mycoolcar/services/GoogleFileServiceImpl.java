@@ -21,12 +21,12 @@ public class GoogleFileServiceImpl implements FileService {
     @Value("${gcp.bucket.name}")
     private String bucketName;
 
-    @Autowired
-    Storage storage;
+    private  final Storage storage;
 
-    /*FileServiceImpl (Storage storage){
+    @Autowired
+    GoogleFileServiceImpl (Storage storage){
         this.storage = storage;
-    }*/
+    }
 
     @Override
     public List<String> listOfFiles() {
@@ -43,10 +43,7 @@ public class GoogleFileServiceImpl implements FileService {
     public ByteArrayResource downloadFile(String fileName) {
 
         Blob blob = storage.get(bucketName, fileName);
-        ByteArrayResource resource = new ByteArrayResource(
-                blob.getContent());
-
-        return resource;
+        return new ByteArrayResource(blob.getContent());
     }
 
     @Override

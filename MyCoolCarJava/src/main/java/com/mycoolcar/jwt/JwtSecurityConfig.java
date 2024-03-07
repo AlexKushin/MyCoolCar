@@ -52,6 +52,7 @@ public class JwtSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/cars").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/user").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/user/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/registration/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()

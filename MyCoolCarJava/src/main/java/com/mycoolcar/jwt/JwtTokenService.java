@@ -29,9 +29,6 @@ public class JwtTokenService {
                 .map(a -> a.getAuthority())
                 .collect(Collectors.joining(" "));
 
-        log.info("Authorities = " + authentication.getAuthorities());
-        log.info("Scope = " + scope);
-
         var claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(Instant.now())

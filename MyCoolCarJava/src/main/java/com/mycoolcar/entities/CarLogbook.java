@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 @Table(name = "car_logbooks")
 @AllArgsConstructor
@@ -35,8 +36,21 @@ public class CarLogbook implements Serializable {
         carLog.setCarLogbook(this);
     }
 
-    public void removeCar(CarLogPost carLog){
-        carLogPosts.remove(car);
+    public void removeCarLog(CarLogPost carLog){
+        carLogPosts.remove(carLog);
         carLog.setCarLogbook(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CarLogbook that)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(carLogPosts, that.carLogPosts)
+                && Objects.equals(car, that.car);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, carLogPosts, car);
     }
 }

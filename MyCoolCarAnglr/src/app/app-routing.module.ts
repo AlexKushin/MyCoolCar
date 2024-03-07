@@ -10,11 +10,15 @@ import {RegistrationComponent} from "./components/registration/registration.comp
 import {
   ConfirmRegistrationComponent
 } from "./components/registration/confirm-registration/confirm-registration.component";
+import {PasswordResetComponent} from "./components/login/password-reset/password-reset.component";
+import {PasswordChangeComponent} from "./components/login/password-change/password-change.component";
 
 
 const routes: Routes = [
   {path:"", component: LoginComponent},
   {path:"login", component: LoginComponent},
+  {path:"password/reset", component: PasswordResetComponent},
+  {path:"password/change", component: PasswordChangeComponent},
   {path:"registration", component: RegistrationComponent},
   {path:"registration/confirm", component: ConfirmRegistrationComponent},
   {path:"welcome", component: WelcomeComponent, canActivate: [authGuard]},
