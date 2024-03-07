@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Table(name = "car_logs")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,5 +24,15 @@ public class CarLogPost extends Post{
     @JsonIgnore
     private CarLogbook carLogbook;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CarLogPost that)) return false;
+        return Objects.equals(carLogbook, that.carLogbook);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(carLogbook);
+    }
 }

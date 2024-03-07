@@ -51,7 +51,7 @@ public class User implements UserDetails, Serializable {
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
-    List<Car> userCars = new ArrayList<>();
+    private List<Car> userCars = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(name = "user_clubs",
@@ -59,7 +59,7 @@ public class User implements UserDetails, Serializable {
             @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
-    List<CarClub> userClubs = new ArrayList<>();
+    private List<CarClub> userClubs = new ArrayList<>();
 
    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
    @JoinTable(name = "user_subscribed_cars",
@@ -67,7 +67,7 @@ public class User implements UserDetails, Serializable {
            @JoinColumn(name = "user_id", referencedColumnName = "id"),
            inverseJoinColumns =
            @JoinColumn(name = "car_id", referencedColumnName = "id"))
-    List<Car> subscribedCars = new ArrayList<>();
+    private List<Car> subscribedCars = new ArrayList<>();
 
 
     public User() {
@@ -136,5 +136,23 @@ public class User implements UserDetails, Serializable {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User user)) return false;
+        return ban == user.ban && enabled == user.enabled && Objects.equals(id, user.id)
+                && Objects.equals(registered, user.registered) && Objects.equals(firstName, user.firstName)
+                && Objects.equals(lastName, user.lastName) && Objects.equals(email, user.email)
+                && Objects.equals(password, user.password) && Objects.equals(roles, user.roles)
+                && Objects.equals(userCars, user.userCars) && Objects.equals(userClubs, user.userClubs)
+                && Objects.equals(subscribedCars, user.subscribedCars);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, ban, registered, firstName, lastName, email, password,
+                enabled, roles, userCars, userClubs, subscribedCars);
     }
 }

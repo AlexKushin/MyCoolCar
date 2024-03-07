@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 @AllArgsConstructor
@@ -29,5 +30,17 @@ public class Post implements Serializable {
 
     private LocalDateTime createdTime;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Post post)) return false;
+        return Objects.equals(id, post.id) && Objects.equals(topic, post.topic)
+                && Objects.equals(description, post.description)
+                && Objects.equals(createdTime, post.createdTime);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, topic, description, createdTime);
+    }
 }

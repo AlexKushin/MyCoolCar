@@ -3,12 +3,11 @@ package com.mycoolcar.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Null;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 
 @Table(name = "cars")
 @Entity
@@ -54,4 +53,21 @@ public class Car implements Serializable {
 
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Car car)) return false;
+        return productYear == car.productYear && rate == car.rate && Objects.equals(id, car.id)
+                && Objects.equals(brand, car.brand) && Objects.equals(model, car.model)
+                && Objects.equals(description, car.description) && Objects.equals(mainImageUrl, car.mainImageUrl)
+                && Arrays.equals(imagesUrl, car.imagesUrl) && Objects.equals(logbook, car.logbook)
+                && Objects.equals(user, car.user);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(id, brand, model, productYear, description, mainImageUrl, rate, logbook, user);
+        result = 31 * result + Arrays.hashCode(imagesUrl);
+        return result;
+    }
 }
