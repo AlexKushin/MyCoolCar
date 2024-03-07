@@ -1,8 +1,10 @@
 package com.mycoolcar.exceptions;
 
+import java.io.Serial;
+
 public final class UserNotFoundException extends RuntimeException {
-    //todo should exceptions be Serializable?
-    //private static final long serialVersionUID = 5861310537366287163L;
+    @Serial
+    private static final long serialVersionUID = 693091659392899768L;
 
     public UserNotFoundException() {
         super();

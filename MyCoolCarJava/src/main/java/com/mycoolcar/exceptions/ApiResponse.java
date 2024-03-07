@@ -3,10 +3,18 @@ package com.mycoolcar.exceptions;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
-public class ApiResponse {
+public class ApiResponse implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1628667709705917826L;
+
     private String message;
+
     private String error;
 
 
