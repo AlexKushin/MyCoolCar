@@ -28,14 +28,14 @@ public class VerificationToken {
     public VerificationToken(final String token) {
         super();
         this.token = token;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
     public VerificationToken(final String token, final User user) {
         super();
         this.token = token;
         this.user = user;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
     public Long getId() {
@@ -66,14 +66,14 @@ public class VerificationToken {
         this.expiryDate = expiryDate;
     }
 
-    private LocalDateTime calculateExpiryDate(final int expiryTimeInMinutes) {
+    private LocalDateTime calculateExpiryDate() {
         LocalDateTime time = LocalDateTime.now();
-         return time.plusMinutes(expiryTimeInMinutes);
+         return time.plusMinutes(VerificationToken.EXPIRATION);
     }
 
     public void updateToken(final String token) {
         this.token = token;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
     @Override

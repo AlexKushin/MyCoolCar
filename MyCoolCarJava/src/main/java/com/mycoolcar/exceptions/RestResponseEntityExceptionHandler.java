@@ -37,13 +37,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                                                                   HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Locale locale = getLocaleFromRequest(request);
         String errorsStr = ex.getBindingResult().getAllErrors().stream().map(e -> {
-            if (e instanceof FieldError) {
+            if (e instanceof FieldError fieldError) {
                 try {
                     return """
                             {"field":" + %s ","message":"%s"}
                             """
-                            .formatted(((FieldError) e).getField(), messageSource
-                                    .getMessage(e.getCode() + ".user." + ((FieldError) e).getField(), null, locale));
+                            .formatted(fieldError.getField(), messageSource
+                                    .getMessage(e.getCode() + ".user." + fieldError.getField(), null, locale));
 
                 } catch (NoSuchMessageException exception) {
                     return """
