@@ -17,6 +17,7 @@
 		<java.version>17</java.version>
 		<spring-cloud-gcp.version>4.1.1</spring-cloud-gcp.version>
 		<spring-cloud.version>2022.0.1</spring-cloud.version>
+		<passay.version>1.0</passay.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -92,6 +93,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
+
+		<!-- Password Validation -->
+		<dependency>
+			<groupId>org.passay</groupId>
+			<artifactId>passay</artifactId>
+			<version>${passay.version}</version>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
