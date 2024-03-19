@@ -2,6 +2,7 @@ package com.mycoolcar.dtos;
 
 import com.mycoolcar.validation.PasswordMatches;
 import com.mycoolcar.validation.ValidEmail;
+import com.mycoolcar.validation.ValidPassword;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,6 +16,7 @@ public record UserCreationDto(
         String lastName,
         @NotNull
         @NotEmpty
+        @ValidPassword
         String password,
         String matchingPassword,
         @NotNull
