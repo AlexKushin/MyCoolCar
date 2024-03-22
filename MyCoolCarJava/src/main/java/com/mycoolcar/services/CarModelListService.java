@@ -15,8 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -33,16 +32,19 @@ public class CarModelListService {
     }
 
     @PostConstruct
-    public void importToDB() {
+    public void importCarModelsToDB() {
         try (CSVReader reader = new CSVReader(new FileReader(
                 "MyCoolCarJava/src/main/resources/car_models_list.csv", StandardCharsets.UTF_8))) {
             String[] carBrandModels;
             while ((carBrandModels = reader.readNext()) != null) {
-                CarBrand carBrand = new CarBrand();
-                carBrand.setName(carBrandModels[0]);
-                List<CarModel> carModels = new ArrayList<>();
+                String carBrandName = carBrandModels[0];
+                CarBrand carBrand = new CarBrand(carBrandName);
+                carBrandRepository.save(carBrand);
+                Set<CarModel> carModels = carBrand.getCarModels();
                 for (int i = 1; i < carBrandModels.length; i++) {
-                    CarModel carModel = new CarModel(carBrandModels[i]);
+                    String carModelName = carBrandModels[i];
+                    CarModel carModel = new CarModel(carModelName);
+                    carModel.setCarBrand(carBrand);
                     carModelRepository.save(carModel);
                     carModels.add(carModel);
                 }
