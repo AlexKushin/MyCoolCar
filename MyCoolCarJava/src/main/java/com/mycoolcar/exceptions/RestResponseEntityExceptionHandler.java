@@ -1,6 +1,8 @@
 package com.mycoolcar.exceptions;
 
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpHeaders;
@@ -15,11 +17,14 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.*;
 
+@Slf4j
 @RestControllerAdvice
 @AllArgsConstructor
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
@@ -75,25 +80,44 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatusCode status, WebRequest request) {
-        ApiResponse error = new ApiResponse("No Handler Found", ex.getMessage());
+        ApiResponse error = new ApiResponse(getLocalMessage("exception.NoHandlerFoundException", request), ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
     }
 
     @ExceptionHandler(UserAlreadyExistException.class)
     protected ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse("User already exists", ex.getMessage());
+        ApiResponse error = new ApiResponse(getLocalMessage("exception.UserAlreadyExistException", request), ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), CONFLICT, request);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse("Resource not found", ex.getMessage());
+        ApiResponse error = new ApiResponse(getLocalMessage("exception.ResourceNotFoundException", request), ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
     }
+
     @ExceptionHandler(UserNotFoundException.class)
     protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse("User not found", ex.getMessage());
+        ApiResponse error = new ApiResponse(getLocalMessage("exception.UserNotFoundException", request), ex.getMessage());
         return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(IOException.class)
+    protected void handleIOException(IOException ex) {
+        log.error("Can't read file by path {}", ex.getMessage());
+        throw new InterruptAppException("Can't read file");
+    }
+
+    @ExceptionHandler(CsvValidationException.class)
+    protected void handleCsvValidationException(CsvValidationException ex) {
+        log.error("Error processing CSV file: {}", ex.getMessage());
+        throw new InterruptAppException("Error processing CSV file");
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    protected void handleFileNotFoundException(FileNotFoundException ex) {
+        log.error("There is no file to read {}", ex.getMessage());
+        throw new InterruptAppException("There is no file to read");
     }
 
 
@@ -104,6 +128,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         } else {
             return new Locale("en");
         }
+    }
+
+    private String getLocalMessage(String exCode, final WebRequest request) {
+        Locale locale = getLocaleFromRequest(request);
+        return messageSource.getMessage(exCode, null, locale);
     }
 
 }
