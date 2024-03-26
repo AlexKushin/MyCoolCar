@@ -1,6 +1,7 @@
 package com.mycoolcar.configs;
 
 import com.mycoolcar.validation.PasswordMatchesValidator;
+import com.opencsv.CSVReader;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -51,6 +55,12 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public PasswordMatchesValidator passwordMatchesValidator() {
         return new PasswordMatchesValidator();
+    }
+
+    @Bean
+    public CSVReader csvReader() throws IOException {
+        String filePath = "MyCoolCarJava/src/main/resources/car_models_list.csv";
+        return new CSVReader(new FileReader(filePath, StandardCharsets.UTF_8));
     }
 
 }
