@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -48,19 +47,21 @@ public class JwtSecurityConfig {
         return httpSecurity
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authenticate").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/user/registration").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/cars").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/cars").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/user").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/user/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/registration/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/registration").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/cars").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/registration/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS,"/**")
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                        .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(
@@ -124,7 +125,7 @@ public class JwtSecurityConfig {
     }
 
     @Bean
-    PasswordEncoder bcryptPasswordEncoder(){
+    PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

@@ -6,13 +6,16 @@ import com.mycoolcar.entities.*;
 import com.mycoolcar.repositories.CarClubRepository;
 import com.mycoolcar.repositories.CarLogbookRepository;
 import com.mycoolcar.services.PostService;
+import com.mycoolcar.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -25,12 +28,15 @@ public class PostController {
     private final CarLogbookRepository carLogbookRepository;
     private final CarClubRepository carClubRepository;
 
+    private final UserService userService;
+
     @Autowired
     public PostController(PostService postService, CarLogbookRepository carLogbookRepository,
-                          CarClubRepository carClubRepository) {
+                          CarClubRepository carClubRepository, UserService userService) {
         this.postService = postService;
         this.carLogbookRepository = carLogbookRepository;
         this.carClubRepository = carClubRepository;
+        this.userService = userService;
     }
 
     @PostMapping("car-log-posts/new")
@@ -63,6 +69,13 @@ public class PostController {
         return carClub.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(newClubPost, HttpStatus.CREATED);
 
+    }
+
+    @GetMapping("user/news")
+    public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
+        Optional<User> user = userService.getByUsername(principal.getName());
+        return user.map(value -> new ResponseEntity<>(postService.getNewPosts(value), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
 }

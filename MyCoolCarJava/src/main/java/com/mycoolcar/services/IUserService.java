@@ -23,4 +23,7 @@ public interface IUserService {
 
     String validatePasswordResetToken(String token);
 
+    Optional<User> banUser(long id);
+
+    void deleteUser(long id);
 }
