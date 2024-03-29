@@ -1,6 +1,5 @@
 package com.mycoolcar.services;
 
-import org.springframework.stereotype.Service;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
@@ -9,11 +8,12 @@ import com.google.cloud.storage.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
 
 @Service
 public class GoogleFileServiceImpl implements FileService {
@@ -21,21 +21,26 @@ public class GoogleFileServiceImpl implements FileService {
     @Value("${gcp.bucket.name}")
     private String bucketName;
 
-    private  final Storage storage;
+    private final Storage storage;
 
     @Autowired
-    GoogleFileServiceImpl (Storage storage){
+    public GoogleFileServiceImpl(Storage storage) {
         this.storage = storage;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
     }
 
     @Override
     public List<String> listOfFiles() {
 
         List<String> list = new ArrayList<>();
-        Page<Blob> blobs = storage.list(bucketName);
+        Page<Blob> blobs = storage.list(bucketName); //returns not ordered list
         for (Blob blob : blobs.iterateAll()) {
             list.add(blob.getName());
         }
+        Collections.sort(list);
         return list;
     }
 
@@ -50,18 +55,21 @@ public class GoogleFileServiceImpl implements FileService {
     public boolean deleteFile(String fileName) {
 
         Blob blob = storage.get(bucketName, fileName);
-
         return blob.delete();
     }
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         BlobId blobId = BlobId.of(bucketName, uniqueFileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).
                 setContentType(file.getContentType()).build();
-        Blob blob = storage.create(blobInfo,file.getBytes());
-        return blob.getMediaLink();
+        Blob blob = storage.create(blobInfo, file.getBytes());
+        String fileLink = blob.getMediaLink();
+        if(fileLink == null){
+            return file.getOriginalFilename();
+        }
+        return fileLink;
 
     }
 }
