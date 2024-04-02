@@ -4,7 +4,6 @@ import com.mycoolcar.dtos.CarCreationDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.services.CarService;
-import com.mycoolcar.services.GoogleFileServiceImpl;
 import com.mycoolcar.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,11 @@ public class CarController {
 
     private final UserService userService;
 
-    private final GoogleFileServiceImpl fileService;
 
     @Autowired
-    public CarController(CarService carService, UserService userService, GoogleFileServiceImpl fileService) {
+    public CarController(CarService carService, UserService userService) {
         this.carService = carService;
         this.userService = userService;
-        this.fileService = fileService;
     }
 
     @GetMapping("cars")
@@ -52,27 +49,14 @@ public class CarController {
                                        @RequestParam("description") String carDescription) throws IOException {
 
         Optional<User> userOptional = userService.getByUsername(principal.getName());
-
-        Car newCar = new Car(carBrand, carModel,
-                carProductYear, carDescription);
-        if(!mainImage.isEmpty()){
-            String mainImageUrl = fileService.uploadFile(mainImage);
-            newCar.setMainImageUrl(mainImageUrl);
-        }
-        if(images.length > 0){
-            String[] imagesUrls = new String[8];
-            for (int i = 0; i < images.length; i++) {
-                imagesUrls[i] = fileService.uploadFile(images[i]);
-            }
-            newCar.setImagesUrl(imagesUrls);
-        }
+        Car newCar = new Car();
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            user.addCar(newCar);
-            userService.save(user);
+            newCar = carService.addNewCar(user, images, mainImage, carBrand,
+                    carModel, carProductYear, carDescription);
         }
         return userOptional.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(newCar, HttpStatus.CREATED);
-
     }
+
 }
