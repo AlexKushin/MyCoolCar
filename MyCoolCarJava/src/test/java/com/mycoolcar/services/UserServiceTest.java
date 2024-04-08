@@ -263,6 +263,51 @@ class UserServiceTest  {
         userService.changeUserPassword(user, password);
 
         verify(userRepository, times(1)).save(user);
-        // You can add more assertions here to check if the password is properly encoded, etc.
+    }
+
+    @Test
+    void testGetUserByEmail_Success() {
+        String email = "test@example.com";
+        User user = new User();
+        user.setEmail(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        Optional<User> result = userService.getUserByEmail(email);
+
+        assertTrue(result.isPresent());
+        assertEquals(email, result.get().getEmail());
+    }
+
+    @Test
+    void testGetUserByEmail_UserNotFound() {
+        String email = "test@example.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        Optional<User> result = userService.getUserByEmail(email);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void testGetByUsername_Success() {
+        String username = "testuser";
+        User user = new User();
+        user.setFirstName(username);
+        when(userRepository.findUserByFirstName(username)).thenReturn(Optional.of(user));
+
+        Optional<User> result = userService.getByUsername(username);
+
+        assertTrue(result.isPresent());
+        assertEquals(username, result.get().getFirstName());
+    }
+
+    @Test
+    void testGetByUsername_UserNotFound() {
+        String username = "testuser";
+        when(userRepository.findUserByFirstName(username)).thenReturn(Optional.empty());
+
+        Optional<User> result = userService.getByUsername(username);
+
+        assertFalse(result.isPresent());
     }
 }

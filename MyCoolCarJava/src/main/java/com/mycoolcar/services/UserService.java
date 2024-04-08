@@ -76,7 +76,6 @@ public class UserService implements UserDetailsService, IUserService {
         user.setRoles(userRoles);
         userRepository.save(user);
     }
-//todo: create userPrincipal implements UserDetails https://www.baeldung.com/spring-security-authentication-with-a-database
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
