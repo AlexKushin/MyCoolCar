@@ -1,45 +1,65 @@
 package com.mycoolcar.services;
 
 import com.mycoolcar.entities.*;
-import com.mycoolcar.repositories.CarLogPostRepository;
-import com.mycoolcar.repositories.ClubPostRepository;
+import com.mycoolcar.exceptions.ResourceNotFoundException;
+import com.mycoolcar.repositories.CarClubPostRepository;
+import com.mycoolcar.repositories.CarLogBookPostRepository;
 import com.mycoolcar.repositories.CarLogbookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class PostService {
 
-    private final CarLogPostRepository carLogPostRepository;
-    private final ClubPostRepository clubPostRepository;
+    private final CarLogBookPostRepository carLogBookPostRepository;
+    private final CarClubPostRepository carClubPostRepository;
     private final CarLogbookRepository carLogbookRepository;
 
     @Autowired
-    public PostService(CarLogPostRepository carLogPostRepository, ClubPostRepository clubPostRepository,
+    public PostService(CarLogBookPostRepository carLogBookPostRepository,
+                       CarClubPostRepository carClubPostRepository,
                        CarLogbookRepository carLogbookRepository) {
-        this.carLogPostRepository = carLogPostRepository;
-        this.clubPostRepository = clubPostRepository;
+        this.carLogBookPostRepository = carLogBookPostRepository;
+        this.carClubPostRepository = carClubPostRepository;
         this.carLogbookRepository = carLogbookRepository;
     }
 
     public Post post(CarLogPost carLogPost) {
-        return carLogPostRepository.save(carLogPost);
+        return carLogBookPostRepository.save(carLogPost);
     }
 
     public Post post(ClubPost clubPost) {
-        return clubPostRepository.save(clubPost);
+        return carClubPostRepository.save(clubPost);
     }
 
     public List<Post> getNewPosts(User user) {
         List<CarLogbook> carLogbooks = carLogbookRepository.findAllByCarIn(user.getSubscribedCars());
-        List<CarLogPost> carLogPosts = carLogPostRepository.findAllByCarLogbookInOrderByCreatedTime(carLogbooks);
-        List<ClubPost> clubPosts = clubPostRepository.findAllByCarClubInOrderByCreatedTime(user.getUserClubs());
-        List<Post> news = new ArrayList<>();
-        news.addAll(carLogPosts);
-        news.addAll(clubPosts);
-        return news;
+        return Stream.concat(
+                        carLogBookPostRepository.findAllByCarLogbookInOrderByCreatedTime(carLogbooks).stream(),
+                        carClubPostRepository.findAllByCarClubInOrderByCreatedTime(user.getUserClubs()).stream())
+                .toList();
+    }
+
+    public void deleteCarClubPost(long id) {
+        Optional<ClubPost> clubPostToDeleteOp = carClubPostRepository.findById(id);
+        if (clubPostToDeleteOp.isEmpty()) {
+            throw new ResourceNotFoundException("Car Club Post with id =" + id + " not found");
+        }
+        ClubPost clubPost = clubPostToDeleteOp.get();
+        carClubPostRepository.delete(clubPost);
+    }
+
+    public void deleteCarLogPost(long id) {
+        Optional<CarLogPost> carLogPostToDeleteOp = carLogBookPostRepository.findById(id);
+        if (carLogPostToDeleteOp.isEmpty()) {
+            throw new ResourceNotFoundException("Car LogBook Post with id =" + id + " not found");
+        }
+        CarLogPost carLogPost = carLogPostToDeleteOp.get();
+        carLogBookPostRepository.delete(carLogPost);
     }
 }
+

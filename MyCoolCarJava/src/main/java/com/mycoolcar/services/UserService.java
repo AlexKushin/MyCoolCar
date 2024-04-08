@@ -76,13 +76,16 @@ public class UserService implements UserDetailsService, IUserService {
         user.setRoles(userRoles);
         userRepository.save(user);
     }
-
-    public Optional<User> findUserByEmail(String email) {
+    public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
     public Optional<User> getByUsername(String username) {
         return userRepository.findUserByFirstName(username);
+    }
+
+    public Optional<User> getUserById(long userId) {
+        return userRepository.findById(userId);
     }
 
     @Override
@@ -112,8 +115,8 @@ public class UserService implements UserDetailsService, IUserService {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id =" + id + " not found"));
     }
 
-    public User save(User user) {
-        return userRepository.save(user);
+    public Optional<User> save(User user) {
+        return Optional.of(userRepository.save(user));
     }
 
 
@@ -152,6 +155,28 @@ public class UserService implements UserDetailsService, IUserService {
         }
         return isTokenExpired(passToken) ? "expired" : null;
     }
+
+    @Override
+    public Optional<User> banUser(long id) {
+        Optional<User> userToBanOp =  getUserById(id);
+        if(userToBanOp.isEmpty()){
+            throw  new UserNotFoundException("User with id =" + id + " not found");
+        }
+        User user = userToBanOp.get();
+        user.setBan(!user.isBan());
+        return save(user);
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        Optional<User> userToDeleteOp =  getUserById(id);
+        if(userToDeleteOp.isEmpty()){
+            throw  new UserNotFoundException("User with id =" + id + " not found");
+        }
+        User user = userToDeleteOp.get();
+        userRepository.delete(user);
+    }
+
     private boolean isTokenExpired(VerificationToken passToken) {
         return passToken.getExpiryDate().isBefore(LocalDateTime.now());
     }

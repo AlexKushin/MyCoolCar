@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ClubPostRepository extends JpaRepository<ClubPost, Long> {
+public interface CarClubPostRepository extends JpaRepository<ClubPost, Long> {
 
    List<ClubPost> findAllByCarClubInOrderByCreatedTime(List<CarClub> subscribedCarClubs);
 }

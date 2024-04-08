@@ -2,14 +2,12 @@ package com.mycoolcar.controllers;
 
 import com.mycoolcar.dtos.NewPasswordDto;
 import com.mycoolcar.dtos.UserCreationDto;
-import com.mycoolcar.entities.Post;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.ApiResponse;
 import com.mycoolcar.exceptions.UserNotFoundException;
-import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.registration.OnRegistrationCompleteEvent;
-import com.mycoolcar.services.PostService;
+import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.services.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.Locale;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -32,16 +31,14 @@ import java.util.*;
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     private final UserService userService;
-    private final PostService postService;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messageSource;
+
     @Autowired
     public UserController(UserService userService,
-                          PostService postService,
                           ApplicationEventPublisher eventPublisher,
                           MessageSource messageSource) {
         this.userService = userService;
-        this.postService = postService;
         this.eventPublisher = eventPublisher;
         this.messageSource = messageSource;
     }
@@ -86,7 +83,7 @@ public class UserController {
     @PostMapping("/user/resetPassword")
     public ResponseEntity<ApiResponse> resetPassword(HttpServletRequest request,
                                      @RequestParam("email") String userEmail) {
-        Optional <User> user = userService.findUserByEmail(userEmail);
+        Optional <User> user = userService.getUserByEmail(userEmail);
         if (user.isEmpty()) {
             throw new UserNotFoundException("User with email "+ userEmail + " not found");
         }
@@ -135,6 +132,20 @@ public class UserController {
         return "this URL is only accessible for Admin";
     }
 
+    @PutMapping({"/admin/users/{id}"})
+    public ResponseEntity<User> banUser(@PathVariable long id) {
+        Optional<User> bannedUser = userService.banUser(id);
+        return bannedUser.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
+                : new ResponseEntity<>(bannedUser.get(), HttpStatus.OK);
+    }
+
+    @DeleteMapping({"/admin/users/{id}"})
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable long id, final Locale locale) {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(new ApiResponse(
+                messageSource.getMessage("message.deleteUser", null, locale)), HttpStatus.OK);
+    }
+
 
     @GetMapping({"/me"})
     public ResponseEntity<User> getMe(Principal principal) {
@@ -143,14 +154,7 @@ public class UserController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
-    @GetMapping("user/news")
-    public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
-        Optional<User> user = userService.getByUsername(principal.getName());
-        return user.map(value -> new ResponseEntity<>(postService.getNewPosts(value), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
-    }
-
-
+    //non Api
     private String getAppUrl(HttpServletRequest request) {
         return request.getHeader("Origin") + request.getContextPath();
     }
