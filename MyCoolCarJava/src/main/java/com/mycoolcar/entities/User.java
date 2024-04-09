@@ -99,7 +99,7 @@ public class User implements UserDetails, Serializable {
     @JsonIgnore
     @Override
     public String getUsername() {
-        return firstName;
+        return email;
     }
 
 

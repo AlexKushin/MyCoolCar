@@ -91,7 +91,10 @@ public class UserService implements UserDetailsService, IUserService {
     @Override
     public Optional<User> registerNewUserAccount(UserCreationDto userCreationDto) throws UserAlreadyExistException {
         userRepository.findByEmail(userCreationDto.email()).ifPresent(user -> {
-            throw new UserAlreadyExistException("User with ID: " + user.getEmail() + " is already exists");
+            throw new UserAlreadyExistException("User with email: " + user.getEmail() + " is already exists");
+        });
+        userRepository.findUserByFirstName(userCreationDto.email()).ifPresent(user -> {
+            throw new UserAlreadyExistException("User with name: " + user.getFirstName() + " is already exists");
         });
         User newUser = new User();
         newUser.setFirstName(userCreationDto.firstName());
