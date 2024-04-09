@@ -1,17 +1,17 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {CarService} from "../../services/car.service";
+import {CarService} from "../../../services/car.service";
 import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-car',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './car.component.html',
-  styleUrls: ['./car.component.css']
+  templateUrl: './new-car.component.html',
+  styleUrls: ['./new-car.component.css']
 })
-export class CarComponent implements OnInit {
+export class NewCarComponent implements OnInit {
 
   constructor(
     private carService: CarService,

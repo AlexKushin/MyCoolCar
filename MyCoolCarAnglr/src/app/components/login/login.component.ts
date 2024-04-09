@@ -5,8 +5,8 @@ import {FormsModule} from '@angular/forms';
 import {AuthenticationService} from "../../services/authServices/authentication.service";
 import {Car} from "../../models/car";
 import {CarService} from "../../services/car.service";
-import {CarCardComponent} from "../car-card/car-card.component";
-import {CarCardSliderComponent} from "../car-card-slider/car-card-slider.component";
+import {CarCardComponent} from "../car/car-card/car-card.component";
+import {CarCardSliderComponent} from "../car/car-card-slider/car-card-slider.component";
 
 @Component({
   selector: 'app-login',

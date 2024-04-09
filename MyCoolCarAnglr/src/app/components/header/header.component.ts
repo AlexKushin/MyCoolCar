@@ -6,10 +6,10 @@ import { RouterModule } from '@angular/router';
   selector: 'app-menu',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.css']
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css']
 })
-export class MenuComponent implements OnInit {
+export class HeaderComponent implements OnInit {
 
   // isUserLoggedIn : boolean = false;
 
