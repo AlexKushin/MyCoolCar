@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -46,16 +49,24 @@ public class GoogleFileServiceImpl implements FileService {
 
     @Override
     public ByteArrayResource downloadFile(String fileName) {
-
         Blob blob = storage.get(bucketName, fileName);
         return new ByteArrayResource(blob.getContent());
     }
 
     @Override
-    public boolean deleteFile(String fileName) {
-
-        Blob blob = storage.get(bucketName, fileName);
+    public boolean deleteFile(String fileLink) {
+        String fileName = extractFileName(fileLink);
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        Blob blob = storage.get(blobId);
         return blob.delete();
+
+    }
+
+    private String extractFileName(String link) {
+        String[] parts = link.split("/");
+        String lastPart = parts[parts.length - 1];
+        String[] fileNameParts = lastPart.split("\\?");
+        return fileNameParts[0];
     }
 
     @Override
@@ -66,7 +77,7 @@ public class GoogleFileServiceImpl implements FileService {
                 setContentType(file.getContentType()).build();
         Blob blob = storage.create(blobInfo, file.getBytes());
         String fileLink = blob.getMediaLink();
-        if(fileLink == null){
+        if (fileLink == null) {
             return file.getOriginalFilename();
         }
         return fileLink;

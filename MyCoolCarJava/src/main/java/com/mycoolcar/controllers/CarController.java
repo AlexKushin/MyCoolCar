@@ -48,7 +48,7 @@ public class CarController {
                                        @RequestParam("productYear") Integer carProductYear,
                                        @RequestParam("description") String carDescription) throws IOException {
 
-        Optional<User> userOptional = userService.getByUsername(principal.getName());
+        Optional<User> userOptional = userService.getUserByEmail(principal.getName());
         Car newCar = new Car();
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -57,6 +57,30 @@ public class CarController {
         }
         return userOptional.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(newCar, HttpStatus.CREATED);
+    }
+
+    @PutMapping("cars/{carId}")
+    public ResponseEntity<Car> editCar(@PathVariable Long carId,
+                                       @RequestPart("files[]") MultipartFile[] images,
+                                       @RequestPart("mainImage") MultipartFile mainImage,
+                                       @RequestPart("deletedImages") List<String> deletedImages,
+                                       @RequestParam("brand") String carBrand,
+                                       @RequestParam("model") String carModel,
+                                       @RequestParam("productYear") Integer carProductYear,
+                                       @RequestParam("description") String carDescription) throws IOException {
+
+        Optional<Car> editedCar = carService.editCar(
+                carId, images, mainImage, deletedImages, carBrand, carModel, carProductYear, carDescription);
+        return editedCar.map(car -> new ResponseEntity<>(car, HttpStatus.OK)).orElseGet(() ->
+                new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+    }
+
+    @DeleteMapping("cars/{carId}")
+    public ResponseEntity<Car> deleteCar(Principal principal, @PathVariable Long carId) {
+        Optional<User> user = userService.getUserByEmail(principal.getName());
+        user.ifPresent(value -> carService.deleteCar(value, carId));
+        return user.isEmpty() ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
+                : new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

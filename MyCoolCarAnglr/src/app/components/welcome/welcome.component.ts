@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserService} from "../../services/user.service";
 import {MatCardModule} from "@angular/material/card";
-import {CarCardComponent} from "../car-card/car-card.component";
+import {CarCardComponent} from "../car/car-card/car-card.component";
 
 @Component({
   selector: 'app-welcome',

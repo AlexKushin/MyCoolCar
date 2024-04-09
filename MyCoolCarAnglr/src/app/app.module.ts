@@ -4,7 +4,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
-import { MenuComponent } from './components/menu/menu.component';
+import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import { RouterModule } from '@angular/router';
@@ -13,9 +13,11 @@ import {HttpInterceptorAuthService} from "./services/authServices/http-intercept
 
 import {ToastrModule, ToastrService} from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CarComponent } from './components/car/car.component';
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    CarComponent
   ],
   imports: [
     ReactiveFormsModule,
@@ -23,7 +25,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    MenuComponent,
+    HeaderComponent,
     FooterComponent,
     HttpClientModule,
     RouterModule.forRoot([]),

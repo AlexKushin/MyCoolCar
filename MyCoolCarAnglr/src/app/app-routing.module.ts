@@ -4,8 +4,7 @@ import {LoginComponent} from "./components/login/login.component";
 import {ErrorComponent} from "./components/error/error.component";
 import {WelcomeComponent} from "./components/welcome/welcome.component";
 import {authGuard} from "./services/authServices/auth.guard";
-import {LogoutComponent} from "./components/logout/logout.component";
-import {CarComponent} from "./components/car/car.component";
+import {NewCarComponent} from "./components/car/new-car/new-car.component";
 import {RegistrationComponent} from "./components/registration/registration.component";
 import {
   ConfirmRegistrationComponent
@@ -22,8 +21,7 @@ const routes: Routes = [
   {path:"registration", component: RegistrationComponent},
   {path:"registration/confirm", component: ConfirmRegistrationComponent},
   {path:"welcome", component: WelcomeComponent, canActivate: [authGuard]},
-  {path:"cars", component: CarComponent, canActivate: [authGuard]},
-  {path:"logout", component: LogoutComponent, canActivate: [authGuard]},
+  {path:"cars", component: NewCarComponent, canActivate: [authGuard]},
   {path:"**", component: ErrorComponent}
 ];
 

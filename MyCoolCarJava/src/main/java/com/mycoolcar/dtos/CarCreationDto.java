@@ -1,12 +1,12 @@
 package com.mycoolcar.dtos;
 
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public record CarCreationDto(String brand, String model,
                              int productYear, String description,
-                             String mainImageUrl, String[] imagesUrl, int rate) {
+                             String mainImageUrl, List<String> imagesUrl, int rate) {
 
     @Override
     public boolean equals(Object other) {
@@ -25,12 +25,12 @@ public record CarCreationDto(String brand, String model,
                 && carCreationDto.productYear == this.productYear
                 && carCreationDto.description.equals(this.description)
                 && carCreationDto.mainImageUrl.equals(this.mainImageUrl)
-                && Arrays.equals(carCreationDto.imagesUrl, this.imagesUrl);
+                && Objects.equals(carCreationDto.imagesUrl, this.imagesUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(brand, model,productYear,description,mainImageUrl, Arrays.hashCode(imagesUrl));
+        return Objects.hash(brand, model,productYear,description,mainImageUrl, Objects.hashCode(imagesUrl));
     }
     
     @Override
@@ -41,7 +41,7 @@ public record CarCreationDto(String brand, String model,
                 ", productYear=" + productYear +
                 ", description='" + description + '\'' +
                 ", mainImageUrl='" + mainImageUrl + '\'' +
-                ", imagesUrl=" + Arrays.toString(imagesUrl) +
+                ", imagesUrl=" + imagesUrl.toString() +
                 ", rate=" + rate +
                 ']';
     }

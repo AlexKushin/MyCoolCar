@@ -149,7 +149,7 @@ public class UserController {
 
     @GetMapping({"/me"})
     public ResponseEntity<User> getMe(Principal principal) {
-        Optional<User> user = userService.getByUsername(principal.getName());
+        Optional<User> user = userService.getUserByEmail(principal.getName());
         return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
