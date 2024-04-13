@@ -35,6 +35,7 @@ export function authReducer(state = initialState, action: AuthActions.AuthAction
       };
 
     case AuthActions.AUTHENTICATED_USER:
+      console.log("******************" + action.payload)
       const user = new User(
         action.payload.id,
         action.payload.ban,

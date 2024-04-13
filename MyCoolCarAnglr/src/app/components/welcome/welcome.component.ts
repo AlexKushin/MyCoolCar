@@ -21,7 +21,8 @@ export class WelcomeComponent implements OnInit {
 
 
   name = ''
-  user!: User
+  // @ts-ignore
+  user: User
   subscription!: Subscription;
 
   constructor(

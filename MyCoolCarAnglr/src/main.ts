@@ -1,6 +1,6 @@
 import {bootstrapApplication, BrowserModule} from "@angular/platform-browser";
 import {AppComponent} from "./app/app.component";
-import {provideStore} from "@ngrx/store";
+import {provideState, provideStore} from "@ngrx/store";
 import {AppRoutingModule} from "./app/app-routing.module";
 import {importProvidersFrom} from "@angular/core";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
@@ -12,9 +12,18 @@ import {RouterModule} from "@angular/router";
 import {provideEffects} from '@ngrx/effects';
 import {authReducer} from "./app/components/login/store/auth.reducer";
 import {AuthEffects} from "./app/components/login/store/auth.effects";
+import {StoreDevtoolsModule} from "@ngrx/store-devtools";
+import {environment} from "./environments/environment";
+
+
+
+
 
 bootstrapApplication(AppComponent, {
-    providers: [provideStore(authReducer),
+    providers: [
+      provideStore(authReducer),
+      // @ts-ignore
+      provideState({name: 'auth', reducer: authReducer} ),
       importProvidersFrom(
         BrowserModule,
         ReactiveFormsModule,
@@ -23,6 +32,7 @@ bootstrapApplication(AppComponent, {
         AppRoutingModule,
         FormsModule,
         HttpClientModule,
+        StoreDevtoolsModule.instrument({logOnly:environment.production}),
         RouterModule.forRoot([]),
         ToastrModule.forRoot(
           {

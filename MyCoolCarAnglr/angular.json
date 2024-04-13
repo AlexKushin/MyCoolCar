@@ -61,10 +61,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "MyCoolCarAnglr:build:production"
+              "buildTarget": "MyCoolCarAnglr:build:production"
             },
             "development": {
-              "browserTarget": "MyCoolCarAnglr:build:development"
+              "buildTarget": "MyCoolCarAnglr:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -72,7 +72,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "MyCoolCarAnglr:build"
+            "buildTarget": "MyCoolCarAnglr:build"
           }
         },
         "test": {
