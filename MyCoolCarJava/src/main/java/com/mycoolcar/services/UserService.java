@@ -1,6 +1,7 @@
 package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.UserCreationDto;
+import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
@@ -80,6 +81,16 @@ public class UserService implements UserDetailsService, IUserService {
         return userRepository.findByEmail(email);
     }
 
+    public UserDto getUserDtoByEmail(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if(userOptional.isEmpty()){
+            throw new UsernameNotFoundException("user was not found");
+        }
+        User user = userOptional.get();
+        return new UserDto(user.getId(),user.isBan(), user.getFirstName(),
+                user.getLastName(), user.getEmail(), user.isEnabled(), user.getRoles());
+    }
+
     public Optional<User> getByUsername(String username) {
         return userRepository.findUserByFirstName(username);
     }
@@ -93,7 +104,7 @@ public class UserService implements UserDetailsService, IUserService {
         userRepository.findByEmail(userCreationDto.email()).ifPresent(user -> {
             throw new UserAlreadyExistException("User with email: " + user.getEmail() + " is already exists");
         });
-        userRepository.findUserByFirstName(userCreationDto.email()).ifPresent(user -> {
+        userRepository.findUserByFirstName(userCreationDto.firstName()).ifPresent(user -> {
             throw new UserAlreadyExistException("User with name: " + user.getFirstName() + " is already exists");
         });
         User newUser = new User();

@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -118,6 +119,12 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected void handleFileNotFoundException(FileNotFoundException ex) {
         log.error("There is no file to read {}", ex.getMessage());
         throw new InterruptAppException("There is no file to read");
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    protected ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, final WebRequest request) {
+        ApiResponse error = new ApiResponse(getLocalMessage("exception.AuthenticationException", request), ex.getMessage());
+        return handleExceptionInternal(ex, error, new HttpHeaders(), UNAUTHORIZED, request);
     }
 
 
