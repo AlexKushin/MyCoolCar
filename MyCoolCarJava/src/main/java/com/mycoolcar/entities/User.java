@@ -27,9 +27,9 @@ public class User implements UserDetails, Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    boolean ban;
+    private boolean ban;
 
-    LocalDateTime registered = LocalDateTime.now();
+    private LocalDateTime registered = LocalDateTime.now();
 
     private String firstName;
 
