@@ -9,23 +9,28 @@ import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import {ToastrModule, ToastrService} from "ngx-toastr";
 import {HttpInterceptorAuthService} from "./app/services/authServices/http-interceptor-auth.service";
 import {RouterModule} from "@angular/router";
+import {provideEffects} from '@ngrx/effects';
+import {authReducer} from "./app/components/login/store/auth.reducer";
+import {AuthEffects} from "./app/components/login/store/auth.effects";
 
 bootstrapApplication(AppComponent, {
-    providers: [provideStore(), importProvidersFrom(
-      BrowserModule,
-      ReactiveFormsModule,
-      BrowserAnimationsModule,
-      BrowserModule,
-      AppRoutingModule,
-      FormsModule,
-      HttpClientModule,
-      RouterModule.forRoot([]),
-      ToastrModule.forRoot({
-        positionClass: 'toast-bottom-right'
-      })
-    ),
+    providers: [provideStore(authReducer),
+      importProvidersFrom(
+        BrowserModule,
+        ReactiveFormsModule,
+        BrowserAnimationsModule,
+        BrowserModule,
+        AppRoutingModule,
+        FormsModule,
+        HttpClientModule,
+        RouterModule.forRoot([]),
+        ToastrModule.forRoot(
+          {
+            positionClass: 'toast-bottom-right'
+          })
+      ),
       {provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorAuthService, multi: true},
-      {provide: ToastrService, useClass: ToastrService}
-    ]
+      {provide: ToastrService, useClass: ToastrService},
+      provideEffects([AuthEffects])]
   }
 )
