@@ -1,11 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {CarService} from "../../../services/car.service";
+import {CarService} from "../../../../services/car.service";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-car',
+  selector: 'new-car',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './new-car.component.html',

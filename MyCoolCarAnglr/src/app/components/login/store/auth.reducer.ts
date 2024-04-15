@@ -2,23 +2,20 @@ import {User} from "../../../models/user";
 import * as  AuthActions from "./auth.actions";
 
 export interface State {
-  user: User;
-  authError: string;
+  user: User | null;
+  authError: string | null;
   loading: boolean;
 }
 
 
 const initialState: State = {
-
-// @ts-ignore
   user: null,
-  // @ts-ignore
   authError: null,
   loading: false
 }
 
 
-export function authReducer(state = initialState, action: AuthActions.AuthActions) {
+export function authReducer(state: State = initialState, action: AuthActions.AuthActions) {
   switch (action.type) {
     case AuthActions.LOGIN_START:
       return {
@@ -43,7 +40,7 @@ export function authReducer(state = initialState, action: AuthActions.AuthAction
         action.payload.firstName,
         action.payload.lastName,
         action.payload.email,
-        [],
+        action.payload.userCars,
         action.payload.enabled
       );
       console.log("user = " + user)
