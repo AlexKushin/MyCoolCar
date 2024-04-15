@@ -16,14 +16,10 @@ import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 import {environment} from "./environments/environment";
 
 
-
-
-
 bootstrapApplication(AppComponent, {
     providers: [
       provideStore(authReducer),
-      // @ts-ignore
-      provideState({name: 'auth', reducer: authReducer} ),
+      provideState({name: 'auth', reducer: authReducer}),
       importProvidersFrom(
         BrowserModule,
         ReactiveFormsModule,
@@ -32,7 +28,7 @@ bootstrapApplication(AppComponent, {
         AppRoutingModule,
         FormsModule,
         HttpClientModule,
-        StoreDevtoolsModule.instrument({logOnly:environment.production}),
+        StoreDevtoolsModule.instrument({logOnly: environment.production}),
         RouterModule.forRoot([]),
         ToastrModule.forRoot(
           {

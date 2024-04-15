@@ -49,6 +49,19 @@ const handleError = (errorRes: any) => {
   return of(new AuthActions.AuthenticateFail(errorMessage))
 };
 
+const getUser = (resData: User) => {
+  return new AuthActions.AuthenticatedUser(
+    {
+      id: resData.id,
+      ban: resData.ban,
+      firstName: resData.firstName,
+      lastName: resData.lastName,
+      email: resData.email,
+      enabled: resData.enabled,
+      userCars: resData.userCars
+    });
+}
+
 @Injectable()
 export class AuthEffects {
   constructor(
@@ -86,20 +99,11 @@ export class AuthEffects {
   getAuthenticatedUser = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.AUTHENTICATE_SUCCESS),
-      switchMap((authData: AuthActions.AuthenticateSuccess) => {
+      switchMap(() => {
         return this.http.get<User>(`${API_URL}/api/me`)
           .pipe(
             map((resData: User) => {
-
-              return new AuthActions.AuthenticatedUser(
-                {
-                  id: resData.id,
-                  ban: resData.ban,
-                  firstName: resData.firstName,
-                  lastName: resData.lastName,
-                  email: resData.email,
-                  enabled: resData.enabled
-                });
+              return getUser(resData)
             }),
             catchError(errorRes => {
               return handleError(errorRes)
@@ -114,7 +118,6 @@ export class AuthEffects {
         ofType(AuthActions.REGISTRATION_START),
         switchMap((regData: AuthActions.RegistrationStart) => {
           return this.http.post(`${API_URL}/api/user/registration`, {
-
             firstName: regData.payload.firstName,
             lastName: regData.payload.lastName,
             email: regData.payload.email,
@@ -122,14 +125,9 @@ export class AuthEffects {
             matchingPassword: regData.payload.matchingPassword
 
           })
-
             .pipe(
-              /*tap(() => {
-                this.router.navigate(['/auth']);
-              }),*/
               map(() => {
                   this.router.navigate(['/registration/confirm']);
-
               }),
               catchError(errorRes => {
                 return handleError(errorRes)
@@ -163,5 +161,22 @@ export class AuthEffects {
       ),
     {dispatch: false}
   );
+
+  autoLogin = createEffect(
+    () => this.actions$.pipe(
+      ofType(AuthActions.AUTO_LOGIN),
+      switchMap(() => {
+        return this.http.get<User>(`${API_URL}/api/me`)
+          .pipe(
+            map((resData: User) => {
+              return getUser(resData)
+            }),
+            catchError(errorRes => {
+              return handleError(errorRes)
+            })
+          );
+      })
+    )
+  )
 
 }

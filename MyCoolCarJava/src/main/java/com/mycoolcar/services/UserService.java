@@ -88,7 +88,7 @@ public class UserService implements UserDetailsService, IUserService {
         }
         User user = userOptional.get();
         return new UserDto(user.getId(),user.isBan(), user.getFirstName(),
-                user.getLastName(), user.getEmail(), user.isEnabled(), user.getRoles());
+                user.getLastName(), user.getEmail(), user.isEnabled(), user.getRoles(),user.getUserCars());
     }
 
     public Optional<User> getByUsername(String username) {

@@ -5,6 +5,7 @@
       MyCoolCar</a></div>
     <ul class="navbar-nav">
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/welcome" class="nav-link">Home</a></li>
+      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/cars" class="nav-link">My Garage</a></li>
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/topcars" class="nav-link">Top Cars</a></li>
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/car-clubs" class="nav-link">Car Clubs</a></li>
     </ul>
