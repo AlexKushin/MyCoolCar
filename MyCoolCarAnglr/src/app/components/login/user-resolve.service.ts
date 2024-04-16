@@ -25,9 +25,9 @@ export class UserResolverService implements Resolve<User> {
       }),
       switchMap(user => {
         if (!user) {
-          this.store.dispatch(new AuthActions.AutoLogin);
+          this.store.dispatch(new AuthActions.GetAuthenticatedUser);
           return this.actions$.pipe(
-            ofType(AuthActions.AUTHENTICATED_USER),
+            ofType(AuthActions.SET_AUTHENTICATED_USER),
             take(1)
           );
         } else {

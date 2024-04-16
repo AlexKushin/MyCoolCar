@@ -31,8 +31,7 @@ export function authReducer(state: State = initialState, action: AuthActions.Aut
         loading: false
       };
 
-    case AuthActions.AUTHENTICATED_USER:
-      console.log("******************" + action.payload)
+    case AuthActions.SET_AUTHENTICATED_USER:
       const user = new User(
         action.payload.id,
         action.payload.ban,
@@ -43,7 +42,6 @@ export function authReducer(state: State = initialState, action: AuthActions.Aut
         action.payload.userCars,
         action.payload.enabled
       );
-      console.log("user = " + user)
       return {
         ...state,
         authError: null,
