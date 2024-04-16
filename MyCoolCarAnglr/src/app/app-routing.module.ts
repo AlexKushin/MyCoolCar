@@ -13,6 +13,8 @@ import {PasswordResetComponent} from "./components/login/password-reset/password
 import {PasswordChangeComponent} from "./components/login/password-change/password-change.component";
 import {CarsGarageComponent} from "./components/car/cars-garage/cars-garage.component";
 import {UserResolverService} from "./components/login/user-resolve.service";
+import {UserCarsResolverService} from "./components/car/user-cars-resolve.service";
+
 
 
 const routes: Routes = [
@@ -23,7 +25,7 @@ const routes: Routes = [
   {path:"registration", component: RegistrationComponent},
   {path:"registration/confirm", component: ConfirmRegistrationComponent},
   {path:"welcome", component: WelcomeComponent, resolve: [UserResolverService],canActivate: [authGuard]},
-  {path:"cars", component: CarsGarageComponent, canActivate: [authGuard]},
+  {path:"cars", component: CarsGarageComponent,resolve: [UserCarsResolverService], canActivate: [authGuard]},
   {path:"cars/new", component: NewCarComponent, canActivate: [authGuard]},
   {path:"**", component: ErrorComponent}
 ];
