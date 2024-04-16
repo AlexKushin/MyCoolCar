@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,12 +35,12 @@ public class CarController {
         this.userService = userService;
     }
 
-    @GetMapping("cars")
+    @GetMapping("top_cars")
     public List<CarCreationDto> getAllCars() {
         return carService.getAllCars();
     }
 
-    @PostMapping("cars")
+    @PostMapping("cars/new")
     public ResponseEntity<Car> postCar(Principal principal,
                                        @RequestPart("files[]") MultipartFile[] images,
                                        @RequestPart("mainImage") MultipartFile mainImage,
@@ -83,4 +84,29 @@ public class CarController {
                 : new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("cars")
+    public ResponseEntity<List<Car>> getUserCars(Principal principal) {
+
+        Optional<User> userOptional = userService.getUserByEmail(principal.getName());
+
+        if (userOptional.isEmpty()) {
+            throw new UsernameNotFoundException("user was not found");
+        }
+        List<Car> userCars = userOptional.get().getUserCars();
+
+        return new ResponseEntity<>(userCars, HttpStatus.OK);
+    }
+
+    @GetMapping("subscribed_cars")
+    public ResponseEntity<List<Car>> getUserSubscribedCars(Principal principal) {
+
+        Optional<User> userOptional = userService.getUserByEmail(principal.getName());
+
+        if (userOptional.isEmpty()) {
+            throw new UsernameNotFoundException("user was not found");
+        }
+        List<Car> userSubscribedCars = userOptional.get().getSubscribedCars();
+
+        return new ResponseEntity<>(userSubscribedCars, HttpStatus.OK);
+    }
 }
