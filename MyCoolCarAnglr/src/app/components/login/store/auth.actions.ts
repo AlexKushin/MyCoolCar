@@ -3,12 +3,12 @@ import {Car} from "../../../models/car";
 
 export const LOGIN_START = '[Auth] Login Start';
 export const AUTHENTICATE_SUCCESS = '[Auth] Authenticate Success';
-export const AUTHENTICATED_USER = '[Auth] Authenticated User';
+export const SET_AUTHENTICATED_USER = '[Auth] Set Authenticated User';
 
 export const REGISTRATION_START = '[Auth] Registration Start';
 export const AUTHENTICATE_FAIL = '[Auth] Authenticate Fail';
 
-export const AUTO_LOGIN = '[Auth] Auto Login'
+export const GET_AUTHENTICATED_USER = '[Auth] Get Authenticated User'
 export const LOGOUT = '[Auth] Logout';
 
 export class LoginStart implements Action {
@@ -23,8 +23,8 @@ export class AuthenticateSuccess implements Action {
 
 }
 
-export class AuthenticatedUser implements Action {
-  readonly type = AUTHENTICATED_USER;
+export class SetAuthenticatedUser implements Action {
+  readonly type = SET_AUTHENTICATED_USER;
 
   constructor(public payload: {
     id: number, ban: boolean, firstName: string,
@@ -42,8 +42,8 @@ export class RegistrationStart implements Action {
   }) { }
 }
 
-export class AutoLogin implements Action {
-  readonly  type = AUTO_LOGIN;
+export class GetAuthenticatedUser implements Action {
+  readonly  type = GET_AUTHENTICATED_USER;
 
 }
 export class Logout implements Action {
@@ -63,7 +63,7 @@ export type AuthActions =
   | LoginStart
   | AuthenticateSuccess
   | AuthenticateFail
-  | AuthenticatedUser
+  | SetAuthenticatedUser
   | RegistrationStart
-  | AutoLogin
+  | GetAuthenticatedUser
   | Logout

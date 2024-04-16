@@ -5,8 +5,7 @@ import {catchError, map, switchMap, tap} from "rxjs/operators";
 import {of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {Router} from "@angular/router";
-import {AUTHENTICATED_USER, AuthenticationService, TOKEN} from "../../../services/authServices/authentication.service";
-
+import {AUTHENTICATED_USER, TOKEN} from "../../../services/authServices/authentication.service";
 import {API_URL} from "../../../app.constants";
 import {User} from "../../../models/user";
 
@@ -15,13 +14,8 @@ export interface AuthResponseData {
 }
 
 const handleAuthentication = (email: string, token: string) => {
-  //const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
-  //const user = new User(email, userId, token, expirationDate);
   sessionStorage.setItem(AUTHENTICATED_USER, email);
-  //sessionStorage.setItem(TOKEN, token);
   sessionStorage.setItem(TOKEN, `Bearer ${token}`);
-  //getMe and insert to AuthActions.AuthenticateSuccess
-
   return new AuthActions.AuthenticateSuccess();
 };
 
@@ -43,14 +37,12 @@ const handleError = (errorRes: any) => {
       break;
   }
   console.log(errorMessage)
-  console.log(errorMessage)
-  console.log(errorMessage)
-  console.log(errorMessage)
+
   return of(new AuthActions.AuthenticateFail(errorMessage))
 };
 
 const getUser = (resData: User) => {
-  return new AuthActions.AuthenticatedUser(
+  return new AuthActions.SetAuthenticatedUser(
     {
       id: resData.id,
       ban: resData.ban,
@@ -68,7 +60,7 @@ export class AuthEffects {
     private actions$: Actions,
     private http: HttpClient,
     private router: Router,
-    private authService: AuthenticationService) {
+  ) {
   }
 
 
@@ -95,24 +87,6 @@ export class AuthEffects {
     )
   );
 
-
-  getAuthenticatedUser = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AuthActions.AUTHENTICATE_SUCCESS),
-      switchMap(() => {
-        return this.http.get<User>(`${API_URL}/api/me`)
-          .pipe(
-            map((resData: User) => {
-              return getUser(resData)
-            }),
-            catchError(errorRes => {
-              return handleError(errorRes)
-            })
-          );
-      })
-    )
-  );
-
   registration = createEffect(() =>
       this.actions$.pipe(
         ofType(AuthActions.REGISTRATION_START),
@@ -127,7 +101,7 @@ export class AuthEffects {
           })
             .pipe(
               map(() => {
-                  this.router.navigate(['/registration/confirm']);
+                this.router.navigate(['/registration/confirm']);
               }),
               catchError(errorRes => {
                 return handleError(errorRes)
@@ -153,7 +127,6 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.LOGOUT),
         tap(() => {
-          // this.authService.clearLogoutTimer();
           sessionStorage.removeItem(TOKEN)
           sessionStorage.removeItem(AUTHENTICATED_USER)
           this.router.navigate(['/login']);
@@ -162,9 +135,9 @@ export class AuthEffects {
     {dispatch: false}
   );
 
-  autoLogin = createEffect(
+  getAuthenticatedUser = createEffect(
     () => this.actions$.pipe(
-      ofType(AuthActions.AUTO_LOGIN),
+      ofType(AuthActions.GET_AUTHENTICATED_USER),
       switchMap(() => {
         return this.http.get<User>(`${API_URL}/api/me`)
           .pipe(

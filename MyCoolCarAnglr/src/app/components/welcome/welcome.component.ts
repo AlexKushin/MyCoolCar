@@ -1,7 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from "@angular/router";
-import {UserService} from "../../services/user.service";
 import {MatCardModule} from "@angular/material/card";
 import {CarCardComponent} from "../car/car-card/car-card.component";
 import {Store} from "@ngrx/store";
@@ -24,7 +23,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private userService: UserService,
     private store: Store<{ auth: fromAuth.State }>
   ) {
   }
@@ -41,12 +39,4 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
 
-  getUser() {
-    this.userService.getCurrentUser().subscribe(
-      response => {
-        console.log(response)
-        this.user = response;
-      }
-    )
-  }
 }
