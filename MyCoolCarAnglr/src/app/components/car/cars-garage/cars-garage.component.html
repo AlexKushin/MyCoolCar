@@ -1,6 +1,21 @@
-<p>cars-garage works!</p>
-<app-cars-list></app-cars-list>
-<button
-  (click)="addCar()" class="btn btn-primary">
-  Add new car
-</button>
+<h2>My Cool Car Garage</h2>
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group">
+      <button type="button" class="btn btn-default active" (click)="showMyCars()">My Cars</button>
+      <hr>
+      <button type="button" class="btn btn-default active" (click)="showSubscribedCars()">Subscribed Cars</button>
+      <hr>
+      <button *ngIf="isMyCars" (click)="addCar()" class="btn btn-primary">Add new car</button>
+    </div>
+  </div>
+  <div class="col-md-8">
+
+    <app-cars-list [cars]="isMyCars?userCars:userSubscribedCars"
+                   [header]="isMyCars? 'My Cars' : 'My Car Subscriptions'"></app-cars-list>
+  </div>
+</div>
+
+
+
