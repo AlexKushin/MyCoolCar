@@ -2,13 +2,7 @@
 <div class="container" *ngIf="user">
   <h3>Hello, {{user.firstName}} {{user.lastName}} </h3>
   <hr>
-  <h2>My Cool Car Garage</h2>
-  <div class="container" style="display: flex;">
-    <app-car-card
-      *ngFor=" let car of user.userCars"
-      [car]="car">
-    </app-car-card>
-  </div>
+
   <hr>
 
 </div>

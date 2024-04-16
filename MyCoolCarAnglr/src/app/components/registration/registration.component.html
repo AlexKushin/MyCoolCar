@@ -47,7 +47,7 @@
   </form>-->
 
 <!--  <div class="alert alert-warning" *ngIf="invalidLogin">{{errorMessage}}</div>-->
-  <form #registrationForm="ngForm" (ngSubmit)="registerNewUser1(registrationForm)">
+  <form #registrationForm="ngForm" (ngSubmit)="registerNewUser(registrationForm)">
     <div class="form-group">
       <label for="email">First Name</label>
       <input type="text" id="firstName" class="form-control" ngModel name="firstName" required minlength="3" />
