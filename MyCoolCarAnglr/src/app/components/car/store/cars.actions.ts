@@ -2,11 +2,14 @@ import { Action } from "@ngrx/store";
 import {Car} from "../../../models/car";
 
 export const SET_CARS = '[Cars] Set Cars';
+export const SET_USER_CAR = '[Cars] Set New User Car';
 export const FETCH_CARS = '[Cars] Fetch Cars'
-export const ADD_CAR = '[Cars] Add Car'
+export const ADD_NEW_USER_CAR = '[Cars] Add New User Car'
 export const UPDATE_CAR = '[Cars] Update Car'
 export const DELETE_CAR = '[Cars] Delete Car'
+export const DELETE_CAR_SUCCESS = '[Cars] Delete Car Success'
 export const STORE_CARS = '[Cars] Store Car'
+export const USER_CAR_FAIL = '[Cars] User Car Fail'
 
 export class SetUserCars implements Action {
   readonly type = SET_CARS;
@@ -19,9 +22,9 @@ export class FetchUserCars implements Action {
 }
 
 export class AddUserCar implements Action {
-  readonly type = ADD_CAR;
+  readonly type = ADD_NEW_USER_CAR;
 
-  constructor(public payload: Car) { }
+  constructor(public payload: any) { }
 }
 
 export class UpdateUserCar implements Action {
@@ -35,15 +38,35 @@ export class DeleteUserCar implements Action {
 
   constructor(public payload: number) { }
 }
+export class DeleteUserCarSuccess implements Action {
+  readonly type = DELETE_CAR_SUCCESS;
+
+  constructor() { }
+}
 
 export class StoreUserCar implements Action {
   readonly type = STORE_CARS;
 }
 
+export class SetUserCar implements Action {
+  readonly type = SET_USER_CAR;
+
+  constructor(public payload: Car) { }
+}
+
+export class UserCarFail implements Action {
+  readonly type = USER_CAR_FAIL;
+
+  constructor(public payload: string) { }
+}
+
 export type UserCarsActions =
   | SetUserCars
+  | SetUserCar
   | FetchUserCars
   | AddUserCar
   | UpdateUserCar
   | DeleteUserCar
-  | StoreUserCar;
+  | StoreUserCar
+  | DeleteUserCarSuccess
+  | UserCarFail;

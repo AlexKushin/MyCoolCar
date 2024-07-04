@@ -1,1 +1,19 @@
-<p>car works!</p>
+<div *ngIf="car">
+<div class="row">
+<img src="{{car.mainImageUrl}}" alt="..." class="img-thumbnail" style="max-height: 300px;">
+<div *ngFor=" let carImageUrl of car.imagesUrl">
+  <img src="{{carImageUrl}}" alt="..." class="img-thumbnail" style="max-height: 150px;">
+</div>
+</div>
+<p>Brand: {{car.brand}}</p>
+<p>Model: {{car.model}}</p>
+<p>Production Year: {{car.productYear}}</p>
+<p>Description: {{car.description}}</p>
+<p>Rate: {{car.rate}}</p>
+
+
+<button  (click)="editCar()" class="btn btn-success">Edit My Car</button>
+<button  (click)="deleteCar()" class="btn btn-danger">Delete Car</button>
+<button  (click)="addNewLog()" class="btn btn-success">Add new Log</button>
+
+</div>

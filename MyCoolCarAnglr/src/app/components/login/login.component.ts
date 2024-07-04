@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterLink} from "@angular/router";
 import {FormsModule, NgForm} from '@angular/forms';
-import {AuthenticationService} from "../../services/authServices/authentication.service";
 import {Car} from "../../models/car";
 import {CarService} from "../../services/car.service";
 import {CarCardComponent} from "../car/car-card/car-card.component";

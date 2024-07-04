@@ -8,6 +8,7 @@ import {Router} from "@angular/router";
 import {AUTHENTICATED_USER, TOKEN} from "../../../services/authServices/authentication.service";
 import {API_URL} from "../../../app.constants";
 import {User} from "../../../models/user";
+import {NewUser} from "../../../models/newUser";
 
 export interface AuthResponseData {
   token: string
@@ -91,14 +92,14 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.REGISTRATION_START),
         switchMap((regData: AuthActions.RegistrationStart) => {
-          return this.http.post(`${API_URL}/api/user/registration`, {
-            firstName: regData.payload.firstName,
-            lastName: regData.payload.lastName,
-            email: regData.payload.email,
-            password: regData.payload.password,
-            matchingPassword: regData.payload.matchingPassword
-
-          })
+          let user = new NewUser(
+            regData.payload.firstName,
+            regData.payload.lastName,
+            regData.payload.email,
+            regData.payload.password,
+            regData.payload.matchingPassword
+          )
+          return this.http.post(`${API_URL}/api/user/registration`, user)
             .pipe(
               map(() => {
                 this.router.navigate(['/registration/confirm']);

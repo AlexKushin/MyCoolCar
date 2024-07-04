@@ -3,7 +3,7 @@ import * as CarsActions from './cars.actions'
 
 export interface State {
   userCars: Car[],
- // userSubscribedCars: Car[]  ???
+  // userSubscribedCars: Car[]  ???
 }
 
 
@@ -20,7 +20,9 @@ export function userCarsReducer(state = initialState, action: CarsActions.UserCa
         ...state,
         userCars: [...action.payload]
       }
-    case CarsActions.ADD_CAR:
+    case CarsActions.ADD_NEW_USER_CAR:
+      return state;
+    case CarsActions.SET_USER_CAR:
       return {
         ...state,
         userCars: [...state.userCars, action.payload]
@@ -34,17 +36,16 @@ export function userCarsReducer(state = initialState, action: CarsActions.UserCa
       const updatedUserCars = [...state.userCars];
       updatedUserCars[action.payload.id] = updatedUserCar;
       return {
-
         ...state, // <- spread operator, to copy all the data from initial array
-        recipes: updatedUserCars,
+        userCars: updatedUserCars,
         //we use ... operator to spread elements of payload instead of add array from payload as new element of existing array
 
       };
     case CarsActions.DELETE_CAR:
       return {
         ...state,
-        recipes: state.userCars.filter((userCar, userCarIndex) => {
-          return userCarIndex !== action.payload;
+        userCars: state.userCars.filter((userCar) => {
+          return userCar.id !== action.payload;
         })
       };
     default:
