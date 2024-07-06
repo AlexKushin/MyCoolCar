@@ -26,6 +26,7 @@ export class UserCarsResolverService implements Resolve<Car[]> {
       }),
       switchMap(userCars => {
         if (userCars.length === 0) {
+          console.log("resolver work")
           this.store.dispatch(new UserCarsActions.FetchUserCars());
           return this.actions$.pipe(
             ofType(UserCarsActions.SET_CARS),
@@ -37,4 +38,6 @@ export class UserCarsResolverService implements Resolve<Car[]> {
       })
     );
   }
+
+
 }

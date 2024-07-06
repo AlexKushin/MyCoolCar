@@ -9,8 +9,8 @@ export class Car {
     public rate: number,
     public mainImageUrl: string,
     public imagesUrl: string,
+    public logbook: any,
 
-  //public image: any
   ) {
   }
 
