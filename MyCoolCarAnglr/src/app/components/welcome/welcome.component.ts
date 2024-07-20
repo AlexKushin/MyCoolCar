@@ -1,9 +1,12 @@
-import {Component, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from "@angular/router";
-import {UserService} from "../../services/user.service";
 import {MatCardModule} from "@angular/material/card";
-import {CarCardComponent} from "../car-card/car-card.component";
+import {CarCardComponent} from "../car/car-card/car-card.component";
+import {Store} from "@ngrx/store";
+import * as fromAuth from "../login/store/auth.reducer";
+import {User} from "../../models/user";
+import {map, Subscription} from "rxjs";
 
 @Component({
   selector: 'app-welcome',
@@ -12,34 +15,28 @@ import {CarCardComponent} from "../car-card/car-card.component";
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.css']
 })
-export class WelcomeComponent implements OnInit {
+export class WelcomeComponent implements OnInit, OnDestroy {
 
-
-
-  name = ''
-  user: any
+  public user: User | null
+  subscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private userService: UserService
+    private store: Store<{ auth: fromAuth.State }>
   ) {
   }
 
   ngOnInit(): void {
-    console.log(this.route.snapshot.params["name"])
-    this.name = this.route.snapshot.params["name"]
-    this.getUser()
+    this.subscription = this.store.select('auth')
+      .pipe(map(userState => userState.user))
+      .subscribe((user: User | null) => this.user = user)
+    console.log("user= " + this.user)
   }
-  addCar(){
-    this.router.navigate(['cars'])
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
-  getUser(){
-    this.userService.getCurrentUser().subscribe(
-      response => {
-      console.log(response)
-      this.user = response;
-    }
-    )
-  }
+
+
 }

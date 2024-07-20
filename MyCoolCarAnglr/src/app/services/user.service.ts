@@ -5,6 +5,7 @@ import {NewUser} from "../models/newUser";
 import {Observable} from "rxjs";
 import {Response} from "../models/response";
 import {NewPassword} from "../models/new-password";
+import {User} from "../models/user";
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class UserService {
   }
 
   getCurrentUser() {
-    return this.http.get(`${API_URL}/api/me`);
+    return  this.http.get<User>(`${API_URL}/api/me`);
   }
 
   confirmRegistration(token: String): Observable<Response> {

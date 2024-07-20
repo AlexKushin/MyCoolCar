@@ -15,11 +15,11 @@ export class CarService {
   }
 
   getTopCars() {
-    return this.http.get<Car[]>(`${API_URL}/api/cars`);
+    return this.http.get<Car[]>(`${API_URL}/api/top_cars`);
   }
 
   addNewCar(formData: any){
     console.log(formData.data)
-    return this.http.post(`${API_URL}/api/cars`, formData);
+    return this.http.post(`${API_URL}/api/cars/new`, formData);
   }
 }

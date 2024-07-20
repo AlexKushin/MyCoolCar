@@ -1,0 +1,29 @@
+
+
+    <div class="col-md-12 text-center">
+      <h2>My Cool Car Garage</h2>
+    </div>
+
+
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group" style="margin-top: 50px">
+      <button type="button" class="btn btn-light active" (click)="showMyCars()">My Cars</button>
+      <hr>
+      <button type="button" class="btn btn-light active" (click)="showSubscribedCars()">Subscribed Cars</button>
+      <hr>
+
+      <!--@if-->
+      <button *ngIf="isMyCars" (click)="addCar()" class="btn btn-success">Add new car</button>
+    </div>
+  </div>
+  <div class="col-md-9">
+
+    <app-cars-list [cars]="isMyCars?userCars:userSubscribedCars"
+                   [header]="isMyCars? 'My Cars' : 'My Car Subscriptions'"></app-cars-list>
+  </div>
+</div>
+
+
+

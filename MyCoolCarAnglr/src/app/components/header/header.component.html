@@ -5,14 +5,14 @@
       MyCoolCar</a></div>
     <ul class="navbar-nav">
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/welcome" class="nav-link">Home</a></li>
+      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/cars" class="nav-link">My Garage</a></li>
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/topcars" class="nav-link">Top Cars</a></li>
       <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/car-clubs" class="nav-link">Car Clubs</a></li>
     </ul>
-
     <ul class="navbar-nav navbar-collapse justify-content-end">
       <li><a *ngIf="!authenticationService.isUserLoggedIn()" routerLink="/login" class="nav-link">Login</a></li>
       <li><a *ngIf="!authenticationService.isUserLoggedIn()" routerLink="/registration" class="nav-link">Register</a></li>
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/logout" class="nav-link">Logout</a></li>
+      <li><a *ngIf="authenticationService.isUserLoggedIn()" (click)="onLogout()" routerLink="/login" class="nav-link" >Logout</a></li>
     </ul>
 
   </nav>

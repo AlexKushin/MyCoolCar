@@ -2,6 +2,7 @@ package com.mycoolcar.controllers;
 
 import com.mycoolcar.dtos.NewPasswordDto;
 import com.mycoolcar.dtos.UserCreationDto;
+import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.ApiResponse;
@@ -55,8 +56,9 @@ public class UserController {
         Optional<User> registered = userService.registerNewUserAccount(userCreationDto);
         if (registered.isPresent()) {
             String appUrl = getAppUrl(request);
+            Locale locale = getLocaleFromRequest(request);
             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered.get(),
-                    request.getLocale(), appUrl));
+                    locale, appUrl));
         }
         return registered.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(registered.get(), HttpStatus.CREATED);
@@ -67,9 +69,9 @@ public class UserController {
             (WebRequest request, @RequestParam("token") String token) {
         final Locale locale = request.getLocale();
         String result = userService.validatePasswordResetToken(token);
-        if(result != null) {
+        if (result != null) {
             return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "auth.message." + result, null, locale)),HttpStatus.BAD_REQUEST);
+                    "auth.message." + result, null, locale)), HttpStatus.BAD_REQUEST);
         }
         VerificationToken verificationToken = userService.getVerificationToken(token);
         User user = verificationToken.getUser();
@@ -85,7 +87,7 @@ public class UserController {
                                      @RequestParam("email") String userEmail) {
         Optional <User> user = userService.getUserByEmail(userEmail);
         if (user.isEmpty()) {
-            throw new UserNotFoundException("User with email "+ userEmail + " not found");
+            throw new UserNotFoundException("User with email " + userEmail + " not found");
         }
         String appUrl = getAppUrl(request);
         eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(),
@@ -100,13 +102,13 @@ public class UserController {
                                                     @Valid @RequestBody NewPasswordDto passwordDto) {
         String result = userService.validatePasswordResetToken(passwordDto.token());
 
-        if(result != null) {
+        if (result != null) {
             return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "auth.message." + result, null, locale)),HttpStatus.BAD_REQUEST);
+                    "auth.message." + result, null, locale)), HttpStatus.BAD_REQUEST);
         }
 
         Optional<User> user = userService.getUserByVerificationToken(passwordDto.token());
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             userService.changeUserPassword(user.get(), passwordDto.password());
             return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
                     "message.resetPasswordSuc", null, locale)), HttpStatus.OK);
@@ -148,15 +150,25 @@ public class UserController {
 
 
     @GetMapping({"/me"})
-    public ResponseEntity<User> getMe(Principal principal) {
-        Optional<User> user = userService.getByUsername(principal.getName());
-        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+    public ResponseEntity<UserDto> getMe(Principal principal) {
+        System.out.println("principal.getName()= " + principal.getName());
+        UserDto user = userService.getUserDtoByEmail(principal.getName());
+        return new ResponseEntity<>(user, HttpStatus.OK);
+
     }
 
     //non Api
     private String getAppUrl(HttpServletRequest request) {
         return request.getHeader("Origin") + request.getContextPath();
+    }
+//todo: move to separate util class (RestResponseEntityExceptionHandler has the same method)
+    private Locale getLocaleFromRequest(HttpServletRequest request) {
+        String localeParam = request.getParameter("local");
+        if (localeParam != null) {
+            return new Locale(localeParam);
+        } else {
+            return new Locale("en");
+        }
     }
 
 }

@@ -1,85 +1,71 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {CarService} from "../../services/car.service";
-import {Router} from "@angular/router";
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Car} from "../../models/car";
+import {ActivatedRoute, Router} from "@angular/router";
+import {State, Store} from "@ngrx/store";
+import * as fromUserCars from "./store/cars.reducer";
+import * as UserCarsActions from "./store/cars.actions"
+import {map, Observable, Subscription} from "rxjs";
+import {switchMap} from "rxjs/operators";
+import {NgForOf, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-car',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './car.component.html',
+  imports: [
+    NgForOf,
+    NgIf
+  ],
   styleUrls: ['./car.component.css']
 })
-export class CarComponent implements OnInit {
+export class CarComponent implements OnInit, OnDestroy {
+
 
   constructor(
-    private carService: CarService,
+    private route: ActivatedRoute,
     private router: Router,
+    private store: Store<{ userCarsState: fromUserCars.State }>
   ) {
   }
-  mainImage: any;
-  images: any;
-  // @ts-ignore
-  carForm: FormGroup;
 
-  ngOnInit() {
-    this.initForm();
-  }
+  car: Car;
+  id: number;
+  subscription: Subscription
 
-  saveCar() {
-    console.log("save car")
-
-
-    let formData: any = new FormData();
-    Object.keys(this.carForm.controls).forEach(formControlName => {
-      if (formControlName === 'file') {
-        for (let i = 0; i < this.images.length; i++) {
-         formData.append('files[]', this.images[i])
-        }
-      }
-      if (formControlName === 'mainImage'){
-        formData.append('mainImage', this.mainImage)
-      }
-      else {
-        // @ts-ignore
-        formData.append(formControlName, this.carForm.get(formControlName).value);
-      }
-    });
-    console.log(formData)
-    this.carService.addNewCar(formData).subscribe(
-      data => {
-        console.log(data)
-        this.router.navigate(["welcome"])
-      },
-      error => {
-        console.log(error)
-      }
+  ngOnInit(): void {
+    this.subscription=this.route.params.pipe(map(params => {
+        return +params['id'];
+      }),
+      switchMap(id => {
+        this.id = id;
+        return this.store.select('userCarsState')
+      }),
+      map(userCarsState => {
+        return userCarsState.userCars.find((car) => {
+          return car.id === this.id;
+        });
+      })
     )
-  }
-  uploadMainImage(event: any) {
-    this.mainImage = event.target.files[0];
-  }
-  uploadImages(event: any) {
-    this.images = event.target.files;
-  }
+      .subscribe(car => {
+        // @ts-ignore
+        this.car = car;
+      })
 
-  initForm() {
-    let carBrand = '';
-    let carModel = '';
-    let carProductYear = 1900;
-    let carDescription = '';
-
-
-    this.carForm = new FormGroup({
-      'brand': new FormControl(carBrand, Validators.required),
-      'model': new FormControl(carModel, Validators.required),
-      'productYear': new FormControl(carProductYear, Validators.required),
-      'description': new FormControl(carDescription, Validators.required),
-      'mainImage': new FormControl(this.mainImage, Validators.required),
-      'file': new FormControl(this.images, Validators.required)
-    });
+  }
+  ngOnDestroy(){
+    this.subscription.unsubscribe();
   }
 
 
+  editCar() {
+
+  }
+
+  addNewLog() {
+
+  }
+
+  deleteCar() {
+    this.store.dispatch(new UserCarsActions.DeleteUserCar(this.id))
+  }
 }
