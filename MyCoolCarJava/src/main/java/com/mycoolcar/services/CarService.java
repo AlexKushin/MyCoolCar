@@ -22,12 +22,12 @@ public class CarService {
 
     private final CarRepository carRepository;
 
-    private final GoogleFileServiceImpl fileService;
+    private final FileService fileService;
 
     private final UserService userService;
 
     @Autowired
-    public CarService(CarRepository carRepository, GoogleFileServiceImpl fileService, UserService userService) {
+    public CarService(CarRepository carRepository, FileService fileService, UserService userService) {
         this.carRepository = carRepository;
         this.fileService = fileService;
         this.userService = userService;

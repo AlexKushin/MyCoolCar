@@ -3,6 +3,7 @@ package com.mycoolcar.controllers;
 import com.mycoolcar.dtos.CarCreationDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
+import com.mycoolcar.services.AwsS3ServiceImpl;
 import com.mycoolcar.services.CarService;
 import com.mycoolcar.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +29,14 @@ public class CarController {
 
     private final UserService userService;
 
+    private final AwsS3ServiceImpl fileService;
+
 
     @Autowired
-    public CarController(CarService carService, UserService userService) {
+    public CarController(CarService carService, UserService userService, AwsS3ServiceImpl fileService) {
         this.carService = carService;
         this.userService = userService;
+        this.fileService = fileService;
     }
 
     @GetMapping("top_cars")
@@ -55,6 +59,17 @@ public class CarController {
             User user = userOptional.get();
             newCar = carService.addNewCar(user, images, mainImage, carBrand,
                     carModel, carProductYear, carDescription);
+        }
+        if (!newCar.getMainImageUrl().startsWith("https://storage.googleapis.com/")) {
+            String preassignedMainImgUrl = fileService.findByName(newCar.getMainImageUrl());
+            newCar.setMainImageUrl(preassignedMainImgUrl);
+        }
+        List<String> carImageUrls = newCar.getImagesUrl();
+        for (int i = 0; i < carImageUrls.size(); i++) {
+            String carImageUrl = carImageUrls.get(i);
+            if (!carImageUrl.startsWith("https://storage.googleapis.com/")) {
+                carImageUrls.set(i, fileService.findByName(carImageUrl));
+            }
         }
         return userOptional.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(newCar, HttpStatus.CREATED);
@@ -93,6 +108,8 @@ public class CarController {
             throw new UsernameNotFoundException("user was not found");
         }
         List<Car> userCars = userOptional.get().getUserCars();
+
+        userCars.replaceAll(fileService::generateCarImagesToPreassignedUrls);
 
         return new ResponseEntity<>(userCars, HttpStatus.OK);
     }
