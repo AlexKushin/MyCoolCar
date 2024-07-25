@@ -34,20 +34,23 @@ public class CarService {
     }
 
     public List<CarCreationDto> getAllCars() {
+        log.info("Fetching all cars with a rate of 7 or higher");
         return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(7);
     }
 
     public Car addNewCar(User user, MultipartFile[] images, MultipartFile mainImage, String carBrand,
                          String carModel, Integer carProductYear, String carDescription) throws IOException {
 
-        Car newCar = new Car(carBrand, carModel,
-                carProductYear, carDescription);
+        log.info("Adding a new car for user: {}", user.getUsername());
+        Car newCar = new Car(carBrand, carModel, carProductYear, carDescription);
         if (!mainImage.isEmpty()) {
+            log.info("Uploading main image for the new car");
             String mainImageUrl = fileService.uploadFile(mainImage);
             newCar.setMainImageUrl(mainImageUrl);
         }
         if (images.length > 0) {
-            List <String> imagesUrls = new ArrayList<>();
+            log.info("Uploading {} additional images for the new car", images.length);
+            List<String> imagesUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 imagesUrls.add(fileService.uploadFile(image));
             }
@@ -55,6 +58,7 @@ public class CarService {
         }
         user.addCar(newCar);
         userService.save(user);
+        log.info("New car added successfully for user: {}", user.getUsername());
         return newCar;
     }
 
@@ -64,17 +68,20 @@ public class CarService {
                                  Integer carProductYear, String carDescription) throws IOException {
         Optional<Car> car = carRepository.findById(carId);
         if (car.isEmpty()) {
+            log.error("Car with ID: {} not found", carId);
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car editedCar = car.get();
         if (!mainImage.isEmpty()) {
+            log.info("Replacing main image for car with ID: {}", carId);
             fileService.deleteFile(editedCar.getMainImageUrl());
             String mainImageUrl = fileService.uploadFile(mainImage);
             editedCar.setMainImageUrl(mainImageUrl);
         }
+        log.info("Deleting {} images for car with ID: {}", deletedImages.size(), carId);
         deletedImages.forEach(fileService::deleteFile);
         if (images.length > 0) {
-            List <String> imagesUrls = editedCar.getImagesUrl();
+            List<String> imagesUrls = editedCar.getImagesUrl();
             if (imagesUrls == null) {
                 imagesUrls = new ArrayList<>();
             }
@@ -87,24 +94,30 @@ public class CarService {
         editedCar.setModel(carModel);
         editedCar.setProductYear(carProductYear);
         editedCar.setDescription(carDescription);
+        log.info("Car with ID: {} edited successfully", carId);
         return Optional.of(carRepository.save(editedCar));
     }
 
     public void deleteCar(User user, Long carId) {
+        log.info("Deleting car with ID: {}", carId);
         Optional<Car> car = carRepository.findById(carId);
-        if(car.isEmpty()){
+        if (car.isEmpty()) {
+            log.error("Car with ID: {} not found", carId);
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car deletedCar = car.get();
-        List <String> imagesUrls = deletedCar.getImagesUrl();
-        if(imagesUrls != null && !imagesUrls.isEmpty() ){
+        List<String> imagesUrls = deletedCar.getImagesUrl();
+        if (imagesUrls != null && !imagesUrls.isEmpty()) {
+            log.info("Deleting {} images for car with ID: {}", imagesUrls.size(), carId);
             imagesUrls.forEach(fileService::deleteFile);
         }
         String mainImage = deletedCar.getMainImageUrl();
-        if(mainImage != null ){
+        if (mainImage != null) {
+            log.info("Deleting main image for car with ID: {}", carId);
             fileService.deleteFile(mainImage);
         }
         user.removeCar(deletedCar);
         carRepository.delete(deletedCar);
+        log.info("Car with ID: {} deleted successfully", carId);
     }
 }
