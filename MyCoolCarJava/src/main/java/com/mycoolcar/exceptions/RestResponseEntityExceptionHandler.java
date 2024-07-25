@@ -1,5 +1,7 @@
 package com.mycoolcar.exceptions;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,8 @@ import static org.springframework.http.HttpStatus.*;
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final MessageSource messageSource;
+
+    private static final String CANT_READ_FILE = "Can't read file";
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -106,7 +110,19 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @ExceptionHandler(IOException.class)
     protected void handleIOException(IOException ex) {
         log.error("Can't read file by path {}", ex.getMessage());
-        throw new InterruptAppException("Can't read file");
+        throw new InterruptAppException(CANT_READ_FILE);
+    }
+
+    @ExceptionHandler(AmazonServiceException.class)
+    protected void handleAmazonServiceException(AmazonServiceException ex) {
+        log.error("AmazonServiceException while uploading file: {}", ex.getMessage());
+        throw new InterruptAppException(CANT_READ_FILE);
+    }
+
+    @ExceptionHandler(SdkClientException.class)
+    protected void handleSdkClientException(SdkClientException ex) {
+        log.error("SdkClientException while uploading file: {}", ex.getMessage());
+        throw new InterruptAppException(CANT_READ_FILE);
     }
 
     @ExceptionHandler(CsvValidationException.class)
