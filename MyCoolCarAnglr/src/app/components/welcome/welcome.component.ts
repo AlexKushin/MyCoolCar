@@ -11,7 +11,7 @@ import {map, Subscription} from "rxjs";
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule, MatCardModule, CarCardComponent],
+  imports: [CommonModule, MatCardModule],
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.css']
 })

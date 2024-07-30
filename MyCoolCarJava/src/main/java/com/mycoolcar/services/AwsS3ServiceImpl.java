@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.mycoolcar.entities.Car;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class AwsS3ServiceImpl implements FileService {
 
     @Value("${aws.s3.region}")
     private String bucketRegion;
-
+    @Autowired
     public AwsS3ServiceImpl(AmazonS3 s3client) {
         this.s3client = s3client;
     }

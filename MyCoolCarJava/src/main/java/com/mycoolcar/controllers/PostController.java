@@ -24,7 +24,6 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("api/")
-@CrossOrigin(origins = "http://localhost:4200")
 public class PostController {
 
     private final PostService postService;

@@ -22,7 +22,6 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("api/")
-@CrossOrigin(origins = "http://localhost:4200")
 public class CarController {
 
     private final CarService carService;
