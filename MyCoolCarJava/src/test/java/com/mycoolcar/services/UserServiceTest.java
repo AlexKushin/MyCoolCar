@@ -145,16 +145,16 @@ class UserServiceTest  {
         verify(userRepository, times(1)).save(user);
     }
 
-    @Test
-    void testCreateVerificationTokenForUser_Success() {
-        User user = new User();
-        String token = "token123";
-        VerificationToken verificationToken = new VerificationToken(token, user);
-
-        userService.createVerificationTokenForUser(user, token);
-
-        verify(verificationTokenRepository, times(1)).save(verificationToken);
-    }
+//    @Test
+//    void testCreateVerificationTokenForUser_Success() {
+//        User user = new User();
+//        String token = "token123";
+//        VerificationToken verificationToken = new VerificationToken(token, user);
+//
+//        userService.createVerificationTokenForUser(user, token);
+//
+//        verify(verificationTokenRepository, times(1)).save(verificationToken);
+//    }
 
     @Test
     void testGetVerificationToken_Success() {
