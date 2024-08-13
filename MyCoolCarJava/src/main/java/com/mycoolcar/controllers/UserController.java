@@ -44,10 +44,10 @@ public class UserController {
         this.messageSource = messageSource;
     }
 
-    @PostConstruct
+    /*@PostConstruct
     public void initRolesAndUsers() {
         userService.initRolesAndUsers();
-    }
+    }*/
 
     @PostMapping("/user/registration")
     public ResponseEntity<User> registerNewUser(@Valid @RequestBody UserCreationDto userCreationDto,
