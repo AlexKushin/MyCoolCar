@@ -44,6 +44,7 @@ export class NewCarComponent implements OnInit {
         }
       }
     });
+    console.log("NEW CAR COMPONENT formData")
     console.log(formData)
     this.store.dispatch(new UserCarsActions.AddUserCar(formData))
   }

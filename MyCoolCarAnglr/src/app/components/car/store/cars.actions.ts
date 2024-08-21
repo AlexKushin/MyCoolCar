@@ -1,6 +1,7 @@
 import { Action } from "@ngrx/store";
 import {Car} from "../../../models/car";
 
+
 export const SET_CARS = '[Cars] Set Cars';
 export const SET_USER_CAR = '[Cars] Set New User Car';
 export const FETCH_CARS = '[Cars] Fetch Cars'
@@ -30,7 +31,7 @@ export class AddUserCar implements Action {
 export class UpdateUserCar implements Action {
   readonly type = UPDATE_CAR;
 
-  constructor(public payload: { id: number; userCar: Car }) { }
+  constructor(public payload: { id: number; userCar: any }) { }
 }
 
 export class DeleteUserCar implements Action {

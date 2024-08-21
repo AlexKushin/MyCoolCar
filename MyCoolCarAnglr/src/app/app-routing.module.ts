@@ -15,6 +15,7 @@ import {CarsGarageComponent} from "./components/car/cars-garage/cars-garage.comp
 import {UserResolverService} from "./components/login/user-resolve.service";
 import {UserCarsResolverService} from "./components/car/user-cars-resolve.service";
 import {CarComponent} from "./components/car/car.component";
+import {EditCarComponent} from "./components/car/cars-garage/edit-car/edit-car.component";
 
 
 
@@ -28,7 +29,9 @@ const routes: Routes = [
   {path:"welcome", component: WelcomeComponent, resolve: [UserResolverService],canActivate: [authGuard]},
   {path:"cars", component: CarsGarageComponent,resolve: [UserCarsResolverService], canActivate: [authGuard]},
   {path:"cars/new", component: NewCarComponent, canActivate: [authGuard]},
+  {path:"cars/edit", component: EditCarComponent,canActivate: [authGuard]},
   {path:"cars/:id", component: CarComponent, resolve: [UserCarsResolverService],canActivate: [authGuard]},
+
 
   {path:"**", component: ErrorComponent}
 ];

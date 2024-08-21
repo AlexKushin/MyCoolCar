@@ -1,6 +1,6 @@
 package com.mycoolcar.services;
 
-import com.mycoolcar.dtos.CarCreationDto;
+import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
@@ -33,7 +33,7 @@ public class CarService {
         this.userService = userService;
     }
 
-    public List<CarCreationDto> getAllCars() {
+    public List<CarDto> getAllCars() {
         log.info("Fetching all cars with a rate of 7 or higher");
         return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(7);
     }
@@ -59,11 +59,14 @@ public class CarService {
         user.addCar(newCar);
         userService.save(user);
         log.info("New car added successfully for user: {}", user.getUsername());
+
+        Long newCarId = newCar.getId();  // Retrieve the generated ID
+
+        log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), newCarId);
         return newCar;
     }
 
-    public Optional<Car> editCar(Long carId, MultipartFile[] images,
-                                 MultipartFile mainImage, List<String> deletedImages,
+    public Optional<Car> editCar(Long carId,
                                  String carBrand, String carModel,
                                  Integer carProductYear, String carDescription) throws IOException {
         Optional<Car> car = carRepository.findById(carId);
@@ -72,7 +75,7 @@ public class CarService {
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car editedCar = car.get();
-        if (!mainImage.isEmpty()) {
+       /* if (!mainImage.isEmpty()) {
             log.info("Replacing main image for car with ID: {}", carId);
             fileService.deleteFile(editedCar.getMainImageUrl());
             String mainImageUrl = fileService.uploadFile(mainImage);
@@ -89,7 +92,7 @@ public class CarService {
                 imagesUrls.add(fileService.uploadFile(image));
             }
             editedCar.setImagesUrl(imagesUrls);
-        }
+        }*/
         editedCar.setBrand(carBrand);
         editedCar.setModel(carModel);
         editedCar.setProductYear(carProductYear);
