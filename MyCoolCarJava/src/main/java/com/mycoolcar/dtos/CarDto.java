@@ -4,9 +4,9 @@ package com.mycoolcar.dtos;
 import java.util.List;
 import java.util.Objects;
 
-public record CarCreationDto(String brand, String model,
-                             int productYear, String description,
-                             String mainImageUrl, List<String> imagesUrl, int rate) {
+public record CarDto(String brand, String model,
+                     int productYear, String description,
+                     String mainImageUrl, List<String> imagesUrl, int rate) {
 
     @Override
     public boolean equals(Object other) {
@@ -16,16 +16,16 @@ public record CarCreationDto(String brand, String model,
         if (other == null) {
             return false;
         }
-        if (!(other instanceof CarCreationDto)) {
+        if (!(other instanceof CarDto)) {
             return false;
         }
-        CarCreationDto carCreationDto = (CarCreationDto) other;
-        return carCreationDto.brand.equals(this.brand)
-                && carCreationDto.model.equals(this.model)
-                && carCreationDto.productYear == this.productYear
-                && carCreationDto.description.equals(this.description)
-                && carCreationDto.mainImageUrl.equals(this.mainImageUrl)
-                && Objects.equals(carCreationDto.imagesUrl, this.imagesUrl);
+        CarDto carDto = (CarDto) other;
+        return carDto.brand.equals(this.brand)
+                && carDto.model.equals(this.model)
+                && carDto.productYear == this.productYear
+                && carDto.description.equals(this.description)
+                && carDto.mainImageUrl.equals(this.mainImageUrl)
+                && Objects.equals(carDto.imagesUrl, this.imagesUrl);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.mycoolcar.controllers;
 
-import com.mycoolcar.dtos.CarCreationDto;
+import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.services.AwsS3ServiceImpl;
@@ -39,7 +39,7 @@ public class CarController {
     }
 
     @GetMapping("top_cars")
-    public List<CarCreationDto> getAllCars() {
+    public List<CarDto> getAllCars() {
         return carService.getAllCars();
     }
 
@@ -76,18 +76,15 @@ public class CarController {
 
     @PutMapping("cars/{carId}")
     public ResponseEntity<Car> editCar(@PathVariable Long carId,
-                                       @RequestPart("files[]") MultipartFile[] images,
-                                       @RequestPart("mainImage") MultipartFile mainImage,
-                                       @RequestPart("deletedImages") List<String> deletedImages,
-                                       @RequestParam("brand") String carBrand,
+                                       @RequestParam(name="brand") String carBrand,
                                        @RequestParam("model") String carModel,
                                        @RequestParam("productYear") Integer carProductYear,
                                        @RequestParam("description") String carDescription) throws IOException {
 
         Optional<Car> editedCar = carService.editCar(
-                carId, images, mainImage, deletedImages, carBrand, carModel, carProductYear, carDescription);
-        return editedCar.map(car -> new ResponseEntity<>(car, HttpStatus.OK)).orElseGet(() ->
-                new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+                carId, carBrand, carModel, carProductYear, carDescription);
+        return editedCar.map(car -> new ResponseEntity<>(car, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.BAD_REQUEST));
     }
 
     @DeleteMapping("cars/{carId}")
