@@ -24,13 +24,11 @@ public class CarService {
 
     private final FileService fileService;
 
-    private final UserService userService;
 
     @Autowired
-    public CarService(CarRepository carRepository, FileService fileService, UserService userService) {
+    public CarService(CarRepository carRepository, FileService fileService) {
         this.carRepository = carRepository;
         this.fileService = fileService;
-        this.userService = userService;
     }
 
     public List<CarDto> getAllCars() {
@@ -42,7 +40,7 @@ public class CarService {
                          String carModel, Integer carProductYear, String carDescription) throws IOException {
 
         log.info("Adding a new car for user: {}", user.getUsername());
-        Car newCar = new Car(carBrand, carModel, carProductYear, carDescription);
+        Car newCar = new Car(user, carBrand, carModel, carProductYear, carDescription);
         if (!mainImage.isEmpty()) {
             log.info("Uploading main image for the new car");
             String mainImageUrl = fileService.uploadFile(mainImage);
@@ -56,43 +54,22 @@ public class CarService {
             }
             newCar.setImagesUrl(imagesUrls);
         }
-        user.addCar(newCar);
-        userService.save(user);
-        log.info("New car added successfully for user: {}", user.getUsername());
 
-        Long newCarId = newCar.getId();  // Retrieve the generated ID
-
-        log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), newCarId);
-        return newCar;
+        Car savedCar = carRepository.save(newCar);
+        log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), savedCar.getId());
+        return savedCar;
     }
 
     public Optional<Car> editCar(Long carId,
                                  String carBrand, String carModel,
-                                 Integer carProductYear, String carDescription) throws IOException {
+                                 Integer carProductYear, String carDescription) {
         Optional<Car> car = carRepository.findById(carId);
         if (car.isEmpty()) {
             log.error("Car with ID: {} not found", carId);
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car editedCar = car.get();
-       /* if (!mainImage.isEmpty()) {
-            log.info("Replacing main image for car with ID: {}", carId);
-            fileService.deleteFile(editedCar.getMainImageUrl());
-            String mainImageUrl = fileService.uploadFile(mainImage);
-            editedCar.setMainImageUrl(mainImageUrl);
-        }
-        log.info("Deleting {} images for car with ID: {}", deletedImages.size(), carId);
-        deletedImages.forEach(fileService::deleteFile);
-        if (images.length > 0) {
-            List<String> imagesUrls = editedCar.getImagesUrl();
-            if (imagesUrls == null) {
-                imagesUrls = new ArrayList<>();
-            }
-            for (MultipartFile image : images) {
-                imagesUrls.add(fileService.uploadFile(image));
-            }
-            editedCar.setImagesUrl(imagesUrls);
-        }*/
+
         editedCar.setBrand(carBrand);
         editedCar.setModel(carModel);
         editedCar.setProductYear(carProductYear);
@@ -101,7 +78,7 @@ public class CarService {
         return Optional.of(carRepository.save(editedCar));
     }
 
-    public void deleteCar(User user, Long carId) {
+    public void deleteCar(Long carId) {
         log.info("Deleting car with ID: {}", carId);
         Optional<Car> car = carRepository.findById(carId);
         if (car.isEmpty()) {
@@ -119,7 +96,7 @@ public class CarService {
             log.info("Deleting main image for car with ID: {}", carId);
             fileService.deleteFile(mainImage);
         }
-        user.removeCar(deletedCar);
+        // user.removeCar(deletedCar);
         carRepository.delete(deletedCar);
         log.info("Car with ID: {} deleted successfully", carId);
     }

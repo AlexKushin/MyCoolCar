@@ -20,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.modelmapper.ModelMapper;
+
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
 
@@ -85,4 +87,8 @@ public class MvcConfig implements WebMvcConfigurer {
         return new CSVReader(reader);
     }
 
+    @Bean
+    static ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
 }

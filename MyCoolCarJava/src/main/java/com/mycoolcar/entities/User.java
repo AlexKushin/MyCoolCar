@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 public class User implements UserDetails, Serializable {
 
     private static final long serialVersionUID = -2338113688315793511L;
@@ -70,19 +72,10 @@ public class User implements UserDetails, Serializable {
     private List<Car> subscribedCars = new ArrayList<>();
 
 
-    public User() {
+   /* public User() {
         super();
         this.enabled = false;
-    }
-    public void addCar(Car car) {
-        userCars.add(car);
-        car.setUser(this);
-    }
-
-    public void removeCar(Car car) {
-        userCars.remove(car);
-        car.setUser(null);
-    }
+    }*/
 
     @JsonIgnore
     @Override
@@ -96,46 +89,35 @@ public class User implements UserDetails, Serializable {
     }
 
 
-    @JsonIgnore
     @Override
     public String getUsername() {
         return email;
     }
 
 
-    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
 
-    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
 
-    @JsonIgnore
+
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
 
-    @JsonIgnore
+
     @Override
     public boolean isEnabled() {
-        return true;
-    }
-
-    public String getFirstName() {
-        return this.firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        return this.enabled;
     }
 
     @Override
