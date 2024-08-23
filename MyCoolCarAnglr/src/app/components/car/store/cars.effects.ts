@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, switchMap, tap, withLatestFrom} from "rxjs/operators";
+import {catchError, switchMap, tap} from "rxjs/operators";
 import {map, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {Store} from "@ngrx/store";
@@ -68,13 +68,9 @@ export class UserCarsEffects {
   addNewUserCar = createEffect(() => this.actions$.pipe(
     ofType(UserCarsActions.ADD_NEW_USER_CAR),
     switchMap((car: UserCarsActions.AddUserCar) => {
-      console.log("new user car" + car)
-      console.log("new user car.payload" + car.payload)
       return this.http.post<Car>(`${API_URL}/api/cars/new`, car.payload)
     }),
     map(userCar => {
-      console.log("new  user car")
-      console.log(userCar)
       return new UserCarsActions.SetUserCar(userCar);
     })
   ));
@@ -82,21 +78,18 @@ export class UserCarsEffects {
   updateUserCar = createEffect(() => this.actions$.pipe(
     ofType(UserCarsActions.UPDATE_CAR),
     switchMap((data: UserCarsActions.UpdateUserCar) => {
-      console.log("update car data.payload.id")
-      console.log(data.payload.id)
-      console.log("update car data.payload.userCar")
-      console.log(data.payload.userCar)
 
-      return this.http.put<Car>(`${API_URL}/api/cars/${data.payload.id}`, data.payload.userCar,
+      return this.http.put<Car>(`${API_URL}/api/cars/${data.payload.id}`,
         {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          brand: data.payload.userCar.brand,
+          model: data.payload.userCar.model,
+          productYear: data.payload.userCar.productYear,
+          description: data.payload.userCar.description
         })
     }),
     map(userCar => {
-      console.log("updated user car" + userCar)
-      return new UserCarsActions.UpdateUserCar({id: userCar.id, userCar: userCar});
+
+      return new UserCarsActions.SetUpdatedUserCar({id: userCar.id, userCar: userCar});
     })
   ));
 

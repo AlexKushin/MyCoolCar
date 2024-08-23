@@ -22,25 +22,33 @@ export function userCarsReducer(state = initialState, action: CarsActions.UserCa
       }
     case CarsActions.ADD_NEW_USER_CAR:
       return state;
+
     case CarsActions.SET_USER_CAR:
       return {
         ...state,
         userCars: [...state.userCars, action.payload]
       }
     case CarsActions.UPDATE_CAR:
-      const updatedUserCar = {
-        ...state.userCars[action.payload.id],
-        ...action.payload.userCar
-      };
+      return state;
 
-      const updatedUserCars = [...state.userCars];
-      updatedUserCars[action.payload.id] = updatedUserCar;
-      return {
-        ...state, // <- spread operator, to copy all the data from initial array
-        userCars: updatedUserCars,
-        //we use ... operator to spread elements of payload instead of add array from payload as new element of existing array
+    case CarsActions.SET_UPDATED_CAR:
+      const updatedCarId = action.payload.id;
+      const carIndex = state.userCars.findIndex(car => car.id === updatedCarId);
+      // If the car is found, update it
+      if (carIndex !== -1) {
+        const updatedUserCars = state.userCars.map((car, index) =>
+          index === carIndex ? {...car, ...action.payload.userCar} : car
+        );
 
-      };
+        return {
+          ...state,
+          userCars: updatedUserCars
+        };
+      }
+
+      // If the car with the specific id is not found, return the current state
+      return state;
+
     case CarsActions.DELETE_CAR:
       return {
         ...state,

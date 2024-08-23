@@ -1,5 +1,6 @@
-import { Action } from "@ngrx/store";
+import {Action} from "@ngrx/store";
 import {Car} from "../../../models/car";
+import {EditedCar} from "../../../models/editedCar";
 
 
 export const SET_CARS = '[Cars] Set Cars';
@@ -11,11 +12,13 @@ export const DELETE_CAR = '[Cars] Delete Car'
 export const DELETE_CAR_SUCCESS = '[Cars] Delete Car Success'
 export const STORE_CARS = '[Cars] Store Car'
 export const USER_CAR_FAIL = '[Cars] User Car Fail'
+export const SET_UPDATED_CAR = '[Cars] Set Updated User Car'
 
 export class SetUserCars implements Action {
   readonly type = SET_CARS;
 
-  constructor(public payload: Car[]) { }
+  constructor(public payload: Car[]) {
+  }
 }
 
 export class FetchUserCars implements Action {
@@ -25,24 +28,29 @@ export class FetchUserCars implements Action {
 export class AddUserCar implements Action {
   readonly type = ADD_NEW_USER_CAR;
 
-  constructor(public payload: any) { }
+  constructor(public payload: any) {
+  }
 }
 
 export class UpdateUserCar implements Action {
   readonly type = UPDATE_CAR;
 
-  constructor(public payload: { id: number; userCar: any }) { }
+  constructor(public payload: { id: number; userCar: EditedCar }) {
+  }
 }
 
 export class DeleteUserCar implements Action {
   readonly type = DELETE_CAR;
 
-  constructor(public payload: number) { }
+  constructor(public payload: number) {
+  }
 }
+
 export class DeleteUserCarSuccess implements Action {
   readonly type = DELETE_CAR_SUCCESS;
 
-  constructor() { }
+  constructor() {
+  }
 }
 
 export class StoreUserCar implements Action {
@@ -52,13 +60,22 @@ export class StoreUserCar implements Action {
 export class SetUserCar implements Action {
   readonly type = SET_USER_CAR;
 
-  constructor(public payload: Car) { }
+  constructor(public payload: Car) {
+  }
+}
+
+export class SetUpdatedUserCar implements Action {
+  readonly type = SET_UPDATED_CAR;
+
+  constructor(public payload: { id: number; userCar: Car }) {
+  }
 }
 
 export class UserCarFail implements Action {
   readonly type = USER_CAR_FAIL;
 
-  constructor(public payload: string) { }
+  constructor(public payload: string) {
+  }
 }
 
 export type UserCarsActions =
@@ -70,4 +87,5 @@ export type UserCarsActions =
   | DeleteUserCar
   | StoreUserCar
   | DeleteUserCarSuccess
-  | UserCarFail;
+  | UserCarFail
+  | SetUpdatedUserCar;
