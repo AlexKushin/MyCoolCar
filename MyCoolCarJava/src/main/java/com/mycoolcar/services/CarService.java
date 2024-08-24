@@ -78,7 +78,7 @@ public class CarService {
         return Optional.of(carRepository.save(editedCar));
     }
 
-    public void deleteCar(Long carId) {
+    public void deleteCar(Long carId) throws IOException{
         log.info("Deleting car with ID: {}", carId);
         Optional<Car> car = carRepository.findById(carId);
         if (car.isEmpty()) {
@@ -89,7 +89,9 @@ public class CarService {
         List<String> imagesUrls = deletedCar.getImagesUrl();
         if (imagesUrls != null && !imagesUrls.isEmpty()) {
             log.info("Deleting {} images for car with ID: {}", imagesUrls.size(), carId);
-            imagesUrls.forEach(fileService::deleteFile);
+            for (String imagesUrl : imagesUrls) {
+                fileService.deleteFile(imagesUrl);
+            }
         }
         String mainImage = deletedCar.getMainImageUrl();
         if (mainImage != null) {

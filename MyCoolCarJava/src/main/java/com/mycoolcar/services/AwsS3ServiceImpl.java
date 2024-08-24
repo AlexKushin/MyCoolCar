@@ -24,8 +24,9 @@ public class AwsS3ServiceImpl implements FileService {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    @Value("${aws.s3.region}")
-    private String bucketRegion;
+    /*@Value("${aws.s3.region}")
+    private String bucketRegion;*/
+
     @Autowired
     public AwsS3ServiceImpl(AmazonS3 s3client) {
         this.s3client = s3client;
@@ -89,14 +90,16 @@ public class AwsS3ServiceImpl implements FileService {
 
     public Car generateCarImagesToPreassignedUrls(Car car) {
         log.info("Generating preassigned URLs for car images");
-        if (!car.getMainImageUrl().startsWith("https://storage.googleapis.com/")) {
+        if (!car.getMainImageUrl().startsWith("https://storage.googleapis.com/") &&
+                !car.getMainImageUrl().startsWith("http://localhost")) {
             String preassignedMainImgUrl = findByName(car.getMainImageUrl());
             car.setMainImageUrl(preassignedMainImgUrl);
         }
         List<String> carImageUrls = car.getImagesUrl();
         for (int i = 0; i < carImageUrls.size(); i++) {
             String carImageUrl = carImageUrls.get(i);
-            if (!carImageUrl.startsWith("https://storage.googleapis.com/")) {
+            if (!carImageUrl.startsWith("https://storage.googleapis.com/") &&
+                    !car.getMainImageUrl().startsWith("http://localhost")) {
                 carImageUrls.set(i, findByName(carImageUrl));
             }
         }

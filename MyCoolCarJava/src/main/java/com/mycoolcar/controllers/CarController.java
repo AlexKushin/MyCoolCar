@@ -70,7 +70,7 @@ public class CarController {
 
     @PutMapping("cars/{carId}")
     public ResponseEntity<CarDto> editCar(@PathVariable Long carId,
-                                          @RequestBody CarEditDto car) throws IOException {
+                                          @RequestBody CarEditDto car)  {
 
         Optional<Car> editedCar = carService.editCar(
                 carId, car.getBrand(), car.getModel(), car.getProductYear(), car.getDescription());
@@ -87,9 +87,15 @@ public class CarController {
     }
 
     @DeleteMapping("cars/{carId}")
-    public ResponseEntity<Car> deleteCar(Principal principal, @PathVariable Long carId) {
+    public ResponseEntity<Car> deleteCar(Principal principal, @PathVariable Long carId)  {
         Optional<User> user = userService.getUserByEmail(principal.getName());
-        user.ifPresent(value -> carService.deleteCar(carId));
+        user.ifPresent(value -> {
+            try {
+                carService.deleteCar(carId);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return user.isEmpty() ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
                 : new ResponseEntity<>(HttpStatus.OK);
     }
