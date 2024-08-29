@@ -73,7 +73,7 @@ public class CarController {
                                           @RequestBody CarEditDto car)  {
 
         Optional<Car> editedCar = carService.editCar(
-                carId, car.getBrand(), car.getModel(), car.getProductYear(), car.getDescription());
+                carId, car.brand(), car.model(), car.productYear(), car.description());
         if (editedCar.isPresent()) {
             Car editedCarRes = fileService.generateCarImagesToPreassignedUrls(editedCar.get());
 

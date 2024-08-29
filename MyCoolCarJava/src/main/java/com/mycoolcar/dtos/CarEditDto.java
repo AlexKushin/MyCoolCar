@@ -1,18 +1,30 @@
 package com.mycoolcar.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+public record CarEditDto(String brand,String model,int productYear,String description ) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CarEditDto that)) return false;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-public class CarEditDto {
-    private String brand;
-    private String model;
-    private int productYear;
-    private String description;
+        return productYear == that.productYear && brand.equals(that.brand) && model.equals(that.model) && description.equals(that.description);
+    }
 
+    @Override
+    public int hashCode() {
+        int result = brand.hashCode();
+        result = 31 * result + model.hashCode();
+        result = 31 * result + productYear;
+        result = 31 * result + description.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CarEditDto{" +
+                "brand='" + brand + '\'' +
+                ", model='" + model + '\'' +
+                ", productYear=" + productYear +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

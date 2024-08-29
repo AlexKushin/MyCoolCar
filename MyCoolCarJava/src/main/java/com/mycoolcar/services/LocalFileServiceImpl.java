@@ -41,7 +41,13 @@ public class LocalFileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean deleteFile(String fileName) throws IOException {
+    public boolean deleteFile(String fileUrl) throws IOException {
+        log.info(fileUrl);
+        String prefixToRemove = String.format("http://localhost:%d/getImages/", serverPort);
+
+        // Remove the specified part from the URL
+        String fileName = fileUrl.replace(prefixToRemove, "");
+
         Path imagePath = Path.of(uploadDirectory, fileName);
         log.info("image has been deleted by path {}", imagePath);
         if (Files.exists(imagePath)) {
