@@ -1,6 +1,7 @@
 package com.mycoolcar.controllers;
 
-import com.mycoolcar.dtos.CarCreationDto;
+import com.mycoolcar.dtos.CarDto;
+import com.mycoolcar.dtos.CarEditDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.services.AwsS3ServiceImpl;
@@ -22,7 +23,6 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("api/")
-@CrossOrigin(origins = "http://localhost:4200")
 public class CarController {
 
     private final CarService carService;
@@ -40,18 +40,18 @@ public class CarController {
     }
 
     @GetMapping("top_cars")
-    public List<CarCreationDto> getAllCars() {
+    public List<CarDto> getAllCars() {
         return carService.getAllCars();
     }
 
     @PostMapping("cars/new")
-    public ResponseEntity<Car> postCar(Principal principal,
-                                       @RequestPart("files[]") MultipartFile[] images,
-                                       @RequestPart("mainImage") MultipartFile mainImage,
-                                       @RequestParam("brand") String carBrand,
-                                       @RequestParam("model") String carModel,
-                                       @RequestParam("productYear") Integer carProductYear,
-                                       @RequestParam("description") String carDescription) throws IOException {
+    public ResponseEntity<CarDto> postCar(Principal principal,
+                                          @RequestPart("files[]") MultipartFile[] images,
+                                          @RequestPart("mainImage") MultipartFile mainImage,
+                                          @RequestParam("brand") String carBrand,
+                                          @RequestParam("model") String carModel,
+                                          @RequestParam("productYear") Integer carProductYear,
+                                          @RequestParam("description") String carDescription) throws IOException {
 
         Optional<User> userOptional = userService.getUserByEmail(principal.getName());
         Car newCar = new Car();
@@ -60,41 +60,42 @@ public class CarController {
             newCar = carService.addNewCar(user, images, mainImage, carBrand,
                     carModel, carProductYear, carDescription);
         }
-        if (!newCar.getMainImageUrl().startsWith("https://storage.googleapis.com/")) {
-            String preassignedMainImgUrl = fileService.findByName(newCar.getMainImageUrl());
-            newCar.setMainImageUrl(preassignedMainImgUrl);
-        }
-        List<String> carImageUrls = newCar.getImagesUrl();
-        for (int i = 0; i < carImageUrls.size(); i++) {
-            String carImageUrl = carImageUrls.get(i);
-            if (!carImageUrl.startsWith("https://storage.googleapis.com/")) {
-                carImageUrls.set(i, fileService.findByName(carImageUrl));
-            }
-        }
+        newCar = fileService.generateCarImagesToPreassignedUrls(newCar);
         return userOptional.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
-                : new ResponseEntity<>(newCar, HttpStatus.CREATED);
+                : new ResponseEntity<>(new CarDto(newCar.getId(), newCar.getBrand(), newCar.getModel(),
+                newCar.getProductYear(), newCar.getDescription(), newCar.getMainImageUrl(),
+                newCar.getImagesUrl(), newCar.getRate(), newCar.getUser().getId(),
+                newCar.getUser().getFirstName()), HttpStatus.CREATED);
     }
 
     @PutMapping("cars/{carId}")
-    public ResponseEntity<Car> editCar(@PathVariable Long carId,
-                                       @RequestPart("files[]") MultipartFile[] images,
-                                       @RequestPart("mainImage") MultipartFile mainImage,
-                                       @RequestPart("deletedImages") List<String> deletedImages,
-                                       @RequestParam("brand") String carBrand,
-                                       @RequestParam("model") String carModel,
-                                       @RequestParam("productYear") Integer carProductYear,
-                                       @RequestParam("description") String carDescription) throws IOException {
+    public ResponseEntity<CarDto> editCar(@PathVariable Long carId,
+                                          @RequestBody CarEditDto car)  {
 
         Optional<Car> editedCar = carService.editCar(
-                carId, images, mainImage, deletedImages, carBrand, carModel, carProductYear, carDescription);
-        return editedCar.map(car -> new ResponseEntity<>(car, HttpStatus.OK)).orElseGet(() ->
-                new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+                carId, car.brand(), car.model(), car.productYear(), car.description());
+        if (editedCar.isPresent()) {
+            Car editedCarRes = fileService.generateCarImagesToPreassignedUrls(editedCar.get());
+
+            log.info("editedCarRes {}", editedCarRes.toString());
+            return new ResponseEntity<>(new CarDto(editedCarRes.getId(), editedCarRes.getBrand(), editedCarRes.getModel(),
+                    editedCarRes.getProductYear(), editedCarRes.getDescription(), editedCarRes.getMainImageUrl(),
+                    editedCarRes.getImagesUrl(), editedCarRes.getRate(), editedCarRes.getUser().getId(),
+                    editedCarRes.getUser().getFirstName()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("cars/{carId}")
-    public ResponseEntity<Car> deleteCar(Principal principal, @PathVariable Long carId) {
+    public ResponseEntity<Car> deleteCar(Principal principal, @PathVariable Long carId)  {
         Optional<User> user = userService.getUserByEmail(principal.getName());
-        user.ifPresent(value -> carService.deleteCar(value, carId));
+        user.ifPresent(value -> {
+            try {
+                carService.deleteCar(carId);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return user.isEmpty() ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
                 : new ResponseEntity<>(HttpStatus.OK);
     }

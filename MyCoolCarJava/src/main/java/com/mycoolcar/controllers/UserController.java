@@ -29,7 +29,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:4200")
+
 public class UserController {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
@@ -44,10 +44,10 @@ public class UserController {
         this.messageSource = messageSource;
     }
 
-    @PostConstruct
+    /*@PostConstruct
     public void initRolesAndUsers() {
         userService.initRolesAndUsers();
-    }
+    }*/
 
     @PostMapping("/user/registration")
     public ResponseEntity<User> registerNewUser(@Valid @RequestBody UserCreationDto userCreationDto,
@@ -151,7 +151,6 @@ public class UserController {
 
     @GetMapping({"/me"})
     public ResponseEntity<UserDto> getMe(Principal principal) {
-        System.out.println("principal.getName()= " + principal.getName());
         UserDto user = userService.getUserDtoByEmail(principal.getName());
         return new ResponseEntity<>(user, HttpStatus.OK);
 

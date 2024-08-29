@@ -45,7 +45,8 @@ public class Car implements Serializable {
     @JsonIgnore
     User user;
 
-    public Car(String brand, String model, int productYear, String description) {
+    public Car(User user, String brand, String model, int productYear, String description) {
+        this.user = user;
         this.brand = brand;
         this.model = model;
         this.productYear = productYear;

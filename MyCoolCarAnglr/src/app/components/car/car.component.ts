@@ -58,7 +58,7 @@ export class CarComponent implements OnInit, OnDestroy {
 
 
   editCar() {
-
+    this.router.navigate(['cars/edit'], { state: { data: this.car } })
   }
 
   addNewLog() {

@@ -2,26 +2,47 @@ package com.mycoolcar.configs;
 
 import com.mycoolcar.validation.PasswordMatchesValidator;
 import com.opencsv.CSVReader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.modelmapper.ModelMapper;
+
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
 
+    @Value("${app.dev.frontend.local}")
+    private String frontendLocal;
 
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry
+                        .addMapping("/api/**")
+                        .allowedOrigins(frontendLocal)
+                        .allowedMethods(CorsConfiguration.ALL)
+                        .allowedHeaders(CorsConfiguration.ALL)
+                        .allowedOriginPatterns(CorsConfiguration.ALL)
+                        .maxAge(3600);
+            }
+        };
+    }
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
@@ -56,11 +77,18 @@ public class MvcConfig implements WebMvcConfigurer {
     public PasswordMatchesValidator passwordMatchesValidator() {
         return new PasswordMatchesValidator();
     }
-
     @Bean
-    public CSVReader csvReader() throws IOException {
-        String filePath = "MyCoolCarJava/src/main/resources/car_models_list.csv";
-        return new CSVReader(new FileReader(filePath, StandardCharsets.UTF_8));
+    public CSVReader csvReader() {
+        InputStream inputStream = getClass().getResourceAsStream("/car_models_list.csv");
+        if (inputStream == null) {
+            throw new IllegalArgumentException("File not found: /car_models_list.csv");
+        }
+        InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        return new CSVReader(reader);
     }
 
+    @Bean
+    static ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
 }

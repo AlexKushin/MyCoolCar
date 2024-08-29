@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {catchError, switchMap, tap, withLatestFrom} from "rxjs/operators";
+import {catchError, switchMap, tap} from "rxjs/operators";
 import {map, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {Store} from "@ngrx/store";
@@ -53,8 +53,8 @@ export class UserCarsEffects {
     ofType(UserCarsActions.DELETE_CAR),
     switchMap((carId: UserCarsActions.DeleteUserCar) => {
         return this.http.delete(`${API_URL}/api/cars/${carId.payload}`).pipe(
-          map(()=> {
-            this.store.dispatch( new UserCarsActions.DeleteUserCarSuccess())
+          map(() => {
+            this.store.dispatch(new UserCarsActions.DeleteUserCarSuccess())
           }),
           catchError(errorRes => {
             return handleError(errorRes)
@@ -71,8 +71,25 @@ export class UserCarsEffects {
       return this.http.post<Car>(`${API_URL}/api/cars/new`, car.payload)
     }),
     map(userCar => {
-
       return new UserCarsActions.SetUserCar(userCar);
+    })
+  ));
+
+  updateUserCar = createEffect(() => this.actions$.pipe(
+    ofType(UserCarsActions.UPDATE_CAR),
+    switchMap((data: UserCarsActions.UpdateUserCar) => {
+
+      return this.http.put<Car>(`${API_URL}/api/cars/${data.payload.id}`,
+        {
+          brand: data.payload.userCar.brand,
+          model: data.payload.userCar.model,
+          productYear: data.payload.userCar.productYear,
+          description: data.payload.userCar.description
+        })
+    }),
+    map(userCar => {
+
+      return new UserCarsActions.SetUpdatedUserCar({id: userCar.id, userCar: userCar});
     })
   ));
 
@@ -95,6 +112,21 @@ export class UserCarsEffects {
     () =>
       this.actions$.pipe(
         ofType(UserCarsActions.DELETE_CAR_SUCCESS),
+        tap(() => {
+          this.router.navigate(['/cars']).then(() => {
+            // Handle any post-navigation logic here
+          }).catch(error => {
+            // Handle navigation error
+          });
+        })
+      ),
+    {dispatch: false}
+  );
+
+  redirectAfterCarUpdating = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(UserCarsActions.UPDATE_CAR),
         tap(() => {
           this.router.navigate(['/cars']).then(() => {
             // Handle any post-navigation logic here

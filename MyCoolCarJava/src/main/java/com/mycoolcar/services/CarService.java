@@ -1,6 +1,6 @@
 package com.mycoolcar.services;
 
-import com.mycoolcar.dtos.CarCreationDto;
+import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
@@ -24,87 +24,82 @@ public class CarService {
 
     private final FileService fileService;
 
-    private final UserService userService;
 
     @Autowired
-    public CarService(CarRepository carRepository, FileService fileService, UserService userService) {
+    public CarService(CarRepository carRepository, FileService fileService) {
         this.carRepository = carRepository;
         this.fileService = fileService;
-        this.userService = userService;
     }
 
-    public List<CarCreationDto> getAllCars() {
+    public List<CarDto> getAllCars() {
+        log.info("Fetching all cars with a rate of 7 or higher");
         return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(7);
     }
 
     public Car addNewCar(User user, MultipartFile[] images, MultipartFile mainImage, String carBrand,
                          String carModel, Integer carProductYear, String carDescription) throws IOException {
 
-        Car newCar = new Car(carBrand, carModel,
-                carProductYear, carDescription);
+        log.info("Adding a new car for user: {}", user.getUsername());
+        Car newCar = new Car(user, carBrand, carModel, carProductYear, carDescription);
         if (!mainImage.isEmpty()) {
+            log.info("Uploading main image for the new car");
             String mainImageUrl = fileService.uploadFile(mainImage);
             newCar.setMainImageUrl(mainImageUrl);
         }
         if (images.length > 0) {
-            List <String> imagesUrls = new ArrayList<>();
+            log.info("Uploading {} additional images for the new car", images.length);
+            List<String> imagesUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 imagesUrls.add(fileService.uploadFile(image));
             }
             newCar.setImagesUrl(imagesUrls);
         }
-        user.addCar(newCar);
-        userService.save(user);
-        return newCar;
+
+        Car savedCar = carRepository.save(newCar);
+        log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), savedCar.getId());
+        return savedCar;
     }
 
-    public Optional<Car> editCar(Long carId, MultipartFile[] images,
-                                 MultipartFile mainImage, List<String> deletedImages,
+    public Optional<Car> editCar(Long carId,
                                  String carBrand, String carModel,
-                                 Integer carProductYear, String carDescription) throws IOException {
+                                 Integer carProductYear, String carDescription) {
         Optional<Car> car = carRepository.findById(carId);
         if (car.isEmpty()) {
+            log.error("Car with ID: {} not found", carId);
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car editedCar = car.get();
-        if (!mainImage.isEmpty()) {
-            fileService.deleteFile(editedCar.getMainImageUrl());
-            String mainImageUrl = fileService.uploadFile(mainImage);
-            editedCar.setMainImageUrl(mainImageUrl);
-        }
-        deletedImages.forEach(fileService::deleteFile);
-        if (images.length > 0) {
-            List <String> imagesUrls = editedCar.getImagesUrl();
-            if (imagesUrls == null) {
-                imagesUrls = new ArrayList<>();
-            }
-            for (MultipartFile image : images) {
-                imagesUrls.add(fileService.uploadFile(image));
-            }
-            editedCar.setImagesUrl(imagesUrls);
-        }
+
         editedCar.setBrand(carBrand);
         editedCar.setModel(carModel);
         editedCar.setProductYear(carProductYear);
         editedCar.setDescription(carDescription);
+        log.info("Car with ID: {} edited successfully", carId);
         return Optional.of(carRepository.save(editedCar));
     }
 
-    public void deleteCar(User user, Long carId) {
+    public void deleteCar(Long carId) throws IOException{
+        log.info("Deleting car with ID: {}", carId);
         Optional<Car> car = carRepository.findById(carId);
-        if(car.isEmpty()){
+        if (car.isEmpty()) {
+            log.error("Car with ID: {} not found", carId);
             throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
         }
         Car deletedCar = car.get();
-        List <String> imagesUrls = deletedCar.getImagesUrl();
-        if(imagesUrls != null && !imagesUrls.isEmpty() ){
-            imagesUrls.forEach(fileService::deleteFile);
+        List<String> imagesUrls = deletedCar.getImagesUrl();
+        if (imagesUrls != null && !imagesUrls.isEmpty()) {
+            log.info("Deleting {} images for car with ID: {}", imagesUrls.size(), carId);
+            for (String imagesUrl : imagesUrls) {
+                fileService.deleteFile(imagesUrl);
+            }
         }
         String mainImage = deletedCar.getMainImageUrl();
-        if(mainImage != null ){
+        if (mainImage != null) {
+            log.info("Deleting main image for car with ID: {}", carId);
             fileService.deleteFile(mainImage);
         }
-        user.removeCar(deletedCar);
+        // user.removeCar(deletedCar);
         carRepository.delete(deletedCar);
+        log.info("Car with ID: {} deleted successfully", carId);
     }
 }

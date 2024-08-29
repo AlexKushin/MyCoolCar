@@ -1,6 +1,6 @@
 package com.mycoolcar.services;
 
-import com.mycoolcar.dtos.CarCreationDto;
+import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.repositories.CarRepository;
@@ -42,7 +42,7 @@ class CarServiceTest  {
         // Mocking repository behavior
         when(carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(anyInt())).thenReturn(new ArrayList<>());
 
-        List<CarCreationDto> result = carService.getAllCars();
+        List<CarDto> result = carService.getAllCars();
 
         assertEquals(0, result.size());
     }

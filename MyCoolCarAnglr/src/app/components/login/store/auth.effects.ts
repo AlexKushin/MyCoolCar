@@ -70,7 +70,7 @@ export class AuthEffects {
       ofType(AuthActions.LOGIN_START),
       switchMap((authData: AuthActions.LoginStart) => {
         return this.http
-          .post<AuthResponseData>(`${API_URL}/authenticate`,
+          .post<AuthResponseData>(`${API_URL}/api/authenticate`,
             {
               username: authData.payload.email,
               password: authData.payload.password,

@@ -10,6 +10,8 @@ export class Car {
     public mainImageUrl: string,
     public imagesUrl: string,
     public logbook: any,
+    public userId: number,
+    public userFirstName: string
 
   ) {
   }
