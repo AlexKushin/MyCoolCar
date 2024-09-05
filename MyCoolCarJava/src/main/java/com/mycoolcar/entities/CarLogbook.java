@@ -1,6 +1,7 @@
 package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,9 +28,15 @@ public class CarLogbook implements Serializable {
     private List<CarLogPost> carLogPosts;
 
 
-    @OneToOne(targetEntity= Car.class,cascade=CascadeType.ALL)
+    @OneToOne(mappedBy = "logbook")
     @JsonIgnore
     private Car car;
+
+    // Custom getter for car id
+    @JsonProperty("carId")
+    public Long getCarId() {
+        return (car != null) ? car.getId() : null;
+    }
 
     public void addCarLog(CarLogPost carLog){
         carLogPosts.add(carLog);
@@ -51,6 +58,6 @@ public class CarLogbook implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, carLogPosts, car);
+        return Objects.hash(id, carLogPosts);
     }
 }

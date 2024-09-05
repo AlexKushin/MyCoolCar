@@ -2,7 +2,6 @@ package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.io.Serializable;
@@ -37,8 +36,9 @@ public class Car implements Serializable {
 
     private int rate;
 
-    @OneToOne(targetEntity = CarLogbook.class, cascade = CascadeType.ALL)
-    @Null
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "logbook_id", referencedColumnName = "id")
+    @JsonIgnore
     private CarLogbook logbook;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
@@ -67,7 +67,7 @@ public class Car implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, brand, model, productYear, description, mainImageUrl, rate, logbook, user);
+        int result = Objects.hash(id, brand, model, productYear, description, mainImageUrl, rate, user);
         result = 31 * result + Objects.hashCode(imagesUrl);
         return result;
     }

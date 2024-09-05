@@ -16,14 +16,18 @@ import {StoreDevtoolsModule} from "@ngrx/store-devtools";
 import {environment} from "./environments/environment";
 import {userCarsReducer} from "./app/components/car/store/cars.reducer";
 import {UserCarsEffects} from "./app/components/car/store/cars.effects";
+import {carLogbookReducer} from "./app/components/car-logbook/store/car-logbook.reducer";
+import {CarLogbookEffects} from "./app/components/car-logbook/store/car-logbook.effects";
 
 
 bootstrapApplication(AppComponent, {
     providers: [
       provideStore(authReducer),
       provideStore(userCarsReducer),
+      provideStore(carLogbookReducer),
       provideState({name: 'auth', reducer: authReducer}),
       provideState({name: 'userCarsState', reducer: userCarsReducer}),
+      provideState({name: 'carLogbookState', reducer: carLogbookReducer}),
       importProvidersFrom(
         BrowserModule,
         ReactiveFormsModule,
@@ -41,7 +45,7 @@ bootstrapApplication(AppComponent, {
       ),
       {provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorAuthService, multi: true},
       {provide: ToastrService, useClass: ToastrService},
-      provideEffects([AuthEffects,UserCarsEffects]),
+      provideEffects([AuthEffects,UserCarsEffects, CarLogbookEffects]),
     ],
   }
 )

@@ -22,6 +22,8 @@ export class UserCarsResolverService implements Resolve<Car[]> {
     return this.store.select('userCarsState').pipe(
       take(1),
       map(userCarsState => {
+        console.log("UserCarsResolverService")
+        console.log(userCarsState)
         return userCarsState.userCars;
       }),
       switchMap(userCars => {

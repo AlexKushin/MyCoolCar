@@ -44,9 +44,9 @@ public class PostController {
         this.messageSource = messageSource;
     }
 
-    @PostMapping("car-log-posts/new")
-    public ResponseEntity<CarLogPost> postCarLog(@RequestBody CarLogPostDto carLogPostDto) {
-        Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogPostDto.logbookId());
+    @PostMapping("car-logbook/{carLogbookId}/car-log-posts/new")
+    public ResponseEntity<CarLogPost> postCarLog(@PathVariable Long carLogbookId, @RequestBody CarLogPostDto carLogPostDto) {
+        Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogbookId);
         CarLogPost newCarLogPost = new CarLogPost();
         if (carLogbook.isPresent()) {
             newCarLogPost.setTopic(carLogPostDto.topic());
@@ -94,6 +94,18 @@ public class PostController {
         postService.deleteCarLogPost(id);
         return new ResponseEntity<>(new ApiResponse(
                 messageSource.getMessage("message.deletePost", null, locale)), HttpStatus.OK);
+    }
+
+
+
+
+    @GetMapping({"/car/{carId}/logbook"})
+    public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
+        Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
+        if (carLogbook.isPresent()) {
+            return new ResponseEntity<>(carLogbook.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }

@@ -1,0 +1,11 @@
+<p>car-logbook works!</p>
+<p>CarLogbookId: {{ carLogbook.id }}</p>
+<p style=" border-style: solid;" *ngFor="let car_logbook_post of carLogbook.carLogPosts">PostTopic: {{car_logbook_post.topic}}</p>
+
+<!--<app-car-logbook-post
+  *ngFor="let car_logbook_post of car_logbook.carLogPosts"
+  [log_post]="car_logbook_post">
+</app-car-logbook-post>-->
+
+
+<button (click)="addNewLogPost()" class="btn btn-success">Add new Log</button>
