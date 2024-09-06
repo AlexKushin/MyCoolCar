@@ -20,7 +20,7 @@ export class CarLogbookResolverService implements Resolve<CarLogbook> {
 
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    // @ts-ignore
+
     const carId = +route.paramMap.get('id');
     return this.store.select('carLogbookState').pipe(
       take(1),

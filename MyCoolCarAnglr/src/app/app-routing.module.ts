@@ -17,6 +17,8 @@ import {UserCarsResolverService} from "./components/car/user-cars-resolve.servic
 import {CarComponent} from "./components/car/car.component";
 import {EditCarComponent} from "./components/car/cars-garage/edit-car/edit-car.component";
 import {CarLogbookResolverService} from "./components/car-logbook/car-logbook.resolve.service";
+import {NewCarLogbookPostComponent} from "./components/car-logbook/new-car-logbook-post/new-car-logbook-post.component";
+import {CarLogbookPostComponent} from "./components/car-logbook/car-logbook-post/car-logbook-post.component";
 
 
 const routes: Routes = [
@@ -36,7 +38,8 @@ const routes: Routes = [
     resolve: [CarLogbookResolverService, UserCarsResolverService],
     canActivate: [authGuard]
   },
-
+  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/new", component: NewCarLogbookPostComponent, canActivate: [authGuard]},
+  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId", component: CarLogbookPostComponent, canActivate: [authGuard]},
 
   {path: "**", component: ErrorComponent}
 ];

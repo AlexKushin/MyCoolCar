@@ -99,7 +99,7 @@ public class PostController {
 
 
 
-    @GetMapping({"/car/{carId}/logbook"})
+    @GetMapping({"/cars/{carId}/logbook"})
     public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
         Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
         if (carLogbook.isPresent()) {

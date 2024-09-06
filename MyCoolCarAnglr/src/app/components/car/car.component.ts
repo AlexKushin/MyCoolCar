@@ -8,7 +8,6 @@ import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {NgForOf, NgIf} from "@angular/common";
 import {CarLogbookComponent} from "../car-logbook/car-logbook.component";
-import {CarsListComponent} from "./cars-garage/cars-list/cars-list.component";
 
 @Component({
   selector: 'app-car',
@@ -18,7 +17,6 @@ import {CarsListComponent} from "./cars-garage/cars-list/cars-list.component";
     NgForOf,
     NgIf,
     CarLogbookComponent,
-    CarsListComponent
   ],
   styleUrls: ['./car.component.css']
 })
@@ -51,7 +49,6 @@ export class CarComponent implements OnInit, OnDestroy {
       })
     )
       .subscribe(car => {
-        // @ts-ignore
         this.car = car;
       })
 
@@ -66,9 +63,6 @@ export class CarComponent implements OnInit, OnDestroy {
     this.router.navigate(['cars/edit'], {state: {data: this.car}})
   }
 
-  addNewLog() {
-
-  }
 
   deleteCar() {
     this.store.dispatch(new UserCarsActions.DeleteUserCar(this.id))
