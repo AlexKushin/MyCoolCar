@@ -3,6 +3,7 @@ import {CarLogbookPost} from "../../../models/carLogbookPost";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
 import * as fromCarLogbook from "../store/car-logbook.reducer";
+import * as CarLogbookActions from "../store/car-logbook.actions"
 import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 
@@ -50,5 +51,13 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  editLogbookPost() {
+
+  }
+
+  deleteLogbookPost() {
+    this.store.dispatch(new CarLogbookActions.DeleteCarLogbookPost(this.logbookPostId))
   }
 }

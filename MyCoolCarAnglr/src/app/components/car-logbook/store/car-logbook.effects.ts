@@ -46,6 +46,18 @@ export class CarLogbookEffects {
     })
   ));
 
+  deleteCarLogbookPost = createEffect(() => this.actions$.pipe(
+    ofType(CarLogbookActions.DELETE_CAR_LOGBOOK_POST),
+    switchMap((carLogBookPostId: CarLogbookActions.DeleteCarLogbookPost) => {
+        return this.http.delete(`${API_URL}/api/car-logbook-posts/${carLogBookPostId.payload}`).pipe(
+          map(() => {
+            this.store.dispatch(new CarLogbookActions.DeleteCarLogbookPostSuccess())
+          })
+        )
+      }
+    )
+  ), {dispatch: false})
+
 
   redirectAfterCarUpdating = createEffect(
     () =>
@@ -66,8 +78,30 @@ export class CarLogbookEffects {
               // Handle navigation error
             });
           }
+        })
+      ),
+    {dispatch: false}
+  );
 
-
+  redirectAfterCarLogbookPostDeleting = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(CarLogbookActions.DELETE_CAR_LOGBOOK_POST_SUCCESS),
+        tap(() => {
+          const currentRoute = this.router.routerState.snapshot.root;
+          let carId: number
+          let route = currentRoute;
+          while (route.firstChild) {
+            route = route.firstChild;
+          }
+          carId = +route.params['id'];
+          if (carId) {
+            this.router.navigate([`/cars/${carId}`]).then(() => {
+              // Handle any post-navigation logic here
+            }).catch(error => {
+              // Handle navigation error
+            });
+          }
         })
       ),
     {dispatch: false}
