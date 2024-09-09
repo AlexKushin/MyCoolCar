@@ -43,6 +43,16 @@ export function carLogbookReducer(state = initialState, action: LogbookActions.C
           )
         }
       };
+    case LogbookActions.SET_EDITED_CAR_LOGBOOK_POST:
+      return {
+        ...state,
+        carLogbook: {
+          ...state.carLogbook, // Keep existing carLogbook properties
+          carLogPosts: state.carLogbook.carLogPosts.map(post =>
+            post.id === action.payload.id ? { ...post, ...action.payload.carLogbookPost } : post
+          )
+        }
+      }
 
     default:
       return state

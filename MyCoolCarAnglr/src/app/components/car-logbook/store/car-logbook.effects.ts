@@ -58,54 +58,64 @@ export class CarLogbookEffects {
     )
   ), {dispatch: false})
 
+  editCarLogbookPost = createEffect(() => this.actions$.pipe(
+    ofType(CarLogbookActions.EDIT_CAR_LOGBOOK_POST),
+    switchMap((data: CarLogbookActions.EditCarLogbookPost) => {
 
-  redirectAfterCarUpdating = createEffect(
+      return this.http.put<CarLogbookPost>(`${API_URL}/api/car-logbook-posts/${data.payload.carLogbookId}`,
+        data.payload.logbookPost)
+    }),
+    map(carLogbookPost => {
+      console.log('car logbook post after editing')
+      console.log(carLogbookPost)
+      return new CarLogbookActions.SetEditedCarLogbookPost({id: carLogbookPost.id, carLogbookPost: carLogbookPost});
+    })
+  ));
+
+
+  redirectAfterNewCarLogbookPostAdding$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(CarLogbookActions.SET_NEW_CAR_LOGBOOK_POST),
         tap(() => {
-          const currentRoute = this.router.routerState.snapshot.root;
-          let carId: number
-          let route = currentRoute;
-          while (route.firstChild) {
-            route = route.firstChild;
-          }
-          carId = +route.params['id'];
-          if (carId) {
-            this.router.navigate([`/cars/${carId}`]).then(() => {
-              // Handle any post-navigation logic here
-            }).catch(error => {
-              // Handle navigation error
-            });
-          }
+          this.getCarIdAndNavigate()
         })
       ),
     {dispatch: false}
   );
 
-  redirectAfterCarLogbookPostDeleting = createEffect(
+  redirectAfterCarLogbookPostDeleting$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(CarLogbookActions.DELETE_CAR_LOGBOOK_POST_SUCCESS),
         tap(() => {
-          const currentRoute = this.router.routerState.snapshot.root;
-          let carId: number
-          let route = currentRoute;
-          while (route.firstChild) {
-            route = route.firstChild;
-          }
-          carId = +route.params['id'];
-          if (carId) {
-            this.router.navigate([`/cars/${carId}`]).then(() => {
-              // Handle any post-navigation logic here
-            }).catch(error => {
-              // Handle navigation error
-            });
-          }
+          this.getCarIdAndNavigate()
         })
       ),
     {dispatch: false}
   );
 
+  redirectAfterCarLogbookPostEditing$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(CarLogbookActions.SET_EDITED_CAR_LOGBOOK_POST),
+        tap(() => {
+          this.getCarIdAndNavigate()
+        })
+      ),
+    {dispatch: false}
+  );
 
+  private getCarIdAndNavigate():void{
+    const currentRoute = this.router.routerState.snapshot.root;
+    let carId: number
+    let route = currentRoute;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    carId = +route.params['id'];
+    if (carId) {
+      this.router.navigate([`/cars/${carId}`]);
+    }
+  }
 }

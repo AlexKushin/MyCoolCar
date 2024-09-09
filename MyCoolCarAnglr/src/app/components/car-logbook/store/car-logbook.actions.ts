@@ -8,6 +8,8 @@ export const ADD_NEW_CAR_LOGBOOK_POST = '[Car-Logbook] Add Car-Logbook Post'
 export const SET_NEW_CAR_LOGBOOK_POST = '[Car-Logbook] Set Car-Logbook Post'
 export const DELETE_CAR_LOGBOOK_POST = '[Car-Logbook] Delete Car-Logbook Post'
 export const DELETE_CAR_LOGBOOK_POST_SUCCESS = '[Car-Logbook] Delete Car-Logbook Post Success'
+export const EDIT_CAR_LOGBOOK_POST = '[Car-Logbook] Edit Car-Logbook Post'
+export const SET_EDITED_CAR_LOGBOOK_POST = '[Car-Logbook] Set Edited Car-Logbook Post'
 
 
 export class FetchCarLogbook implements Action {
@@ -61,6 +63,28 @@ export class DeleteCarLogbookPostSuccess implements Action {
   }
 }
 
+export class EditCarLogbookPost implements Action {
+  readonly type = EDIT_CAR_LOGBOOK_POST;
+
+  constructor(public payload:
+                {
+                  carLogbookId: number;
+                  logbookPost:
+                    {
+                      topic: string,
+                      description: string
+                    }
+                }) {
+  }
+}
+
+export class SetEditedCarLogbookPost implements Action {
+  readonly type = SET_EDITED_CAR_LOGBOOK_POST;
+
+  constructor(public payload: { id: number; carLogbookPost: CarLogbookPost }) {
+  }
+
+}
 
 export type CarLogbookActions =
   | FetchCarLogbook
@@ -69,3 +93,5 @@ export type CarLogbookActions =
   | SetCarLogbookPost
   | DeleteCarLogbookPost
   | DeleteCarLogbookPostSuccess
+  | EditCarLogbookPost
+  | SetEditedCarLogbookPost

@@ -96,16 +96,19 @@ public class PostController {
                 messageSource.getMessage("message.deletePost", null, locale)), HttpStatus.OK);
     }
 
+    @PutMapping({"/car-logbook-posts/{id}"})
+    public ResponseEntity<CarLogPost> editCarLogbookPost(@PathVariable long id, @RequestBody CarLogPostDto carLogPostDto) {
+        Optional<CarLogPost> editedCarLogbookPost = postService.editCarLogbookPost( id, carLogPostDto);
+        return editedCarLogbookPost.map(carLogPost -> new ResponseEntity<>(carLogPost, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+    }
+
 
 
 
     @GetMapping({"/cars/{carId}/logbook"})
     public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
         Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
-        if (carLogbook.isPresent()) {
-            return new ResponseEntity<>(carLogbook.get(), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return carLogbook.map(logbook -> new ResponseEntity<>(logbook, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
 }

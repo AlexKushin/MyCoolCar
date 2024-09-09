@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CarLogbookPost} from "../../../models/carLogbookPost";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import * as fromCarLogbook from "../store/car-logbook.reducer";
 import * as CarLogbookActions from "../store/car-logbook.actions"
@@ -19,7 +19,8 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private store: Store<{ carLogbookState: fromCarLogbook.State }>
+    private store: Store<{ carLogbookState: fromCarLogbook.State }>,
+    private router: Router,
   ) {
   }
 
@@ -28,7 +29,6 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
   subscription: Subscription
 
   ngOnInit(): void {
-    console.log("log post:")
     this.subscription = this.route.params.pipe(map(params => {
         return +params['car-logbook-postId'];
       }),
@@ -54,7 +54,7 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
   }
 
   editLogbookPost() {
-
+    this.router.navigate(['edit'], {relativeTo: this.route, state: {data: this.logbookPost}});
   }
 
   deleteLogbookPost() {

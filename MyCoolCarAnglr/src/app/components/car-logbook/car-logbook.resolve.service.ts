@@ -25,14 +25,10 @@ export class CarLogbookResolverService implements Resolve<CarLogbook> {
     return this.store.select('carLogbookState').pipe(
       take(1),
       map((carLogbookState: fromCarLogbook.State) => {
-        console.log("CarLogbookResolverService")
-        console.log(carLogbookState)
         return carLogbookState.carLogbook;
       }),
       switchMap(carLogbook => {
         if (carLogbook.id === -1 || carLogbook.carId !== carId) {
-          console.log("CarLogbook resolver works")
-
           this.store.dispatch(new CarLogbookActions.FetchCarLogbook(carId));
           return this.actions$.pipe(
             ofType(CarLogbookActions.SET_CAR_LOGBOOK),
