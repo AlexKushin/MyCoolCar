@@ -2,6 +2,7 @@ package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.entities.Car;
+import com.mycoolcar.entities.CarLogbook;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.repositories.CarRepository;
@@ -54,7 +55,10 @@ public class CarService {
             }
             newCar.setImagesUrl(imagesUrls);
         }
+        CarLogbook carLogbook = new CarLogbook();
 
+        newCar.setLogbook(carLogbook);
+        carLogbook.setCar(newCar);
         Car savedCar = carRepository.save(newCar);
         log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), savedCar.getId());
         return savedCar;

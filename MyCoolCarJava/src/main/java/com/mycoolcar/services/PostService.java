@@ -1,5 +1,6 @@
 package com.mycoolcar.services;
 
+import com.mycoolcar.dtos.CarLogPostDto;
 import com.mycoolcar.entities.*;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.repositories.CarClubPostRepository;
@@ -77,6 +78,22 @@ public class PostService {
         CarLogPost carLogPost = carLogPostToDeleteOp.get();
         carLogBookPostRepository.delete(carLogPost);
         log.info("Deleted CarLogPost with ID: {}", id);
+    }
+
+    public Optional<CarLogPost> editCarLogbookPost(long id, CarLogPostDto carLogPostDto) {
+        Optional<CarLogPost> carLogbookPostOp=carLogBookPostRepository.findById(id);
+        if (carLogbookPostOp.isEmpty()) {
+            log.warn("Car LogBook Post with ID: {} not found", id);
+            throw new ResourceNotFoundException("Car LogBook Post with id =" + id + " not found");
+        }
+        CarLogPost carLogbookPost = carLogbookPostOp.get();
+        carLogbookPost.setTopic(carLogPostDto.topic());
+        carLogbookPost.setDescription(carLogPostDto.description());
+        carLogbookPost.setEdited(true);
+        carLogBookPostRepository.save(carLogbookPost);
+        log.info("Car Logbook Post with ID: {} has been edited", id);
+
+        return Optional.of(carLogbookPost);
     }
 }
 

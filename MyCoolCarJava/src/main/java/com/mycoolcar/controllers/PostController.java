@@ -44,9 +44,9 @@ public class PostController {
         this.messageSource = messageSource;
     }
 
-    @PostMapping("car-log-posts/new")
-    public ResponseEntity<CarLogPost> postCarLog(@RequestBody CarLogPostDto carLogPostDto) {
-        Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogPostDto.logbookId());
+    @PostMapping("car-logbook/{carLogbookId}/car-log-posts/new")
+    public ResponseEntity<CarLogPost> postCarLog(@PathVariable Long carLogbookId, @RequestBody CarLogPostDto carLogPostDto) {
+        Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogbookId);
         CarLogPost newCarLogPost = new CarLogPost();
         if (carLogbook.isPresent()) {
             newCarLogPost.setTopic(carLogPostDto.topic());
@@ -94,6 +94,21 @@ public class PostController {
         postService.deleteCarLogPost(id);
         return new ResponseEntity<>(new ApiResponse(
                 messageSource.getMessage("message.deletePost", null, locale)), HttpStatus.OK);
+    }
+
+    @PutMapping({"/car-logbook-posts/{id}"})
+    public ResponseEntity<CarLogPost> editCarLogbookPost(@PathVariable long id, @RequestBody CarLogPostDto carLogPostDto) {
+        Optional<CarLogPost> editedCarLogbookPost = postService.editCarLogbookPost( id, carLogPostDto);
+        return editedCarLogbookPost.map(carLogPost -> new ResponseEntity<>(carLogPost, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+    }
+
+
+
+
+    @GetMapping({"/cars/{carId}/logbook"})
+    public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
+        Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
+        return carLogbook.map(logbook -> new ResponseEntity<>(logbook, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
 }

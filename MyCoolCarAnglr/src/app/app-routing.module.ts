@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
 import {LoginComponent} from "./components/login/login.component";
 import {ErrorComponent} from "./components/error/error.component";
 import {WelcomeComponent} from "./components/welcome/welcome.component";
@@ -16,28 +16,41 @@ import {UserResolverService} from "./components/login/user-resolve.service";
 import {UserCarsResolverService} from "./components/car/user-cars-resolve.service";
 import {CarComponent} from "./components/car/car.component";
 import {EditCarComponent} from "./components/car/cars-garage/edit-car/edit-car.component";
-
+import {CarLogbookResolverService} from "./components/car-logbook/car-logbook.resolve.service";
+import {NewCarLogbookPostComponent} from "./components/car-logbook/new-car-logbook-post/new-car-logbook-post.component";
+import {CarLogbookPostComponent} from "./components/car-logbook/car-logbook-post/car-logbook-post.component";
+import {
+  EditCarLogbookPostComponent
+} from "./components/car-logbook/edit-car-logbook-post/edit-car-logbook-post.component";
 
 
 const routes: Routes = [
-  {path:"", component: LoginComponent},
-  {path:"login", component: LoginComponent},
-  {path:"password/reset", component: PasswordResetComponent},
-  {path:"password/change", component: PasswordChangeComponent},
-  {path:"registration", component: RegistrationComponent},
-  {path:"registration/confirm", component: ConfirmRegistrationComponent},
-  {path:"welcome", component: WelcomeComponent, resolve: [UserResolverService],canActivate: [authGuard]},
-  {path:"cars", component: CarsGarageComponent,resolve: [UserCarsResolverService], canActivate: [authGuard]},
-  {path:"cars/new", component: NewCarComponent, canActivate: [authGuard]},
-  {path:"cars/edit", component: EditCarComponent,canActivate: [authGuard]},
-  {path:"cars/:id", component: CarComponent, resolve: [UserCarsResolverService],canActivate: [authGuard]},
+  {path: "", component: LoginComponent},
+  {path: "login", component: LoginComponent},
+  {path: "password/reset", component: PasswordResetComponent},
+  {path: "password/change", component: PasswordChangeComponent},
+  {path: "registration", component: RegistrationComponent},
+  {path: "registration/confirm", component: ConfirmRegistrationComponent},
+  {path: "welcome", component: WelcomeComponent, resolve: [UserResolverService], canActivate: [authGuard]},
+  {path: "cars", component: CarsGarageComponent, resolve: [UserCarsResolverService], canActivate: [authGuard]},
+  {path: "cars/new", component: NewCarComponent, canActivate: [authGuard]},
+  {path: "cars/:id/edit", component: EditCarComponent, canActivate: [authGuard]},
+  {
+    path: "cars/:id",
+    component: CarComponent,
+    resolve: [CarLogbookResolverService, UserCarsResolverService],
+    canActivate: [authGuard]
+  },
+  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/new", component: NewCarLogbookPostComponent, canActivate: [authGuard]},
+  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId", component: CarLogbookPostComponent, canActivate: [authGuard]},
+  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId/edit", component:  EditCarLogbookPostComponent, canActivate: [authGuard]},
 
-
-  {path:"**", component: ErrorComponent}
+  {path: "**", component: ErrorComponent}
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+}

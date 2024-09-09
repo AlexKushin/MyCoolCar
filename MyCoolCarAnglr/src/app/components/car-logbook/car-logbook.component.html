@@ -1,0 +1,13 @@
+
+<div *ngFor="let car_logbook_post of carLogbook.carLogPosts"
+     style="font-size: 20px">
+  <a
+    routerLink="car-logbook/{{carLogbook.id}}/car-logbook-posts/{{car_logbook_post.id}}"
+    routerLinkActive="active"
+    style="cursor: pointer;">
+    PostTopic: {{car_logbook_post.topic}}
+  </a>
+  <hr>
+</div>
+<br>
+<button (click)="addNewLogPost()" class="btn btn-success">Add new Log</button>

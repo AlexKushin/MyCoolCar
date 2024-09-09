@@ -30,6 +30,8 @@ public class Post implements Serializable {
 
     private LocalDateTime createdTime;
 
+    private boolean isEdited;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,0 +1,15 @@
+<H1>CAR LOGBOOK POST</H1>
+<div style=" border-style: dotted;">
+  <p>Topic: {{ logbookPost.topic }}</p>
+  <p>CarLogPostId: {{ logbookPost.id }}</p>
+  <p>Created time: {{ logbookPost.createdTime }}</p>
+  <p>Description: {{ logbookPost.description }}</p>
+  <p>Is Edited: {{ logbookPost.edited ? 'true' : 'false' }}</p>
+</div>
+
+<br>
+<br>
+<br>
+
+<button (click)="editLogbookPost()" class="btn btn-success">Edit Logbook post</button>
+<button (click)="deleteLogbookPost()" class="btn btn-danger">Delete Logbook post</button>

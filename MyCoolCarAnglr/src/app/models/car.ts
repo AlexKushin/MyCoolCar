@@ -1,3 +1,4 @@
+
 export class Car {
 
   constructor(
@@ -8,8 +9,7 @@ export class Car {
     public description: string,
     public rate: number,
     public mainImageUrl: string,
-    public imagesUrl: string,
-    public logbook: any,
+    public imagesUrl: string[],
     public userId: number,
     public userFirstName: string
 

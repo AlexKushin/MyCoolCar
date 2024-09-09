@@ -93,46 +93,34 @@ export class UserCarsEffects {
     })
   ));
 
-  redirectAfterCarManipulating = createEffect(
+  redirectAfterCarManipulating$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(UserCarsActions.SET_USER_CAR),
         tap(() => {
-          this.router.navigate(['/cars']).then(() => {
-            // Handle any post-navigation logic here
-          }).catch(error => {
-            // Handle navigation error
-          });
+          this.router.navigate(['/cars']);
         })
       ),
     {dispatch: false}
   );
 
-  redirectAfterCarDeleting = createEffect(
+  redirectAfterCarDeleting$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(UserCarsActions.DELETE_CAR_SUCCESS),
         tap(() => {
-          this.router.navigate(['/cars']).then(() => {
-            // Handle any post-navigation logic here
-          }).catch(error => {
-            // Handle navigation error
-          });
+          this.router.navigate(['/cars']);
         })
       ),
     {dispatch: false}
   );
 
-  redirectAfterCarUpdating = createEffect(
+  redirectAfterCarUpdating$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(UserCarsActions.UPDATE_CAR),
         tap(() => {
-          this.router.navigate(['/cars']).then(() => {
-            // Handle any post-navigation logic here
-          }).catch(error => {
-            // Handle navigation error
-          });
+          this.router.navigate(['/cars']);
         })
       ),
     {dispatch: false}

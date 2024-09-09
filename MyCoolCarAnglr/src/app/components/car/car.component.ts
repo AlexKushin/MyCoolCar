@@ -1,12 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Car} from "../../models/car";
 import {ActivatedRoute, Router} from "@angular/router";
-import {State, Store} from "@ngrx/store";
+import {Store} from "@ngrx/store";
 import * as fromUserCars from "./store/cars.reducer";
 import * as UserCarsActions from "./store/cars.actions"
-import {map, Observable, Subscription} from "rxjs";
+import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {NgForOf, NgIf} from "@angular/common";
+import {CarLogbookComponent} from "../car-logbook/car-logbook.component";
 
 @Component({
   selector: 'app-car',
@@ -14,7 +15,8 @@ import {NgForOf, NgIf} from "@angular/common";
   templateUrl: './car.component.html',
   imports: [
     NgForOf,
-    NgIf
+    NgIf,
+    CarLogbookComponent,
   ],
   styleUrls: ['./car.component.css']
 })
@@ -33,7 +35,7 @@ export class CarComponent implements OnInit, OnDestroy {
   subscription: Subscription
 
   ngOnInit(): void {
-    this.subscription=this.route.params.pipe(map(params => {
+    this.subscription = this.route.params.pipe(map(params => {
         return +params['id'];
       }),
       switchMap(id => {
@@ -47,23 +49,20 @@ export class CarComponent implements OnInit, OnDestroy {
       })
     )
       .subscribe(car => {
-        // @ts-ignore
         this.car = car;
       })
 
   }
-  ngOnDestroy(){
+
+  ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
 
   editCar() {
-    this.router.navigate(['cars/edit'], { state: { data: this.car } })
+    this.router.navigate(['edit'], {relativeTo: this.route, state: {data: this.car}})
   }
 
-  addNewLog() {
-
-  }
 
   deleteCar() {
     this.store.dispatch(new UserCarsActions.DeleteUserCar(this.id))
