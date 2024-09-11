@@ -12,7 +12,8 @@ import {Store} from "@ngrx/store";
 import * as fromAuth from "./auth.reducer";
 
 export interface AuthResponseData {
-  token: string
+  token: string,
+  expiresIn: number
 }
 
 const handleAuthentication = (email: string, token: string) => {
@@ -87,7 +88,7 @@ export class AuthEffects {
           tap(resData => {
             setTimeout(() => {
               this.store.dispatch(new AuthActions.Logout());
-            }, 3000);
+            }, +resData.expiresIn * (60* 1000));
           }),
           switchMap((resData: AuthResponseData) =>
             this.handleAuthenticationFlow(authData.payload.email, resData.token)

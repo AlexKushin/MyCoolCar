@@ -1,4 +1,4 @@
 package com.mycoolcar.jwt;
 
-public record JwtTokenResponse(String token) {
+public record JwtTokenResponse(String token, int expiresIn) {
 }
