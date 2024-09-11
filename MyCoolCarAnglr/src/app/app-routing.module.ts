@@ -25,13 +25,14 @@ import {
 
 
 const routes: Routes = [
-  {path: "", component: LoginComponent},
+  {path: "", component: WelcomeComponent},
+  {path: "welcome", component: WelcomeComponent},
   {path: "login", component: LoginComponent},
   {path: "password/reset", component: PasswordResetComponent},
   {path: "password/change", component: PasswordChangeComponent},
   {path: "registration", component: RegistrationComponent},
   {path: "registration/confirm", component: ConfirmRegistrationComponent},
-  {path: "welcome", component: WelcomeComponent, resolve: [UserResolverService], canActivate: [authGuard]},
+  {path: "current/welcome", component: WelcomeComponent, resolve: [UserResolverService], canActivate: [authGuard]},
   {path: "cars", component: CarsGarageComponent, resolve: [UserCarsResolverService], canActivate: [authGuard]},
   {path: "cars/new", component: NewCarComponent, canActivate: [authGuard]},
   {path: "cars/:id/edit", component: EditCarComponent, canActivate: [authGuard]},

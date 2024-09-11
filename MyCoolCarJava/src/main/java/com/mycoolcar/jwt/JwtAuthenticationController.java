@@ -32,7 +32,7 @@ public class JwtAuthenticationController {
                         jwtTokenRequest.password());
         Authentication authentication =
                 authenticationManager.authenticate(authenticationToken);
-        String token = tokenService.generateToken(authentication);
-        return ResponseEntity.ok(new JwtTokenResponse(token));
+        JwtTokenResponse tokenRes = tokenService.generateToken(authentication);
+        return ResponseEntity.ok(tokenRes);
     }
 }

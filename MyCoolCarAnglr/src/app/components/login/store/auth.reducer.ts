@@ -32,20 +32,10 @@ export function authReducer(state: State = initialState, action: AuthActions.Aut
       };
 
     case AuthActions.SET_AUTHENTICATED_USER:
-      const user = new User(
-        action.payload.id,
-        action.payload.ban,
-        '',
-        action.payload.firstName,
-        action.payload.lastName,
-        action.payload.email,
-        action.payload.userCars,
-        action.payload.enabled
-      );
       return {
         ...state,
         authError: null,
-        user: user,
+        user: action.payload,
         loading: false
 
       }

@@ -1,23 +1,24 @@
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as AuthActions from './auth.actions'
-import {catchError, map, switchMap, tap} from "rxjs/operators";
+import {catchError, map, switchMap, tap, mergeMap} from "rxjs/operators";
 import {of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {Router} from "@angular/router";
-import {AUTHENTICATED_USER, TOKEN} from "../../../services/authServices/authentication.service";
+import {AUTHENTICATED_USER, TOKEN} from "../../../services/authServices/http-interceptor-auth.service";
 import {API_URL} from "../../../app.constants";
 import {User} from "../../../models/user";
-import {NewUser} from "../../../models/newUser";
+import {Store} from "@ngrx/store";
+import * as fromAuth from "./auth.reducer";
 
 export interface AuthResponseData {
-  token: string
+  token: string,
+  expiresIn: number
 }
 
 const handleAuthentication = (email: string, token: string) => {
   sessionStorage.setItem(AUTHENTICATED_USER, email);
   sessionStorage.setItem(TOKEN, `Bearer ${token}`);
-  return new AuthActions.AuthenticateSuccess();
 };
 
 
@@ -42,17 +43,8 @@ const handleError = (errorRes: any) => {
   return of(new AuthActions.AuthenticateFail(errorMessage))
 };
 
-const getUser = (resData: User) => {
-  return new AuthActions.SetAuthenticatedUser(
-    {
-      id: resData.id,
-      ban: resData.ban,
-      firstName: resData.firstName,
-      lastName: resData.lastName,
-      email: resData.email,
-      enabled: resData.enabled,
-      userCars: resData.userCars
-    });
+const setUser = (resData: User) => {
+  return new AuthActions.SetAuthenticatedUser(resData);
 }
 
 @Injectable()
@@ -61,30 +53,49 @@ export class AuthEffects {
     private actions$: Actions,
     private http: HttpClient,
     private router: Router,
+    private store: Store<{ auth: fromAuth.State }>
   ) {
   }
 
 
+  private loginRequest(email: string, password: string) {
+    return this.http.post<AuthResponseData>(`${API_URL}/api/authenticate`, {
+      username: email,
+      password: password,
+    });
+  }
+
+  private fetchAuthenticatedUser() {
+    return this.http.get<User>(`${API_URL}/api/me`);
+  }
+
+  private handleAuthenticationFlow(email: string, token: string) {
+    handleAuthentication(email, token);
+    return this.fetchAuthenticatedUser().pipe(
+      mergeMap((user: User) => [
+        setUser(user), // Dispatch SetAuthenticatedUser action
+        new AuthActions.AuthenticateSuccess(), // Dispatch AuthenticateSuccess action
+      ]),
+      catchError((errorRes) => handleError(errorRes))
+    );
+  }
+
   authLogin = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.LOGIN_START),
-      switchMap((authData: AuthActions.LoginStart) => {
-        return this.http
-          .post<AuthResponseData>(`${API_URL}/api/authenticate`,
-            {
-              username: authData.payload.email,
-              password: authData.payload.password,
-            }
-          )
-          .pipe(
-            map((resData) => {
-              return handleAuthentication(authData.payload.email, resData.token);
-            }),
-            catchError(errorRes => {
-              return handleError(errorRes)
-            })
-          );
-      })
+      switchMap((authData: AuthActions.LoginStart) =>
+        this.loginRequest(authData.payload.email, authData.payload.password).pipe(
+          tap(resData => {
+            setTimeout(() => {
+              this.store.dispatch(new AuthActions.Logout());
+            }, +resData.expiresIn * (60* 1000));
+          }),
+          switchMap((resData: AuthResponseData) =>
+            this.handleAuthenticationFlow(authData.payload.email, resData.token)
+          ),
+          catchError((errorRes) => handleError(errorRes))
+        )
+      )
     )
   );
 
@@ -92,14 +103,7 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.REGISTRATION_START),
         switchMap((regData: AuthActions.RegistrationStart) => {
-          let user = new NewUser(
-            regData.payload.firstName,
-            regData.payload.lastName,
-            regData.payload.email,
-            regData.payload.password,
-            regData.payload.matchingPassword
-          )
-          return this.http.post(`${API_URL}/api/user/registration`, user)
+          return this.http.post(`${API_URL}/api/user/registration`, regData.payload)
             .pipe(
               map(() => {
                 this.router.navigate(['/registration/confirm']);
@@ -112,12 +116,13 @@ export class AuthEffects {
       ),
     {dispatch: false}
   );
+
   authRedirect = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.AUTHENTICATE_SUCCESS),
         tap(() => {
-          this.router.navigate(['/welcome']);
+          this.router.navigate(['/current/welcome']);
         })
       ),
     {dispatch: false}
@@ -130,27 +135,9 @@ export class AuthEffects {
         tap(() => {
           sessionStorage.removeItem(TOKEN)
           sessionStorage.removeItem(AUTHENTICATED_USER)
-          this.router.navigate(['/login']);
+          this.router.navigate(['/welcome']);
         })
       ),
     {dispatch: false}
   );
-
-  getAuthenticatedUser = createEffect(
-    () => this.actions$.pipe(
-      ofType(AuthActions.GET_AUTHENTICATED_USER),
-      switchMap(() => {
-        return this.http.get<User>(`${API_URL}/api/me`)
-          .pipe(
-            map((resData: User) => {
-              return getUser(resData)
-            }),
-            catchError(errorRes => {
-              return handleError(errorRes)
-            })
-          );
-      })
-    )
-  )
-
 }

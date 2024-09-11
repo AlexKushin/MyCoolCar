@@ -1,7 +1,9 @@
 package com.mycoolcar.jwt;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -15,31 +17,34 @@ import java.util.stream.Collectors;
 @Service
 public class JwtTokenService {
 
+    @Value("${jwt.expiration.time}")
+    int tokenExpirationTime;
+
     private final JwtEncoder jwtEncoder;
 
     public JwtTokenService(JwtEncoder jwtEncoder) {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String generateToken(Authentication authentication) {
+    public JwtTokenResponse generateToken(Authentication authentication) {
 
         var scope = authentication
                 .getAuthorities()
                 .stream()
-                .map(a -> a.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
         var claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(90, ChronoUnit.MINUTES))
+                .expiresAt(Instant.now().plus(tokenExpirationTime, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
 
-        return this.jwtEncoder
+        return new JwtTokenResponse(this.jwtEncoder
                 .encode(JwtEncoderParameters.from(claims))
-                .getTokenValue();
+                .getTokenValue(),tokenExpirationTime);
     }
 }
 
