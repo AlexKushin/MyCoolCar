@@ -1,5 +1,6 @@
 import {Action} from "@ngrx/store";
-import {Car} from "../../../models/car";
+import {User} from "../../../models/user";
+import {NewUser} from "../../../models/newUser";
 
 export const LOGIN_START = '[Auth] Login Start';
 export const AUTHENTICATE_SUCCESS = '[Auth] Authenticate Success';
@@ -26,10 +27,7 @@ export class AuthenticateSuccess implements Action {
 export class SetAuthenticatedUser implements Action {
   readonly type = SET_AUTHENTICATED_USER;
 
-  constructor(public payload: {
-    id: number, ban: boolean, firstName: string,
-    lastName: string, email: string, enabled: boolean, userCars: Car[]
-  }) {
+  constructor(public payload: User) {
   }
 
 }
@@ -37,15 +35,15 @@ export class SetAuthenticatedUser implements Action {
 export class RegistrationStart implements Action {
   readonly type = REGISTRATION_START;
 
-  constructor(public payload: {firstName: string, lastName: string,
-    email: string, password: string, matchingPassword: string
-  }) { }
+  constructor(public payload: NewUser) {
+  }
 }
 
 export class GetAuthenticatedUser implements Action {
-  readonly  type = GET_AUTHENTICATED_USER;
+  readonly type = GET_AUTHENTICATED_USER;
 
 }
+
 export class Logout implements Action {
   readonly type = LOGOUT;
 }
@@ -56,7 +54,6 @@ export class AuthenticateFail implements Action {
   constructor(public payload: string) {
   }
 }
-
 
 
 export type AuthActions =

@@ -1,18 +1,18 @@
-
 <header>
   <nav class=" navbar navbar-expand-md navbar-dark bg-dark">
     <div><a href="https://www.google.com" class="navbar-brand">
       MyCoolCar</a></div>
     <ul class="navbar-nav">
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/welcome" class="nav-link">Home</a></li>
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/cars" class="nav-link">My Garage</a></li>
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/topcars" class="nav-link">Top Cars</a></li>
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" routerLink="/car-clubs" class="nav-link">Car Clubs</a></li>
+      <li><a [routerLink]="isUserAuthenticated ? '/current/welcome' : '/welcome'" class="nav-link">Home</a></li>
+      <li><a routerLink="/topcars" class="nav-link">Top Cars</a></li>
+      <li><a routerLink="/car-clubs" class="nav-link">Car Clubs</a></li>
+      <li><a *ngIf="isUserAuthenticated" routerLink="/cars" class="nav-link">My Garage</a></li>
+      <li><a *ngIf="isUserAuthenticated" routerLink="/my-car-clubs" class="nav-link">My Car Clubs</a></li>
     </ul>
     <ul class="navbar-nav navbar-collapse justify-content-end">
-      <li><a *ngIf="!authenticationService.isUserLoggedIn()" routerLink="/login" class="nav-link">Login</a></li>
-      <li><a *ngIf="!authenticationService.isUserLoggedIn()" routerLink="/registration" class="nav-link">Register</a></li>
-      <li><a *ngIf="authenticationService.isUserLoggedIn()" (click)="onLogout()" routerLink="/login" class="nav-link" >Logout</a></li>
+      <li><a *ngIf="!isUserAuthenticated" routerLink="/login" class="nav-link">Login</a></li>
+      <li><a *ngIf="!isUserAuthenticated" routerLink="/registration" class="nav-link">Register</a></li>
+      <li><a *ngIf="isUserAuthenticated" (click)="onLogout()" routerLink="/welcome" class="nav-link">Logout</a></li>
     </ul>
 
   </nav>

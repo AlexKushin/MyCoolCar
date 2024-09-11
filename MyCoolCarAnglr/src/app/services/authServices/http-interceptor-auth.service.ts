@@ -1,19 +1,20 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
-import {AuthenticationService} from "./authentication.service";
+
+export const TOKEN = "token"
+export const AUTHENTICATED_USER = "authenticatedUser"
 
 @Injectable({
   providedIn: 'root'
 })
-export class HttpInterceptorAuthService  implements HttpInterceptor {
+export class HttpInterceptorAuthService implements HttpInterceptor {
 
-  constructor(
-    private basicAuthService: AuthenticationService
-  ) { }
+  constructor() {
+  }
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    let basicAuthHeaderString = this.basicAuthService.getAuthenticatedToken();
-    let username = this.basicAuthService.getAuthenticatedUser();
+    let basicAuthHeaderString = this.getAuthenticatedToken();
+    let username = this.getAuthenticatedUser();
     if (basicAuthHeaderString && username) {
       req = req.clone({
         setHeaders: {
@@ -21,10 +22,24 @@ export class HttpInterceptorAuthService  implements HttpInterceptor {
         }
       })
     }
-    req = req.clone({setParams:{
-      local: 'pl_PL'
-      }})
+    req = req.clone({
+      setParams: {
+        local: 'pl_PL'
+      }
+    })
     return next.handle(req);
+  }
+
+
+  private getAuthenticatedUser() {
+    return sessionStorage.getItem(AUTHENTICATED_USER)
+  }
+
+  private getAuthenticatedToken() {
+    if (this.getAuthenticatedUser()) {
+      return sessionStorage.getItem(TOKEN)
+    }
+    return ''
   }
 
 }

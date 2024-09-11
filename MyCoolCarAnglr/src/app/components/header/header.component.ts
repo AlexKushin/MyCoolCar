@@ -1,10 +1,12 @@
 import {Component, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {AuthenticationService} from "../../services/authServices/authentication.service";
-import { RouterModule } from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {RouterModule} from '@angular/router';
 import {Store} from "@ngrx/store";
 import * as fromAuth from "../login/store/auth.reducer";
 import * as AuthActions from '../login/store/auth.actions'
+import {map, Subscription} from "rxjs";
+import {User} from "../../models/user";
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -14,20 +16,30 @@ import * as AuthActions from '../login/store/auth.actions'
 })
 export class HeaderComponent implements OnInit {
 
-  // isUserLoggedIn : boolean = false;
+  isUserAuthenticated = false;
+  private userSub: Subscription;
 
   constructor(
-    public authenticationService: AuthenticationService,
-    private store: Store<fromAuth.State>
-     )
-    {}
-
-  ngOnInit(): void {
-    //this.isUserLoggedIn = this.authenticationService.isUserLoggedIn();
+    private store: Store<{ auth: fromAuth.State }>
+  ) {
   }
-/*onLogout() {
-  this.authenticationService.logout();
-}*/
+
+  ngOnInit() {
+    console.log('HeaderComponent OnInit:')
+    console.log('isAuthenticated before')
+    console.log(this.isUserAuthenticated)
+    this.userSub = this.store
+       .select('auth')
+      .pipe(map(userState => userState.user))
+      .subscribe((user: User) => {
+        this.isUserAuthenticated = !!user;
+        console.log("user: ")
+        console.log(user);
+        console.log('isAuthenticated after')
+        console.log(this.isUserAuthenticated)
+      });
+  }
+
   onLogout() {
     this.store.dispatch(new AuthActions.Logout())
   }
