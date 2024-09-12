@@ -1,9 +1,8 @@
 <H1>Login!</H1>
-
+<ng-template appPlaceholder></ng-template>
 <div class="container">
   <div class="row">
     <div class="col-md-7">
-      <div class="alert alert-warning" *ngIf="invalidLogin">{{errorMessage}}</div>
       <form class="form-inline" style="offset: right" #authForm="ngForm" (ngSubmit)="onSubmit(authForm)">
         <div class="form-group">
           <label class="sr-only" for="email">Email address</label>
@@ -21,9 +20,5 @@
       <ul><a routerLink="/password/reset" class="nav-link">Forgot password</a></ul>
     </div>
   </div>
-  <!--<ul><a routerLink="/password/reset" class="nav-link">Forgot password</a></ul>-->
-  <!--<div>
-    <app-car-card-slider [cars]="cars"></app-car-card-slider>
-  </div>-->
 </div>
 
