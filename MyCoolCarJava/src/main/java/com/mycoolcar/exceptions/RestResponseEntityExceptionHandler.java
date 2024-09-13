@@ -2,16 +2,18 @@ package com.mycoolcar.exceptions;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
+import com.mycoolcar.util.ApiResponse;
+import com.mycoolcar.util.MessageSourceHandler;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +24,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.*;
@@ -32,79 +33,80 @@ import static org.springframework.http.HttpStatus.*;
 @AllArgsConstructor
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final MessageSource messageSource;
+    private final MessageSourceHandler messageSourceHandler;
 
     private static final String CANT_READ_FILE = "Can't read file";
 
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return new ResponseEntity<>(new ApiResponse("Malformed JSON Request", ex.getMessage()), status);
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatusCode status,
+                                                                  WebRequest request) {
+        ApiResponse errorResponse = new ApiResponse(status, "Malformed JSON Request");
+        return new ResponseEntity<>(errorResponse, status);
     }
 
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        Locale locale = getLocaleFromRequest(request);
-        String errorsStr = ex.getBindingResult().getAllErrors().stream().map(e -> {
+                                                                  HttpHeaders headers,
+                                                                  HttpStatusCode status,
+                                                                  WebRequest request) {
+        final BindingResult result = ex.getBindingResult();
+        String errorsStr = result.getAllErrors().stream().map(e -> {
             if (e instanceof FieldError fieldError) {
-                try {
-                    return """
-                            {"field":" + %s ","message":"%s"}
-                            """
-                            .formatted(fieldError.getField(), messageSource
-                                    .getMessage(e.getCode() + ".user." + fieldError.getField(), null, locale));
-
-                } catch (NoSuchMessageException exception) {
-                    return """
-                            {"field":" + %s ","defaultMessage":"%s"}
-                            """
-                            .formatted(((FieldError) e).getField(), e.getDefaultMessage());
-                }
+                return " %s : %s"
+                        .formatted(fieldError.getField(), messageSourceHandler
+                                .getLocalMessage(e.getCode() + ".user." + fieldError.getField(),
+                                        request, fieldError.getDefaultMessage()));
             } else {
-                try {
-                    return """
-                            {"object":" + %s ","message":"%s"}
-                            """
-                            .formatted(e.getObjectName(), messageSource
-                                    .getMessage(e.getCode() + ".user", null, locale));
-                } catch (NoSuchMessageException exception) {
-                    return """
-                            {"object":" + %s ","defaultMessage":"%s"}
-                            """
-                            .formatted(e.getObjectName(), e.getDefaultMessage());
-                }
-
+                return " %s :  %s"
+                        .formatted(e.getObjectName(), messageSourceHandler
+                                .getLocalMessage(e.getCode() + ".user", request, e.getDefaultMessage()));
             }
-        }).collect(Collectors.joining(","));
-        ApiResponse apiResponse = new ApiResponse(errorsStr, "Method Argument Not Valid");
-        return handleExceptionInternal(ex, apiResponse, new HttpHeaders(), NOT_ACCEPTABLE, request);
+        }).collect(Collectors.joining(", "));
+        ApiResponse errorResponse = new ApiResponse(status, errorsStr);
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), status, request);
     }
 
 
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatusCode status, WebRequest request) {
-        ApiResponse error = new ApiResponse(getLocalMessage("exception.NoHandlerFoundException", request), ex.getMessage());
-        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+
+        String message = messageSourceHandler
+                .getLocalMessage("exception.NoHandlerFoundException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.NOT_ACCEPTABLE, message);
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), status, request);
     }
+
 
     @ExceptionHandler(UserAlreadyExistException.class)
-    protected ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse(getLocalMessage("exception.UserAlreadyExistException", request), ex.getMessage());
-        return handleExceptionInternal(ex, error, new HttpHeaders(), CONFLICT, request);
+    protected ResponseEntity<ApiResponse> handleUserAlreadyExistException(UserAlreadyExistException ex,
+                                                                          final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.UserAlreadyExistException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.CONFLICT, message);
+        return new ResponseEntity<>(errorResponse, CONFLICT);
     }
 
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse(getLocalMessage("exception.ResourceNotFoundException", request), ex.getMessage());
-        return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
+    protected ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException ex,
+                                                                          final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.ResourceNotFoundException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.NOT_FOUND, message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse(getLocalMessage("exception.UserNotFoundException", request), ex.getMessage());
-        return handleExceptionInternal(ex, error, new HttpHeaders(), BAD_REQUEST, request);
+    protected ResponseEntity<ApiResponse> handleUserNotFoundException(UserNotFoundException ex,
+                                                                      final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.UserNotFoundException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.NOT_FOUND, message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IOException.class)
@@ -137,25 +139,22 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         throw new InterruptAppException("There is no file to read");
     }
 
+    @ExceptionHandler(InterruptAppException.class)
+    protected ResponseEntity<ApiResponse> handleInterruptAppException(InterruptAppException ex,
+                                                                      final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.InterruptAppException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(AuthenticationException.class)
-    protected ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, final WebRequest request) {
-        ApiResponse error = new ApiResponse(getLocalMessage("exception.AuthenticationException", request), ex.getMessage());
-        return handleExceptionInternal(ex, error, new HttpHeaders(), UNAUTHORIZED, request);
-    }
-
-
-    private Locale getLocaleFromRequest(WebRequest request) {
-        String localeParam = request.getParameter("local");
-        if (localeParam != null) {
-            return new Locale(localeParam);
-        } else {
-            return new Locale("en");
-        }
-    }
-
-    private String getLocalMessage(String exCode, final WebRequest request) {
-        Locale locale = getLocaleFromRequest(request);
-        return messageSource.getMessage(exCode, null, locale);
+    protected ResponseEntity<ApiResponse> handleAuthenticationException(AuthenticationException ex,
+                                                                        final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.AuthenticationException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.UNAUTHORIZED, message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
 }

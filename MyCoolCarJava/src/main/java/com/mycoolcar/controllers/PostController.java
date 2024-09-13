@@ -3,22 +3,22 @@ package com.mycoolcar.controllers;
 import com.mycoolcar.dtos.CarLogPostDto;
 import com.mycoolcar.dtos.ClubPostDto;
 import com.mycoolcar.entities.*;
-import com.mycoolcar.exceptions.ApiResponse;
+import com.mycoolcar.util.ApiResponse;
 import com.mycoolcar.repositories.CarClubRepository;
 import com.mycoolcar.repositories.CarLogbookRepository;
 import com.mycoolcar.services.PostService;
 import com.mycoolcar.services.UserService;
+import com.mycoolcar.util.MessageSourceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
@@ -32,20 +32,22 @@ public class PostController {
 
     private final UserService userService;
 
-    private final MessageSource messageSource;
+    private final MessageSourceHandler messageSourceHandler;
 
     @Autowired
     public PostController(PostService postService, CarLogbookRepository carLogbookRepository,
-                          CarClubRepository carClubRepository, UserService userService, MessageSource messageSource) {
+                          CarClubRepository carClubRepository, UserService userService,
+                          MessageSourceHandler messageSourceHandler) {
         this.postService = postService;
         this.carLogbookRepository = carLogbookRepository;
         this.carClubRepository = carClubRepository;
         this.userService = userService;
-        this.messageSource = messageSource;
+        this.messageSourceHandler = messageSourceHandler;
     }
 
     @PostMapping("car-logbook/{carLogbookId}/car-log-posts/new")
-    public ResponseEntity<CarLogPost> postCarLog(@PathVariable Long carLogbookId, @RequestBody CarLogPostDto carLogPostDto) {
+    public ResponseEntity<CarLogPost> postCarLog(@PathVariable Long carLogbookId,
+                                                 @RequestBody CarLogPostDto carLogPostDto) {
         Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogbookId);
         CarLogPost newCarLogPost = new CarLogPost();
         if (carLogbook.isPresent()) {
@@ -84,22 +86,30 @@ public class PostController {
     }
 
     @DeleteMapping({"/car-club-posts/{id}"})
-    public ResponseEntity<ApiResponse> deleteCarClubPost(@PathVariable long id, final Locale locale) {
+    public ResponseEntity<ApiResponse> deleteCarClubPost(@PathVariable long id, WebRequest request) {
         postService.deleteCarClubPost(id);
-        return new ResponseEntity<>(new ApiResponse(
-                messageSource.getMessage("message.deletePost", null, locale)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
+                messageSourceHandler
+                        .getLocalMessage("message.deletePost", request,
+                                "Post has been deleted")), HttpStatus.OK);
     }
     @DeleteMapping({"/car-logbook-posts/{id}"})
-    public ResponseEntity<ApiResponse> deleteCarLogBookPost(@PathVariable long id, final Locale locale) {
+    public ResponseEntity<ApiResponse> deleteCarLogBookPost(@PathVariable long id,  WebRequest request) {
         postService.deleteCarLogPost(id);
-        return new ResponseEntity<>(new ApiResponse(
-                messageSource.getMessage("message.deletePost", null, locale)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
+                messageSourceHandler
+                        .getLocalMessage("message.deletePost", request,
+                                "Post has been deleted")), HttpStatus.OK);
+
     }
 
     @PutMapping({"/car-logbook-posts/{id}"})
-    public ResponseEntity<CarLogPost> editCarLogbookPost(@PathVariable long id, @RequestBody CarLogPostDto carLogPostDto) {
+    public ResponseEntity<CarLogPost> editCarLogbookPost(@PathVariable long id,
+                                                         @RequestBody CarLogPostDto carLogPostDto) {
         Optional<CarLogPost> editedCarLogbookPost = postService.editCarLogbookPost( id, carLogPostDto);
-        return editedCarLogbookPost.map(carLogPost -> new ResponseEntity<>(carLogPost, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+        return editedCarLogbookPost.map(carLogPost ->
+                new ResponseEntity<>(carLogPost, HttpStatus.OK)).orElseGet(() ->
+                new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
 
@@ -108,7 +118,9 @@ public class PostController {
     @GetMapping({"/cars/{carId}/logbook"})
     public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
         Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
-        return carLogbook.map(logbook -> new ResponseEntity<>(logbook, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return carLogbook.map(logbook ->
+                new ResponseEntity<>(logbook, HttpStatus.OK)).orElseGet(() ->
+                new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
 }
