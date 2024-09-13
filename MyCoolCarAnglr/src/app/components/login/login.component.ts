@@ -70,11 +70,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (!authForm.valid) {
       return;
     }
-    const email = authForm.value.email;
-    const password = authForm.value.password;
-
-    this.store.dispatch(new AuthActions.LoginStart(
-      {email: email, password: password}))
+    this.store.dispatch(new AuthActions.LoginStart(authForm.value))
     authForm.reset();
   }
 
