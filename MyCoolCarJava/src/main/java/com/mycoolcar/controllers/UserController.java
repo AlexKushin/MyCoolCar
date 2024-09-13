@@ -98,7 +98,7 @@ public class UserController {
     }
 
     @PostMapping("/user/savePassword")
-    public ResponseEntity<ApiResponse> savePassword(final Locale locale, WebRequest request,
+    public ResponseEntity<ApiResponse> savePassword(WebRequest request,
                                                     @Valid @RequestBody NewPasswordDto passwordDto) {
         String result = userService.validatePasswordResetToken(passwordDto.token());
 
