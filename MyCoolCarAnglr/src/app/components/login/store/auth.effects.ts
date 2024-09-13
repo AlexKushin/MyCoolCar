@@ -23,23 +23,11 @@ const handleAuthentication = (email: string, token: string) => {
 
 
 const handleError = (errorRes: any) => {
-
   let errorMessage = 'An unknown error occurred!';
-  if (!errorRes.error || !errorRes.error.error) {
+  if (!errorRes.error) {
     return of(new AuthActions.AuthenticateFail(errorMessage));
-
   }
-  switch (errorRes.error.error) {
-    case 'EMAIL_EXISTS':
-      errorMessage = 'This email exists already';
-      break;
-    case 'Bad credentials':
-      //errorMessage = 'Email or password is not correct.';
-      errorMessage = errorRes.error.message;
-      break;
-  }
-  console.log(errorMessage)
-
+  errorMessage = errorRes.error.message
   return of(new AuthActions.AuthenticateFail(errorMessage))
 };
 
@@ -88,7 +76,7 @@ export class AuthEffects {
           tap(resData => {
             setTimeout(() => {
               this.store.dispatch(new AuthActions.Logout());
-            }, +resData.expiresIn * (60* 1000));
+            }, +resData.expiresIn * (60 * 1000));
           }),
           switchMap((resData: AuthResponseData) =>
             this.handleAuthenticationFlow(authData.payload.email, resData.token)
@@ -100,21 +88,19 @@ export class AuthEffects {
   );
 
   registration = createEffect(() =>
-      this.actions$.pipe(
-        ofType(AuthActions.REGISTRATION_START),
-        switchMap((regData: AuthActions.RegistrationStart) => {
-          return this.http.post(`${API_URL}/api/user/registration`, regData.payload)
-            .pipe(
-              map(() => {
-                this.router.navigate(['/registration/confirm']);
-              }),
-              catchError(errorRes => {
-                return handleError(errorRes)
-              })
-            );
-        })
-      ),
-    {dispatch: false}
+    this.actions$.pipe(
+      ofType(AuthActions.REGISTRATION_START),
+      switchMap((regData: AuthActions.RegistrationStart) => {
+        return this.http.post(`${API_URL}/api/user/registration`, regData.payload)
+          .pipe(
+            map(() => {
+              this.router.navigate(['/registration/confirm']);
+              return new AuthActions.RegistrationConfirm();
+            }),
+            catchError((errorRes) => handleError(errorRes))
+          );
+      })
+    )
   );
 
   authRedirect = createEffect(

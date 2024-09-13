@@ -5,18 +5,16 @@ import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
-import com.mycoolcar.exceptions.ApiResponse;
+import com.mycoolcar.util.ApiResponse;
 import com.mycoolcar.exceptions.UserNotFoundException;
 import com.mycoolcar.registration.OnRegistrationCompleteEvent;
 import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.services.UserService;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
+import com.mycoolcar.util.MessageSourceHandler;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,15 +31,15 @@ import java.util.Optional;
 public class UserController {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
-    private final MessageSource messageSource;
+    private final MessageSourceHandler messageSourceHandler;
 
     @Autowired
     public UserController(UserService userService,
                           ApplicationEventPublisher eventPublisher,
-                          MessageSource messageSource) {
+                          MessageSourceHandler messageSourceHandler) {
         this.userService = userService;
         this.eventPublisher = eventPublisher;
-        this.messageSource = messageSource;
+        this.messageSourceHandler = messageSourceHandler;
     }
 
     /*@PostConstruct
@@ -51,14 +49,13 @@ public class UserController {
 
     @PostMapping("/user/registration")
     public ResponseEntity<User> registerNewUser(@Valid @RequestBody UserCreationDto userCreationDto,
-                                                HttpServletRequest request) {
+                                                WebRequest request) {
+
         log.debug("Registering user account with information: {}", userCreationDto);
         Optional<User> registered = userService.registerNewUserAccount(userCreationDto);
         if (registered.isPresent()) {
             String appUrl = getAppUrl(request);
-            Locale locale = getLocaleFromRequest(request);
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered.get(),
-                    locale, appUrl));
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered.get(), request, appUrl));
         }
         return registered.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
                 : new ResponseEntity<>(registered.get(), HttpStatus.CREATED);
@@ -67,67 +64,63 @@ public class UserController {
     @GetMapping("/registration/confirm")
     public ResponseEntity<ApiResponse> confirmRegistration
             (WebRequest request, @RequestParam("token") String token) {
-        final Locale locale = request.getLocale();
         String result = userService.validatePasswordResetToken(token);
         if (result != null) {
-            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "auth.message." + result, null, locale)), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse(HttpStatus.BAD_REQUEST, messageSourceHandler
+                            .getLocalMessage("auth.message." + result, request, "Invalid token")),
+                    HttpStatus.BAD_REQUEST);
         }
         VerificationToken verificationToken = userService.getVerificationToken(token);
         User user = verificationToken.getUser();
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
         userService.deleteVerificationToken(token);
-        String message = messageSource.getMessage("auth.message.confirm", null, locale);
-        return new ResponseEntity<>(new ApiResponse(message), HttpStatus.OK);
+        String message = messageSourceHandler
+                .getLocalMessage("auth.message.confirm", request, "registration confirmed");
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK, message), HttpStatus.OK);
     }
 
     @PostMapping("/user/resetPassword")
-    public ResponseEntity<ApiResponse> resetPassword(HttpServletRequest request,
-                                     @RequestParam("email") String userEmail) {
-        Optional <User> user = userService.getUserByEmail(userEmail);
+    public ResponseEntity<ApiResponse> resetPassword(WebRequest request,
+                                                     @RequestParam("email") String userEmail) {
+        Optional<User> user = userService.getUserByEmail(userEmail);
         if (user.isEmpty()) {
             throw new UserNotFoundException("User with email " + userEmail + " not found");
         }
         String appUrl = getAppUrl(request);
         eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(),
-                request.getLocale(), appUrl));
-        return new ResponseEntity<>(new ApiResponse(
-                messageSource.getMessage("message.resetPasswordEmail", null,
-                        request.getLocale())), HttpStatus.OK);
+                request, appUrl));
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
+                messageSourceHandler
+                        .getLocalMessage("message.resetPasswordEmail", request,
+                                "You should receive and Password Reset Email shortly")), HttpStatus.OK);
     }
 
     @PostMapping("/user/savePassword")
-    public ResponseEntity<ApiResponse> savePassword(final Locale locale,
+    public ResponseEntity<ApiResponse> savePassword(WebRequest request,
                                                     @Valid @RequestBody NewPasswordDto passwordDto) {
         String result = userService.validatePasswordResetToken(passwordDto.token());
 
         if (result != null) {
-            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "auth.message." + result, null, locale)), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(HttpStatus.BAD_REQUEST, messageSourceHandler.getLocalMessage(
+                    "auth.message." + result, request, "Invalid token")), HttpStatus.BAD_REQUEST);
         }
 
         Optional<User> user = userService.getUserByVerificationToken(passwordDto.token());
         if (user.isPresent()) {
             userService.changeUserPassword(user.get(), passwordDto.password());
-            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "message.resetPasswordSuc", null, locale)), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(HttpStatus.OK, messageSourceHandler.getLocalMessage(
+                    "message.resetPasswordSuc", request, "Password reset successfully")),
+                    HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new ApiResponse(messageSource.getMessage(
-                    "auth.message.invalid", null, locale)), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse(HttpStatus.BAD_REQUEST, messageSourceHandler.getLocalMessage(
+                            "auth.message.invalid", request,
+                            "This username is invalid, or does not exist")), HttpStatus.BAD_REQUEST);
         }
     }
 
-
-    @GetMapping("/persons")
-    public ResponseEntity<UserCreationDto> getPerson() {
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PutMapping("/persons")
-    public ResponseEntity<UserCreationDto> putPerson() {
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 
     @GetMapping({"/admin"})
     public String forAdmin() {
@@ -142,10 +135,12 @@ public class UserController {
     }
 
     @DeleteMapping({"/admin/users/{id}"})
-    public ResponseEntity<ApiResponse> deleteUser(@PathVariable long id, final Locale locale) {
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable long id, WebRequest request) {
         userService.deleteUser(id);
-        return new ResponseEntity<>(new ApiResponse(
-                messageSource.getMessage("message.deleteUser", null, locale)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
+                messageSourceHandler
+                        .getLocalMessage("message.deleteUser", request,
+                                "User has been deleted successfully")), HttpStatus.OK);
     }
 
 
@@ -157,17 +152,8 @@ public class UserController {
     }
 
     //non Api
-    private String getAppUrl(HttpServletRequest request) {
+    private String getAppUrl(WebRequest request) {
         return request.getHeader("Origin") + request.getContextPath();
-    }
-//todo: move to separate util class (RestResponseEntityExceptionHandler has the same method)
-    private Locale getLocaleFromRequest(HttpServletRequest request) {
-        String localeParam = request.getParameter("local");
-        if (localeParam != null) {
-            return new Locale(localeParam);
-        } else {
-            return new Locale("en");
-        }
     }
 
 }

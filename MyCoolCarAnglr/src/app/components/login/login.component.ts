@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Injector, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterLink} from "@angular/router";
 import {FormsModule, NgForm} from '@angular/forms';
@@ -9,33 +9,51 @@ import {CarCardSliderComponent} from "../car/car-card-slider/car-card-slider.com
 import * as fromAuth from './store/auth.reducer'
 import {Store} from "@ngrx/store";
 import * as AuthActions from './store/auth.actions'
+import {PlaceholderDirective} from "../shared/placeholder/placeholder.directive";
+import {Subscription} from "rxjs";
+import {WarningComponent} from "../shared/warning/warning.component";
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, CarCardComponent, CarCardSliderComponent, RouterLink],
+  imports:
+    [
+      CommonModule,
+      FormsModule,
+      CarCardComponent,
+      CarCardSliderComponent,
+      RouterLink,
+      PlaceholderDirective
+    ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
 
-
-  username = ""
-  password = ""
-  errorMessage = "Invalid Credentials"
-  invalidLogin = false
   cars: Car[] = []
 
+  error: string = null;
+  @ViewChild(PlaceholderDirective, {static: false}) alertHost: PlaceholderDirective;
+
+  private closeSub: Subscription;
+  private storeSub: Subscription;
+
   constructor(
-    //private router: Router,
     private carService: CarService,
-    // private authService: AuthenticationService,
-    private store: Store<fromAuth.State>
+    private store: Store<{ auth: fromAuth.State }>,
+    private injector: Injector
   ) {
   }
 
   ngOnInit(): void {
     // this.refreshTopCars()
+    this.storeSub = this.store.select('auth').subscribe(authState => {
+      this.error = authState.authError;
+      if (this.error) {
+        this.showErrorAlert(this.error);
+      }
+    });
+
   }
 
 
@@ -52,11 +70,33 @@ export class LoginComponent implements OnInit {
     if (!authForm.valid) {
       return;
     }
-    const email = authForm.value.email;
-    const password = authForm.value.password;
-
-    this.store.dispatch(new AuthActions.LoginStart(
-      {email: email, password: password}))
+    this.store.dispatch(new AuthActions.LoginStart(authForm.value))
     authForm.reset();
   }
+
+  ngOnDestroy() {
+    if (this.closeSub) {
+      this.closeSub.unsubscribe();
+    }
+    if (this.storeSub) {
+      this.storeSub.unsubscribe();
+    }
+  }
+
+
+  private showErrorAlert(message: string) {
+    const hostViewContainerRef = this.alertHost.viewContainerRef;
+    hostViewContainerRef.clear();
+
+    const componentRef = hostViewContainerRef.createComponent(WarningComponent, {
+      injector: this.injector
+    });
+
+    componentRef.instance.message = message;
+    this.closeSub = componentRef.instance.close.subscribe(() => {
+      this.closeSub.unsubscribe();
+      hostViewContainerRef.clear();
+    });
+  }
+
 }

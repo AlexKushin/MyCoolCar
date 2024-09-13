@@ -7,6 +7,7 @@ export const AUTHENTICATE_SUCCESS = '[Auth] Authenticate Success';
 export const SET_AUTHENTICATED_USER = '[Auth] Set Authenticated User';
 
 export const REGISTRATION_START = '[Auth] Registration Start';
+export const REGISTRATION_CONFIRM = '[Auth] Registration Confirm';
 export const AUTHENTICATE_FAIL = '[Auth] Authenticate Fail';
 
 export const GET_AUTHENTICATED_USER = '[Auth] Get Authenticated User'
@@ -39,6 +40,11 @@ export class RegistrationStart implements Action {
   }
 }
 
+export class RegistrationConfirm implements Action {
+  readonly type = REGISTRATION_CONFIRM;
+
+}
+
 export class GetAuthenticatedUser implements Action {
   readonly type = GET_AUTHENTICATED_USER;
 
@@ -64,3 +70,4 @@ export type AuthActions =
   | RegistrationStart
   | GetAuthenticatedUser
   | Logout
+  | RegistrationConfirm
