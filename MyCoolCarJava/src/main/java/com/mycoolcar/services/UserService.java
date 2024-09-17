@@ -1,22 +1,31 @@
 package com.mycoolcar.services;
 
+import com.mycoolcar.dtos.NewPasswordDto;
 import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
+import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.exceptions.UserNotFoundException;
+import com.mycoolcar.registration.OnRegistrationCompleteEvent;
+import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.repositories.RoleRepository;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.VerificationTokenRepository;
+import com.mycoolcar.util.ApiResponse;
+import com.mycoolcar.util.MessageSourceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -33,6 +42,8 @@ public class UserService implements UserDetailsService, IUserService {
 
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final MessageSourceHandler messageSourceHandler;
 
     private static final String USER_ID = "User with id =";
     private static final String NOT_FOUND = " not found";
@@ -43,11 +54,13 @@ public class UserService implements UserDetailsService, IUserService {
     public UserService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder,
-                       VerificationTokenRepository verificationTokenRepository) {
+                       VerificationTokenRepository verificationTokenRepository, ApplicationEventPublisher eventPublisher, MessageSourceHandler messageSourceHandler) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenRepository = verificationTokenRepository;
+        this.eventPublisher = eventPublisher;
+        this.messageSourceHandler = messageSourceHandler;
     }
 
     public void initRolesAndUsers() {
@@ -100,8 +113,10 @@ public class UserService implements UserDetailsService, IUserService {
             throw new UsernameNotFoundException("User was not found");
         }
         User user = userOptional.get();
-        return new UserDto(user.getId(), user.isBan(), user.getFirstName(),
-                user.getLastName(), user.getEmail(), user.isEnabled(), user.getRoles(), user.getUserCars());
+        return new UserDto(user.getId(), user.isBan(),
+                user.getRegistered(), user.getFirstName(),
+                user.getLastName(), user.getEmail(),
+                user.isEnabled());
     }
 
     public Optional<User> getByUsername(String username) {
@@ -115,7 +130,7 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public Optional<User> registerNewUserAccount(UserCreationDto userCreationDto) throws UserAlreadyExistException {
+    public UserDto registerNewUserAccount(UserCreationDto userCreationDto, WebRequest request) throws UserAlreadyExistException {
         log.info("Registering new user account with email: {}", userCreationDto.email());
         userRepository.findByEmail(userCreationDto.email()).ifPresent(user -> {
             log.warn("User with email: {} already exists", user.getEmail());
@@ -125,6 +140,17 @@ public class UserService implements UserDetailsService, IUserService {
             log.warn("User with name: {} already exists", user.getFirstName());
             throw new UserAlreadyExistException("User with name: " + user.getFirstName() + " already exists");
         });
+        User registeredUser = saveUser(userCreationDto);
+
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request));
+        return new UserDto(registeredUser.getId(), registeredUser.isBan(),
+                registeredUser.getRegistered(), registeredUser.getFirstName(),
+                registeredUser.getLastName(), registeredUser.getEmail(),
+                registeredUser.isEnabled());
+    }
+
+    private User saveUser(UserCreationDto userCreationDto) {
+        log.info("Saving user with email: {}", userCreationDto.email());
         User newUser = new User();
         newUser.setFirstName(userCreationDto.firstName());
         newUser.setLastName(userCreationDto.lastName());
@@ -135,7 +161,7 @@ public class UserService implements UserDetailsService, IUserService {
         personRoles.add(role);
         newUser.setRoles(personRoles);
         log.info("User registered successfully with email: {}", userCreationDto.email());
-        return Optional.of(userRepository.save(newUser));
+        return userRepository.save(newUser);
     }
 
     @Override
@@ -156,16 +182,12 @@ public class UserService implements UserDetailsService, IUserService {
         });
     }
 
-    public Optional<User> save(User user) {
-        log.info("Saving user with email: {}", user.getEmail());
-        return Optional.of(userRepository.save(user));
-    }
-
 
     @Override
-    public Optional<User> getUserByVerificationToken(String verificationToken) {
+    public User getUserByVerificationToken(String verificationTokenStr) {
         log.info("Getting user by verification token");
-        return Optional.of(verificationTokenRepository.findByToken(verificationToken).getUser());
+        VerificationToken token = getVerificationToken(verificationTokenStr);
+        return token.getUser();
     }
 
     @Override
@@ -184,7 +206,11 @@ public class UserService implements UserDetailsService, IUserService {
     @Override
     public VerificationToken getVerificationToken(String verificationToken) {
         log.info("Getting verification token");
-        return verificationTokenRepository.findByToken(verificationToken);
+        Optional<VerificationToken> verToken = verificationTokenRepository.findByToken(verificationToken);
+        if (verToken.isEmpty()) {
+            throw new ResourceNotFoundException("Token was not found");
+        }
+        return verToken.get();
     }
 
     @Override
@@ -194,19 +220,59 @@ public class UserService implements UserDetailsService, IUserService {
         verificationTokenRepository.delete(verToken);
     }
 
-    @Override
-    public String validatePasswordResetToken(String token) {
-        log.info("Validating password reset token");
-        final VerificationToken passToken = verificationTokenRepository.findByToken(token);
-        if (passToken == null) {
-            log.warn("Invalid token: {}", token);
-            return "invalidToken";
+    public ApiResponse confirmRegistration
+            (WebRequest request, String token) {
+        String result = validatePasswordResetToken(token);
+        if (result != null) {
+            return new ApiResponse(HttpStatus.BAD_REQUEST, messageSourceHandler
+                    .getLocalMessage("auth.message." + result, request, "Invalid token"));
         }
-        return isTokenExpired(passToken) ? "expired" : null;
+        User user = getUserByVerificationToken(token);
+        user.setEnabled(true);
+        saveRegisteredUser(user);
+        deleteVerificationToken(token);
+        String message = messageSourceHandler
+                .getLocalMessage("auth.message.confirm", request, "registration confirmed");
+        return new ApiResponse(HttpStatus.OK, message);
+    }
+
+    public ApiResponse resetPassword(WebRequest request, final String userEmail) {
+        Optional<User> user = getUserByEmail(userEmail);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User with email " + userEmail + " not found");
+        }
+        eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(), request));
+
+        return new ApiResponse(HttpStatus.OK,
+                messageSourceHandler.getLocalMessage("message.resetPasswordEmail", request,
+                        "You should receive and Password Reset Email shortly"));
+    }
+
+    public ApiResponse savePassword(WebRequest request, NewPasswordDto passwordDto) {
+        String result = validatePasswordResetToken(passwordDto.token());
+        if (result != null) {
+            return new ApiResponse(HttpStatus.BAD_REQUEST, messageSourceHandler.getLocalMessage(
+                    "auth.message." + result, request, "Invalid token"));
+        }
+        User user = getUserByVerificationToken(passwordDto.token());
+        changeUserPassword(user, passwordDto.password());
+        return new ApiResponse(HttpStatus.OK, messageSourceHandler.getLocalMessage(
+                "message.resetPasswordSuc", request, "Password reset successfully"));
     }
 
     @Override
-    public Optional<User> banUser(long id) {
+    public String validatePasswordResetToken(String token) {
+        log.info("Validating password reset token");
+        final Optional<VerificationToken> passToken = verificationTokenRepository.findByToken(token);
+        if (passToken.isEmpty()) {
+            log.warn("Invalid token: {}", token);
+            return "invalidToken";
+        }
+        return isTokenExpired(passToken.get()) ? "expired" : null;
+    }
+
+    @Override
+    public UserDto banUser(long id) {
         log.info("Banning/unbanning user with ID: {}", id);
         Optional<User> userToBanOp = getUserById(id);
         if (userToBanOp.isEmpty()) {
@@ -215,12 +281,17 @@ public class UserService implements UserDetailsService, IUserService {
         }
         User user = userToBanOp.get();
         user.setBan(!user.isBan());
+        User bannedUser = userRepository.save(user);
         log.info("User with ID: {} banned/unbanned successfully", id);
-        return save(user);
+
+        return new UserDto(bannedUser.getId(), bannedUser.isBan(),
+                bannedUser.getRegistered(), bannedUser.getFirstName(),
+                bannedUser.getLastName(), bannedUser.getEmail(),
+                bannedUser.isEnabled());
     }
 
     @Override
-    public void deleteUser(long id) {
+    public ApiResponse deleteUser(long id, WebRequest request) {
         log.info("Deleting user with ID: {}", id);
         Optional<User> userToDeleteOp = getUserById(id);
         if (userToDeleteOp.isEmpty()) {
@@ -230,6 +301,9 @@ public class UserService implements UserDetailsService, IUserService {
         User user = userToDeleteOp.get();
         userRepository.delete(user);
         log.info("User with ID: {} deleted successfully", id);
+        return new ApiResponse(HttpStatus.OK,
+                messageSourceHandler.getLocalMessage("message.deleteUser", request,
+                        "User has been deleted successfully"));
     }
 
     private boolean isTokenExpired(VerificationToken passToken) {
