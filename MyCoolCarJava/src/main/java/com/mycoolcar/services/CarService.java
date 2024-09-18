@@ -1,6 +1,7 @@
 package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.CarDto;
+import com.mycoolcar.dtos.CarEditDto;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.entities.CarLogbook;
 import com.mycoolcar.entities.User;
@@ -8,6 +9,8 @@ import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.repositories.CarRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +27,8 @@ public class CarService {
     private final CarRepository carRepository;
 
     private final FileService fileService;
+    @Value("${car.rate}")
+    private int rate;
 
 
     @Autowired
@@ -33,12 +38,12 @@ public class CarService {
     }
 
     public List<CarDto> getAllCars() {
-        log.info("Fetching all cars with a rate of 7 or higher");
-        return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(7);
+        log.info("Fetching all cars with a rate of {} or higher", rate);
+        return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(rate);
     }
 
-    public Car addNewCar(User user, MultipartFile[] images, MultipartFile mainImage, String carBrand,
-                         String carModel, Integer carProductYear, String carDescription) throws IOException {
+    public CarDto saveNewCar(User user, MultipartFile[] images, MultipartFile mainImage, String carBrand,
+                             String carModel, Integer carProductYear, String carDescription) throws IOException {
 
         log.info("Adding a new car for user: {}", user.getUsername());
         Car newCar = new Car(user, carBrand, carModel, carProductYear, carDescription);
@@ -61,35 +66,38 @@ public class CarService {
         carLogbook.setCar(newCar);
         Car savedCar = carRepository.save(newCar);
         log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), savedCar.getId());
-        return savedCar;
+        savedCar = fileService.generateCarImagesToPreassignedUrls(newCar);
+        return mapCarToDto(savedCar);
     }
 
-    public Optional<Car> editCar(Long carId,
-                                 String carBrand, String carModel,
-                                 Integer carProductYear, String carDescription) {
-        Optional<Car> car = carRepository.findById(carId);
-        if (car.isEmpty()) {
-            log.error("Car with ID: {} not found", carId);
-            throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
-        }
-        Car editedCar = car.get();
-
-        editedCar.setBrand(carBrand);
-        editedCar.setModel(carModel);
-        editedCar.setProductYear(carProductYear);
-        editedCar.setDescription(carDescription);
+    public CarDto editCar(Long carId, CarEditDto carEditDto) {
+        Car carToEdit = getCarById(carId);
+        carToEdit.setBrand(carEditDto.brand());
+        carToEdit.setModel(carEditDto.model());
+        carToEdit.setProductYear(carEditDto.productYear());
+        carToEdit.setDescription(carEditDto.description());
         log.info("Car with ID: {} edited successfully", carId);
-        return Optional.of(carRepository.save(editedCar));
+        Car editedCar = carRepository.save(carToEdit);
+        editedCar = fileService.generateCarImagesToPreassignedUrls(editedCar);
+
+        return mapCarToDto(editedCar);
     }
 
-    public void deleteCar(Long carId) throws IOException{
+    public List<Car> getUserCars(User user) {
+        List<Car> userCars = user.getUserCars();
+        userCars.replaceAll(fileService::generateCarImagesToPreassignedUrls);
+        return userCars;
+    }
+
+    public List<Car> getUserSubscribedCars(User user) {
+        List<Car> userSubscribedCars = user.getSubscribedCars();
+        userSubscribedCars.replaceAll(fileService::generateCarImagesToPreassignedUrls);
+        return userSubscribedCars;
+    }
+
+    public void deleteCar(Long carId) throws IOException {
         log.info("Deleting car with ID: {}", carId);
-        Optional<Car> car = carRepository.findById(carId);
-        if (car.isEmpty()) {
-            log.error("Car with ID: {} not found", carId);
-            throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
-        }
-        Car deletedCar = car.get();
+        Car deletedCar = getCarById(carId);
         List<String> imagesUrls = deletedCar.getImagesUrl();
         if (imagesUrls != null && !imagesUrls.isEmpty()) {
             log.info("Deleting {} images for car with ID: {}", imagesUrls.size(), carId);
@@ -102,8 +110,24 @@ public class CarService {
             log.info("Deleting main image for car with ID: {}", carId);
             fileService.deleteFile(mainImage);
         }
-        // user.removeCar(deletedCar);
         carRepository.delete(deletedCar);
         log.info("Car with ID: {} deleted successfully", carId);
+    }
+
+    private Car getCarById(long carId) {
+        Optional<Car> car = carRepository.findById(carId);
+        if (car.isEmpty()) {
+            log.error("Car with ID: {} not found", carId);
+            throw new ResourceNotFoundException("Car with id: " + carId + "  is not found");
+        }
+        return car.get();
+    }
+
+    private CarDto mapCarToDto(Car car) {
+        return new CarDto(car.getId(), car.getBrand(),
+                car.getModel(), car.getProductYear(),
+                car.getDescription(), car.getMainImageUrl(),
+                car.getImagesUrl(), car.getRate(),
+                car.getUser().getId(), car.getUser().getFirstName());
     }
 }

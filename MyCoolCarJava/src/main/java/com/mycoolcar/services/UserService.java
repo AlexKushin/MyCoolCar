@@ -100,9 +100,13 @@ public class UserService implements UserDetailsService, IUserService {
         log.info("User created");
     }
 
-    public Optional<User> getUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         log.info("Getting user by email: {}", email);
-        return userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User with email " + email + " not found");
+        }
+        return user.get();
     }
 
     public UserDto getUserDtoByEmail(String email) {
@@ -237,12 +241,8 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     public ApiResponse resetPassword(WebRequest request, final String userEmail) {
-        Optional<User> user = getUserByEmail(userEmail);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("User with email " + userEmail + " not found");
-        }
-        eventPublisher.publishEvent(new OnResetPasswordEvent(user.get(), request));
-
+        User user = getUserByEmail(userEmail);
+        eventPublisher.publishEvent(new OnResetPasswordEvent(user, request));
         return new ApiResponse(HttpStatus.OK,
                 messageSourceHandler.getLocalMessage("message.resetPasswordEmail", request,
                         "You should receive and Password Reset Email shortly"));

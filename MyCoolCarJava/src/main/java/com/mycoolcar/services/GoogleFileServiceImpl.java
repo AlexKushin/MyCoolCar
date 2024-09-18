@@ -5,6 +5,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.mycoolcar.entities.Car;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,5 +105,10 @@ public class GoogleFileServiceImpl implements FileService {
         }
         log.info("File: {} uploaded successfully to bucket: {}", uniqueFileName, bucketName);
         return fileLink;
+    }
+
+    @Override
+    public Car generateCarImagesToPreassignedUrls(Car car) {
+        return car;
     }
 }
