@@ -24,9 +24,6 @@ public class AwsS3ServiceImpl implements FileService {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    /*@Value("${aws.s3.region}")
-    private String bucketRegion;*/
-
     @Autowired
     public AwsS3ServiceImpl(AmazonS3 s3client) {
         this.s3client = s3client;

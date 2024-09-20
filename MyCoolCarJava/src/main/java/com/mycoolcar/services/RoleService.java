@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 public class RoleService {
@@ -27,12 +29,17 @@ public class RoleService {
 
     public Role findByRoleName(String roleName) {
         log.info("Finding role by name: {}", roleName);
-        Role role = roleRepository.findByRoleName(roleName);
-        if (role == null) {
+        Role role = getRoleByName(roleName);
+        log.info("Found role: {}", role.getRoleName());
+        return role;
+    }
+
+    private Role getRoleByName(String roleName) {
+        Optional<Role> role = roleRepository.findByRoleName(roleName);
+        if (role.isEmpty()) {
             log.warn("Role with name: {} not found", roleName);
             throw new ResourceNotFoundException("Role with name " + roleName + " not found");
         }
-        log.info("Found role: {}", role.getRoleName());
-        return role;
+        return role.get();
     }
 }

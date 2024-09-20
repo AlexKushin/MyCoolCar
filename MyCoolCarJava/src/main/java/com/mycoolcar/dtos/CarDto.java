@@ -2,7 +2,7 @@ package com.mycoolcar.dtos;
 
 
 import java.util.List;
-
+//Todo  Think about Compact Constructors and overriding methods
 public record CarDto(Long id, String brand, String model,
                      int productYear, String description,
                      String mainImageUrl, List<String> imagesUrl,

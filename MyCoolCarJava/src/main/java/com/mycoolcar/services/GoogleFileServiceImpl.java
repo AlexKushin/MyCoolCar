@@ -7,6 +7,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.mycoolcar.entities.Car;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class GoogleFileServiceImpl implements FileService {
-
+    @Setter
     @Value("${gcp.bucket.name}")
     private String bucketName;
 
@@ -35,9 +36,7 @@ public class GoogleFileServiceImpl implements FileService {
         this.storage = storage;
     }
 
-    public void setBucketName(String bucketName) {
-        this.bucketName = bucketName;
-    }
+
 
     @Override
     public List<String> listOfFiles() {
