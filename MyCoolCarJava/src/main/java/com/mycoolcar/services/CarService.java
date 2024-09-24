@@ -66,7 +66,7 @@ public class CarService {
         carLogbook.setCar(newCar);
         Car savedCar = carRepository.save(newCar);
         log.info("New car added successfully for user: {}, with Car ID: {}", user.getUsername(), savedCar.getId());
-        savedCar = fileService.generateCarImagesToPreassignedUrls(newCar);
+        savedCar = fileService.generateCarImagesToPreassignedUrls(savedCar);
         return mapCarToDto(savedCar);
     }
 
