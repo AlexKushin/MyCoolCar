@@ -10,7 +10,6 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Role implements Serializable {
 
@@ -23,32 +22,8 @@ public class Role implements Serializable {
 
     private String roleDescription;
 
-    public Role(String roleName) {
+    public Role(String roleName, String roleDescription) {
         this.roleName = roleName;
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleDescription() {
-        return roleDescription;
-    }
-
-    public void setRoleDescription(String roleDescription) {
         this.roleDescription = roleDescription;
     }
 

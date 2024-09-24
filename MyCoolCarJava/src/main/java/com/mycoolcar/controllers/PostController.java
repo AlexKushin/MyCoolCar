@@ -15,7 +15,6 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -49,9 +48,9 @@ public class PostController {
 
     @GetMapping("user/news")
     public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
-        Optional<User> user = userService.getByUsername(principal.getName());
-        return user.map(value -> new ResponseEntity<>(postService.getNewPosts(value), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+        //principal.getName() returns user's email
+        User user = userService.getUserByEmail(principal.getName());
+        return  new ResponseEntity<>(postService.getNewPosts(user), HttpStatus.OK) ;
     }
 
     @DeleteMapping({"/car-club-posts/{id}"})

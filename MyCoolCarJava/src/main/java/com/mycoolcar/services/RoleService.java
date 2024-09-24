@@ -15,9 +15,23 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_USER = "USER";
+
     @Autowired
     public RoleService(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
+    }
+
+    public void initRoles() {
+        Role adminRole = new Role(ROLE_ADMIN, "admin role");
+        createNewRole(adminRole);
+        log.info("Admin role created");
+
+        Role userRole = new Role(ROLE_USER, "user role");
+        createNewRole(userRole);
+        log.info("User role created");
+
     }
 
     public Role createNewRole(Role role) {

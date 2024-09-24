@@ -6,10 +6,11 @@ import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.util.ApiResponse;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.context.request.WebRequest;
 
 
-public interface IUserService {
+public interface IUserService extends UserDetailsService {
     UserDto registerNewUserAccount(UserCreationDto userDto, WebRequest request)
             throws UserAlreadyExistException;
 

@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,8 +32,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
-public class UserService implements UserDetailsService, IUserService {
-
+public class UserService implements IUserService {
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_USER = "USER";
 
@@ -66,18 +64,6 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     public void initRolesAndUsers() {
-        log.info("Initializing roles and users");
-        Role adminRole = new Role();
-        adminRole.setRoleName(ROLE_ADMIN);
-        adminRole.setRoleDescription("admin role");
-        roleService.createNewRole(adminRole);
-        log.info("Admin role created");
-
-        Role userRole = new Role();
-        userRole.setRoleName(ROLE_USER);
-        userRole.setRoleDescription("user role");
-        roleService.createNewRole(userRole);
-        log.info("User role created");
 
         User admin = new User();
         admin.setFirstName("admin");
@@ -85,6 +71,7 @@ public class UserService implements UserDetailsService, IUserService {
         admin.setEmail("admin@gmail.com");
         admin.setPassword(passwordEncoder.encode("password"));
         Set<Role> personRoles = new HashSet<>();
+        Role adminRole = roleService.findByRoleName("ADMIN");
         personRoles.add(adminRole);
         admin.setRoles(personRoles);
         userRepository.save(admin);
@@ -96,6 +83,7 @@ public class UserService implements UserDetailsService, IUserService {
         user.setEmail("user@gmail.com");
         user.setPassword(passwordEncoder.encode("password"));
         Set<Role> userRoles = new HashSet<>();
+        Role userRole = roleService.findByRoleName("USER");
         userRoles.add(userRole);
         user.setRoles(userRoles);
         userRepository.save(user);
@@ -111,25 +99,12 @@ public class UserService implements UserDetailsService, IUserService {
         return user.get();
     }
 
-    public User getUserByFirstName(String firstName) {
-        log.info("Getting user by first name: {}", firstName);
-        Optional<User> user = userRepository.findUserByFirstName(firstName);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("User with email " + firstName + " not found");
-        }
-        return user.get();
-    }
-
     public UserDto getUserDtoByEmail(String email) {
         log.info("Getting user DTO by email: {}", email);
         User user = getUserByEmail(email);
         return mapUserToDto(user);
     }
 
-    public Optional<User> getByUsername(String username) {
-        log.info("Getting user by username: {}", username);
-        return userRepository.findUserByFirstName(username);
-    }
 
     public User getUserById(long userId) {
         log.info("Getting user by ID: {}", userId);
@@ -146,7 +121,6 @@ public class UserService implements UserDetailsService, IUserService {
         log.info("Registering new user account with email: {}", userCreationDto.email());
         //todo write user exist check
         getUserByEmail(userCreationDto.email());
-        getUserByFirstName(userCreationDto.firstName());
         User registeredUser = saveUser(userCreationDto);
 
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request));
@@ -168,16 +142,13 @@ public class UserService implements UserDetailsService, IUserService {
         return userRepository.save(newUser);
     }
 
+    //loads user by email
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Loading user by username (email): {}", email);
         return getUserByEmail(email);
     }
 
-    public UserDetails loadUserById(long id) {
-        log.info("Loading user by ID: {}", id);
-        return getUserById(id);
-    }
 
     @Override
     public User getUserByVerificationToken(String verificationTokenStr) {
