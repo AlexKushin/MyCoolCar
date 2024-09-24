@@ -94,7 +94,7 @@ public class UserService implements IUserService {
         log.info("Getting user by email: {}", email);
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            throw new UserNotFoundException("User with email " + email + " not found");
+            throw new UsernameNotFoundException("User with email " + email + " not found");
         }
         return user.get();
     }
@@ -116,11 +116,20 @@ public class UserService implements IUserService {
         return user.get();
     }
 
+    private boolean isUserExists(String email){
+        log.info("Check if user with email: {} exists", email);
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.isPresent();
+    }
+
     @Override
     public UserDto registerNewUserAccount(UserCreationDto userCreationDto, WebRequest request) throws UserAlreadyExistException {
         log.info("Registering new user account with email: {}", userCreationDto.email());
-        //todo write user exist check
-        getUserByEmail(userCreationDto.email());
+
+        if(isUserExists(userCreationDto.email())){
+            log.warn("User with email: {} already exists", userCreationDto.email());
+            throw new UserAlreadyExistException("User with email " + userCreationDto.email() + " already exists");
+        }
         User registeredUser = saveUser(userCreationDto);
 
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request));

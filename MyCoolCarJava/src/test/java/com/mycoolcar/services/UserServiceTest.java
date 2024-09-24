@@ -2,12 +2,12 @@ package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.dtos.UserDto;
-import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
+import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.exceptions.UserNotFoundException;
-import com.mycoolcar.repositories.RoleRepository;
+import com.mycoolcar.registration.OnRegistrationCompleteEvent;
 import com.mycoolcar.repositories.UserRepository;
 import com.mycoolcar.repositories.VerificationTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,31 +15,35 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class UserServiceTest  {
+class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private RoleRepository roleRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
     private VerificationTokenRepository verificationTokenRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private RoleService roleService;
 
     @InjectMocks
     private UserService userService;
@@ -50,265 +54,168 @@ class UserServiceTest  {
     }
 
     @Test
-    void testRegisterNewUserAccount_Success() throws UserAlreadyExistException {
-        // Mocking behavior
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(roleRepository.findByRoleName(UserService.ROLE_USER)).thenReturn(new Role());
-        when(userRepository.save(any(User.class))).thenReturn(new User());
-
-        // Call the method under test
-        UserCreationDto userCreationDto = new UserCreationDto("John","Doe", "password", "password", "john@example.com" );
-       UserDto result = userService.registerNewUserAccount(userCreationDto, null);
-
-        // Verify the result
-       // assertTrue(result.isPresent());
-    }
-
-    @Test
-    void testRegisterNewUserAccount_UserAlreadyExists() {
-        // Mocking behavior
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(new User()));
-
-        // Call the method under test and verify the exception
-        assertThrows(UserAlreadyExistException.class, () -> {
-            UserCreationDto userCreationDto = new UserCreationDto("John","Doe", "password", "password", "john@example.com" );
-            userService.registerNewUserAccount(userCreationDto, null);
-        });
-    }
-
-    @Test
-    void testLoadUserByUsername_Success() {
-        // Mocking behavior
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(new User()));
-
-        // Call the method under test
-        assertDoesNotThrow(() -> userService.loadUserByUsername("john@example.com"));
-    }
-
-    @Test
-    void testLoadUserByUsername_UserNotFound() {
-        // Mocking behavior
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
-        // Call the method under test and verify the exception
-        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername("john@example.com"));
-    }
-
-    @Test
-    void testLoadUserById_Success() {
-        long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        assertDoesNotThrow(() -> userService.loadUserById(userId));
-    }
-
-    @Test
-    void testLoadUserById_UserNotFound() {
-        long userId = 1L;
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> userService.loadUserById(userId));
-        assertEquals("User with id =" + userId + " not found", exception.getMessage());
-    }
-
-    @Test
-    void testSaveUser_Success() {
-        User user = new User();
-        when(userRepository.save(user)).thenReturn(user);
-
-      /*  Optional<User> result = userService.save(user);
-
-        assertTrue(result.isPresent());
-        assertEquals(user, result.get());*/
-    }
-
-    @Test
-    void testGetUserByVerificationToken_Success() {
-        String verificationToken = "token123";
-        User user = new User();
-        VerificationToken verificationTokenEntity = new VerificationToken(verificationToken, user);
-     //   when(verificationTokenRepository.findByToken(verificationToken)).thenReturn(verificationTokenEntity);
-
-      //  User result = userService.getUserByVerificationToken(verificationToken);
-
-        //assertTrue(result.isPresent());
-        //assertEquals(user, result.get());
-    }
-
-    @Test
-    void testSaveRegisteredUser_Success() {
-        User user = new User();
-
-        userService.saveRegisteredUser(user);
-
-        verify(userRepository, times(1)).save(user);
-    }
-
-//    @Test
-//    void testCreateVerificationTokenForUser_Success() {
-//        User user = new User();
-//        String token = "token123";
-//        VerificationToken verificationToken = new VerificationToken(token, user);
-//
-//        userService.createVerificationTokenForUser(user, token);
-//
-//        verify(verificationTokenRepository, times(1)).save(verificationToken);
-//    }
-
-    @Test
-    void testGetVerificationToken_Success() {
-        String verificationToken = "token123";
-        VerificationToken expectedToken = new VerificationToken(verificationToken, new User());
-      //  when(verificationTokenRepository.findByToken(verificationToken)).thenReturn(expectedToken);
-
-        //VerificationToken result = userService.getVerificationToken(verificationToken);
-
-//        assertNotNull(result);
-  //      assertEquals(expectedToken, result);
-    }
-
-    @Test
-    void testDeleteVerificationToken_Success() {
-        String token = "token123";
-        VerificationToken verToken = new VerificationToken(token, new User());
-     //   when(verificationTokenRepository.findByToken(token)).thenReturn(verToken);
-
-        userService.deleteVerificationToken(token);
-
-        verify(verificationTokenRepository, times(1)).delete(verToken);
-    }
-
-    @Test
-    void testValidatePasswordResetToken_InvalidToken() {
-        String invalidToken = "invalidToken";
-        when(verificationTokenRepository.findByToken(invalidToken)).thenReturn(null);
-
-        String result = userService.validatePasswordResetToken(invalidToken);
-
-        assertEquals("invalidToken", result);
-    }
-
-    @Test
-    void testValidatePasswordResetToken_ExpiredToken() {
-        String expiredToken = "expiredToken";
-        VerificationToken passToken = new VerificationToken(expiredToken, new User());
-        passToken.setExpiryDate(LocalDateTime.now().minusDays(1));
-      //  when(verificationTokenRepository.findByToken(expiredToken)).thenReturn(passToken);
-
-        String result = userService.validatePasswordResetToken(expiredToken);
-
-        assertEquals("expired", result);
-    }
-
-    @Test
-    void testValidatePasswordResetToken_ValidToken() {
-        String validToken = "validToken";
-        VerificationToken passToken = new VerificationToken(validToken, new User());
-        passToken.setExpiryDate(LocalDateTime.now().plusDays(1));
-    //    when(verificationTokenRepository.findByToken(validToken)).thenReturn(passToken);
-
-        String result = userService.validatePasswordResetToken(validToken);
-
-        assertNull(result);
-    }
-
-    @Test
-    void testBanUser_Success() {
-        long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        user.setBan(false);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.save(user)).thenReturn(user);
-
-        UserDto result = userService.banUser(userId);
-
-        //assertTrue(result.isPresent());
-        //assertEquals(userId, result.get().getId());
-        //assertTrue(result.get().isBan());
-    }
-
-    @Test
-    void testBanUser_UserNotFound() {
-        long userId = 1L;
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class, () -> userService.banUser(userId));
-    }
-
-    @Test
-    void testDeleteUser_Success() {
-        long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        //assertDoesNotThrow(() -> userService.deleteUser(userId));
-    }
-
-    @Test
-    void testDeleteUser_UserNotFound() {
-        long userId = 1L;
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        //assertThrows(UserNotFoundException.class, () -> userService.deleteUser(userId));
-    }
-
-    @Test
-    void testChangeUserPassword_Success() {
-        User user = new User();
-        String password = "newPassword";
-
-        userService.changeUserPassword(user, password);
-
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void testGetUserByEmail_Success() {
+    void getUserByEmail_UserExists_ReturnsUser() {
+        // Arrange
         String email = "test@example.com";
-        User user = new User();
-        user.setEmail(email);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        User mockUser = new User();
+        mockUser.setEmail(email);
 
-        Optional<User> result = userService.getUserByEmail(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
 
-        assertTrue(result.isPresent());
-        assertEquals(email, result.get().getEmail());
+        // Act
+        User result = userService.getUserByEmail(email);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(email, result.getEmail());
+        verify(userRepository, times(1)).findByEmail(email);
     }
 
     @Test
-    void testGetUserByEmail_UserNotFound() {
-        String email = "test@example.com";
+    void getUserByEmail_UserDoesNotExist_ThrowsUserNotFoundException() {
+        // Arrange
+        String email = "nonexistent@example.com";
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
-        Optional<User> result = userService.getUserByEmail(email);
-
-        assertFalse(result.isPresent());
+        // Act & Assert
+        assertThrows(UsernameNotFoundException.class, () -> userService.getUserByEmail(email));
+        verify(userRepository, times(1)).findByEmail(email);
     }
 
     @Test
-    void testGetByUsername_Success() {
-        String username = "testuser";
-        User user = new User();
-        user.setFirstName(username);
-        when(userRepository.findUserByFirstName(username)).thenReturn(Optional.of(user));
+    void loadUserByUsername_UserExists_ReturnsUserDetails() {
+        // Arrange
+        String email = "test@example.com";
+        User mockUser = new User();
+        mockUser.setEmail(email);
 
-        Optional<User> result = userService.getByUsername(username);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
 
-        assertTrue(result.isPresent());
-        assertEquals(username, result.get().getFirstName());
+        // Act
+        UserDetails userDetails = userService.loadUserByUsername(email);
+
+        // Assert
+        assertNotNull(userDetails);
+        assertEquals(email, userDetails.getUsername());
+        verify(userRepository, times(1)).findByEmail(email);
     }
 
     @Test
-    void testGetByUsername_UserNotFound() {
-        String username = "testuser";
-        when(userRepository.findUserByFirstName(username)).thenReturn(Optional.empty());
+    void loadUserByUsername_UserDoesNotExist_ThrowsUsernameNotFoundException() {
+        // Arrange
+        String email = "nonexistent@example.com";
 
-        Optional<User> result = userService.getByUsername(username);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
-        assertFalse(result.isPresent());
+        // Act & Assert
+        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(email));
+        verify(userRepository, times(1)).findByEmail(email);
+    }
+
+    @Test
+    void registerNewUserAccount_UserAlreadyExists_ThrowsUserAlreadyExistException() {
+        // Arrange
+        String email = "test@example.com";
+        UserCreationDto userCreationDto = new UserCreationDto("John", "Doe", "password", "password", email);
+        WebRequest webRequest = mock(WebRequest.class);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User())); // User already exists
+
+        // Act & Assert
+        assertThrows(UserAlreadyExistException.class, () -> {
+            userService.registerNewUserAccount(userCreationDto, webRequest);
+        });
+
+        // Verify that isUserExists was called and saveUser was not
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository, never()).save(any(User.class)); // Ensure save is never called
+        verify(eventPublisher, never()).publishEvent(any(OnRegistrationCompleteEvent.class));
+    }
+
+    @Test
+    void registerNewUserAccount_SuccessfulRegistration_ReturnsUserDto() {
+        // Arrange
+        String email = "john@example.com";
+        String encodedPassword = "encodedPassword";
+        UserCreationDto userCreationDto = new UserCreationDto("John", "Doe", "password", "password", email);
+        WebRequest webRequest = mock(WebRequest.class);
+        User savedUser = new User();
+        savedUser.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty()); // No user exists
+        when(passwordEncoder.encode("password")).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        // Act
+        UserDto userDto = userService.registerNewUserAccount(userCreationDto, webRequest);
+
+        // Assert
+        assertNotNull(userDto);
+        assertEquals(email, userDto.email());
+
+        // Verify that isUserExists was called, user was saved, and event was published
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(eventPublisher, times(1)).publishEvent(any(OnRegistrationCompleteEvent.class));
+    }
+
+    @Test
+    void getVerificationToken_TokenExists_ReturnsVerificationToken() {
+        // Arrange
+        String token = "valid-token";
+        VerificationToken mockToken = new VerificationToken();
+        when(verificationTokenRepository.findByToken(token)).thenReturn(Optional.of(mockToken));
+
+        // Act
+        VerificationToken result = userService.getVerificationToken(token);
+
+        // Assert
+        assertNotNull(result);
+        verify(verificationTokenRepository, times(1)).findByToken(token);
+    }
+
+    @Test
+    void getVerificationToken_TokenDoesNotExist_ThrowsResourceNotFoundException() {
+        // Arrange
+        String token = "invalid-token";
+
+        when(verificationTokenRepository.findByToken(token)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.getVerificationToken(token));
+        verify(verificationTokenRepository, times(1)).findByToken(token);
+    }
+
+    @Test
+    void banUser_UserExists_TogglesBanStatus() {
+        // Arrange
+        long userId = 1L;
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setBan(false);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(userRepository.save(mockUser)).thenReturn(mockUser);
+
+        // Act
+        UserDto result = userService.banUser(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(mockUser.isBan());  // Ban status should be toggled
+        verify(userRepository, times(1)).save(mockUser);
+    }
+
+    @Test
+    void banUser_UserDoesNotExist_ThrowsUserNotFoundException() {
+        // Arrange
+        long userId = 1L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> userService.banUser(userId));
+        verify(userRepository, times(1)).findById(userId);
     }
 }

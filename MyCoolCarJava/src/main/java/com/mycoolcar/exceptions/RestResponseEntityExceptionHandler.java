@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -100,6 +101,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+
+
     @ExceptionHandler(UserNotFoundException.class)
     protected ResponseEntity<ApiResponse> handleUserNotFoundException(UserNotFoundException ex,
                                                                       final WebRequest request) {
@@ -108,6 +111,16 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         ApiResponse errorResponse = new ApiResponse(HttpStatus.NOT_FOUND, message);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    protected ResponseEntity<ApiResponse> handleUsernameNotFoundException(UsernameNotFoundException ex,
+                                                                      final WebRequest request) {
+        String message = messageSourceHandler
+                .getLocalMessage("exception.UsernameNotFoundException", request, ex.getMessage());
+        ApiResponse errorResponse = new ApiResponse(HttpStatus.NOT_FOUND, message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
 
     @ExceptionHandler(IOException.class)
     protected void handleIOException(IOException ex) {
