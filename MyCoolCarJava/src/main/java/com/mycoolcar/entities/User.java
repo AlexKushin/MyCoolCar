@@ -1,6 +1,7 @@
 package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mycoolcar.enums.AppUserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,13 +45,7 @@ public class User implements UserDetails, Serializable {
 
     private boolean enabled;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable(name = "user_roles",
-            joinColumns =
-            @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns =
-            @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles = new HashSet<>();
+    private Set<AppUserRole> roles = new HashSet<>();
 
     @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
     private List<Car> userCars = new ArrayList<>();
@@ -82,7 +77,7 @@ public class User implements UserDetails, Serializable {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<SimpleGrantedAuthority> authorities = new HashSet<>();
         if (roles != null) {
-            authorities = roles.stream().map(p -> new SimpleGrantedAuthority("ROLE_" + p.getRoleName()))
+            authorities = roles.stream().map(p -> new SimpleGrantedAuthority("ROLE_" + p.name()))
                     .collect(Collectors.toUnmodifiableSet());
         }
         return authorities;

@@ -42,9 +42,6 @@ class UserServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
-    @Mock
-    private RoleService roleService;
-
     @InjectMocks
     private UserService userService;
 
@@ -123,9 +120,7 @@ class UserServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User())); // User already exists
 
         // Act & Assert
-        assertThrows(UserAlreadyExistException.class, () -> {
-            userService.registerNewUserAccount(userCreationDto, webRequest);
-        });
+        assertThrows(UserAlreadyExistException.class, () -> userService.registerNewUserAccount(userCreationDto, webRequest));
 
         // Verify that isUserExists was called and saveUser was not
         verify(userRepository, times(1)).findByEmail(email);

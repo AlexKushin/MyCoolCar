@@ -3,9 +3,9 @@ package com.mycoolcar.services;
 import com.mycoolcar.dtos.NewPasswordDto;
 import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.dtos.UserDto;
-import com.mycoolcar.entities.Role;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
+import com.mycoolcar.enums.AppUserRole;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.exceptions.UserNotFoundException;
@@ -33,8 +33,6 @@ import java.util.Set;
 @Slf4j
 @Service
 public class UserService implements IUserService {
-    public static final String ROLE_ADMIN = "ADMIN";
-    public static final String ROLE_USER = "USER";
 
     private static final String USER_ID = "User with id =";
     private static final String NOT_FOUND = " not found";
@@ -45,7 +43,6 @@ public class UserService implements IUserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSourceHandler messageSourceHandler;
-    private final RoleService roleService;
 
 
     @Autowired
@@ -53,14 +50,13 @@ public class UserService implements IUserService {
                        PasswordEncoder passwordEncoder,
                        VerificationTokenRepository verificationTokenRepository,
                        ApplicationEventPublisher eventPublisher,
-                       MessageSourceHandler messageSourceHandler,
-                       RoleService roleService) {
+                       MessageSourceHandler messageSourceHandler) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenRepository = verificationTokenRepository;
         this.eventPublisher = eventPublisher;
         this.messageSourceHandler = messageSourceHandler;
-        this.roleService = roleService;
+
     }
 
     public void initRolesAndUsers() {
@@ -70,9 +66,10 @@ public class UserService implements IUserService {
         admin.setLastName("admin");
         admin.setEmail("admin@gmail.com");
         admin.setPassword(passwordEncoder.encode("password"));
-        Set<Role> personRoles = new HashSet<>();
-        Role adminRole = roleService.findByRoleName("ADMIN");
-        personRoles.add(adminRole);
+        admin.setEnabled(true);
+        Set<AppUserRole> personRoles = new HashSet<>();
+        personRoles.add(AppUserRole.ADMIN);
+        personRoles.add(AppUserRole.MODERATOR);
         admin.setRoles(personRoles);
         userRepository.save(admin);
         log.info("Admin user created");
@@ -82,9 +79,9 @@ public class UserService implements IUserService {
         user.setLastName("user");
         user.setEmail("user@gmail.com");
         user.setPassword(passwordEncoder.encode("password"));
-        Set<Role> userRoles = new HashSet<>();
-        Role userRole = roleService.findByRoleName("USER");
-        userRoles.add(userRole);
+        user.setEnabled(true);
+        Set<AppUserRole> userRoles = new HashSet<>();
+        userRoles.add(AppUserRole.USER);
         user.setRoles(userRoles);
         userRepository.save(user);
         log.info("User created");
@@ -116,7 +113,7 @@ public class UserService implements IUserService {
         return user.get();
     }
 
-    private boolean isUserExists(String email){
+    private boolean isUserExists(String email) {
         log.info("Check if user with email: {} exists", email);
         Optional<User> user = userRepository.findByEmail(email);
         return user.isPresent();
@@ -126,7 +123,7 @@ public class UserService implements IUserService {
     public UserDto registerNewUserAccount(UserCreationDto userCreationDto, WebRequest request) throws UserAlreadyExistException {
         log.info("Registering new user account with email: {}", userCreationDto.email());
 
-        if(isUserExists(userCreationDto.email())){
+        if (isUserExists(userCreationDto.email())) {
             log.warn("User with email: {} already exists", userCreationDto.email());
             throw new UserAlreadyExistException("User with email " + userCreationDto.email() + " already exists");
         }
@@ -143,9 +140,8 @@ public class UserService implements IUserService {
         newUser.setLastName(userCreationDto.lastName());
         newUser.setEmail(userCreationDto.email());
         newUser.setPassword(passwordEncoder.encode(userCreationDto.password()));
-        Set<Role> personRoles = newUser.getRoles();
-        Role role = roleService.findByRoleName(ROLE_USER);
-        personRoles.add(role);
+        Set<AppUserRole> personRoles = newUser.getRoles();
+        personRoles.add(AppUserRole.USER);
         newUser.setRoles(personRoles);
         log.info("User registered successfully with email: {}", userCreationDto.email());
         return userRepository.save(newUser);

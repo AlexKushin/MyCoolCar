@@ -5,6 +5,7 @@ import com.mycoolcar.dtos.UserCreationDto;
 import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.util.ApiResponse;
 import com.mycoolcar.services.UserService;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    /*@PostConstruct
+    @PostConstruct
     public void initRolesAndUsers() {
         userService.initRolesAndUsers();
-    }*/
+    }
 
     @PostMapping("/user/registration")
     public ResponseEntity<UserDto> registerNewUser(@Valid @RequestBody UserCreationDto userCreationDto,
@@ -65,6 +66,11 @@ public class UserController {
     @GetMapping({"/admin"})
     public String forAdmin() {
         return "this URL is only accessible for Admin";
+    }
+
+    @GetMapping({"/admin_moderator"})
+    public String forAdminModerator() {
+        return "this URL is only accessible for Admin or Moderator";
     }
 
     @PutMapping({"/admin/users/{id}"})
