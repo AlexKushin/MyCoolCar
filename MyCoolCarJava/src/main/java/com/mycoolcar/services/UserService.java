@@ -61,28 +61,29 @@ public class UserService implements IUserService {
 
     public void initRolesAndUsers() {
 
-        User admin = new User();
-        admin.setFirstName("admin");
-        admin.setLastName("admin");
-        admin.setEmail("admin@gmail.com");
-        admin.setPassword(passwordEncoder.encode("password"));
-        admin.setEnabled(true);
         Set<AppUserRole> personRoles = new HashSet<>();
         personRoles.add(AppUserRole.ADMIN);
         personRoles.add(AppUserRole.MODERATOR);
-        admin.setRoles(personRoles);
+        User admin = new User(
+                "admin",
+                "admin",
+                "admin@gmail.com",
+                passwordEncoder.encode("password"),
+                personRoles);
+        admin.setEnabled(true);
         userRepository.save(admin);
         log.info("Admin user created");
 
-        User user = new User();
-        user.setFirstName("user");
-        user.setLastName("user");
-        user.setEmail("user@gmail.com");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setEnabled(true);
+
         Set<AppUserRole> userRoles = new HashSet<>();
         userRoles.add(AppUserRole.USER);
-        user.setRoles(userRoles);
+        User user = new User(
+                "user",
+                "user",
+                "user@gmail.com",
+                passwordEncoder.encode("password"),
+                userRoles);
+        user.setEnabled(true);
         userRepository.save(user);
         log.info("User created");
     }
@@ -135,14 +136,15 @@ public class UserService implements IUserService {
 
     private User saveUser(UserCreationDto userCreationDto) {
         log.info("Saving user with email: {}", userCreationDto.email());
-        User newUser = new User();
-        newUser.setFirstName(userCreationDto.firstName());
-        newUser.setLastName(userCreationDto.lastName());
-        newUser.setEmail(userCreationDto.email());
-        newUser.setPassword(passwordEncoder.encode(userCreationDto.password()));
-        Set<AppUserRole> personRoles = newUser.getRoles();
+        Set<AppUserRole> personRoles = new HashSet<>();
         personRoles.add(AppUserRole.USER);
-        newUser.setRoles(personRoles);
+        User newUser = new User(
+                userCreationDto.firstName(),
+                userCreationDto.lastName(),
+                userCreationDto.email(),
+                passwordEncoder.encode(userCreationDto.password()),
+                personRoles);
+
         log.info("User registered successfully with email: {}", userCreationDto.email());
         return userRepository.save(newUser);
     }

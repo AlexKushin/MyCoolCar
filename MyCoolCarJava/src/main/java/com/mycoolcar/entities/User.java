@@ -58,16 +58,24 @@ public class User implements UserDetails, Serializable {
             @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
     private List<CarClub> userClubs = new ArrayList<>();
 
-   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-   @JoinTable(name = "user_subscribed_cars",
-           joinColumns =
-           @JoinColumn(name = "user_id", referencedColumnName = "id"),
-           inverseJoinColumns =
-           @JoinColumn(name = "car_id", referencedColumnName = "id"))
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "user_subscribed_cars",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "car_id", referencedColumnName = "id"))
     private List<Car> subscribedCars = new ArrayList<>();
 
+    public User(String firstName, String lastName,
+                String email, String password, Set<AppUserRole> roles) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
 
-   /* public User() {
+/* public User() {
         super();
         this.enabled = false;
     }*/
@@ -102,12 +110,10 @@ public class User implements UserDetails, Serializable {
     }
 
 
-
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
 
 
     @Override
