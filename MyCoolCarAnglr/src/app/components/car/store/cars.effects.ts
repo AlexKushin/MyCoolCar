@@ -37,7 +37,7 @@ export class UserCarsEffects {
   fetchUserCars = createEffect(() => this.actions$.pipe(
     ofType(UserCarsActions.FETCH_CARS),
     switchMap(() => {
-      return this.http.get<Car[]>(`${API_URL}/api/cars`)
+      return this.http.get<Car[]>(`${API_URL}/api/cars/my`)
     }),
     map(userCars => {
       return userCars.map(userCar => {

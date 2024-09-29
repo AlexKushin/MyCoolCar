@@ -70,14 +70,14 @@ public class CarController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("cars")
+    @GetMapping("cars/my")
     public ResponseEntity<List<Car>> getUserCars(Principal principal) {
         User user = userService.getUserByEmail(principal.getName());
         List<Car> userCars = carService.getUserCars(user);
         return new ResponseEntity<>(userCars, HttpStatus.OK);
     }
 
-    @GetMapping("subscribed_cars")
+    @GetMapping("cars/subscriptions")
     public ResponseEntity<List<Car>> getUserSubscribedCars(Principal principal) {
         User user = userService.getUserByEmail(principal.getName());
         List<Car> userSubscribedCars = carService.getUserSubscribedCars(user);
