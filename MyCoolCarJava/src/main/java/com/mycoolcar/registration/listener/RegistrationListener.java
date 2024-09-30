@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.UUID;
 
@@ -51,13 +52,12 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
     }
 
 
-    private SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event,
-                                                    final User user,
+    private SimpleMailMessage constructEmailMessage(final OnRegistrationCompleteEvent event, final User user,
                                                     final String token) {
-        System.out.println("event.getLocale()= " + event.getRequest());
         final String recipientAddress = user.getEmail();
         final String subject = "Registration Confirmation";
-        final String confirmationUrl = event.getAppUrl() + "/registration/confirm?token=" + token;
+        String appUrl = getAppUrl(event.getRequest());
+        final String confirmationUrl = appUrl + "/registration/confirm?token=" + token;
 
         final String message1 = messageSourceHandler
                 .getLocalMessage("message.regSuccInputToken", event.getRequest(),
@@ -73,6 +73,10 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         email.setText(message1 + token + " \r\n" + message2 + " \r\n" + confirmationUrl);
         email.setFrom(env.getProperty("support.email"));
         return email;
+    }
+
+    private String getAppUrl(WebRequest request) {
+        return request.getHeader("Origin") + request.getContextPath();
     }
 
 

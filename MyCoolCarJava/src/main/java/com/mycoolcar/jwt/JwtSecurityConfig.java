@@ -26,6 +26,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
@@ -48,22 +50,38 @@ public class JwtSecurityConfig {
 
         return httpSecurity
                 .authorizeHttpRequests(auth -> auth
+                        //CarController
+                        .requestMatchers(HttpMethod.GET, "/api/top_cars").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/my").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        .requestMatchers(HttpMethod.GET, "/api/cars/subscriptions").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/cars/new").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/cars/**").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        //FileController
+                        .requestMatchers(HttpMethod.GET, "/getImages/**").permitAll()
+                        //PostController
+                        .requestMatchers(HttpMethod.POST, "/api/car-logbook/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/car-club/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/user/news").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/car-club-posts/**").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/car-logbook-posts/**").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/car-logbook-posts/**").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        .requestMatchers(HttpMethod.GET, "/api/cars/*/logbook").hasAnyRole("ADMIN", "MODERATOR", "USER")
+                        //UserController
                         .requestMatchers("/api/authenticate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user/registration").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/cars").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/cars").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/registration/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/registration/confirm").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/resetPassword").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/savePassword").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/me").hasRole("USER")
+
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        //.requestMatchers(HttpMethod.GET, "/**")
-                        //.permitAll()
+
                         .anyRequest()
-                        .permitAll())
+                        .authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -136,4 +154,15 @@ public class JwtSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Remove the "SCOPE_" prefix
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+
+        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+
+        return authenticationConverter;
+    }
 }

@@ -1,17 +1,20 @@
 package com.mycoolcar.services;
 
 import com.mycoolcar.dtos.UserCreationDto;
+import com.mycoolcar.dtos.UserDto;
 import com.mycoolcar.entities.User;
 import com.mycoolcar.entities.VerificationToken;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
+import com.mycoolcar.util.ApiResponse;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.context.request.WebRequest;
 
-import java.util.Optional;
 
-public interface IUserService {
-    Optional<User> registerNewUserAccount(UserCreationDto userDto)
+public interface IUserService extends UserDetailsService {
+    UserDto registerNewUserAccount(UserCreationDto userDto, WebRequest request)
             throws UserAlreadyExistException;
 
-    Optional <User> getUserByVerificationToken(String verificationToken);
+    User getUserByVerificationToken(String verificationToken);
 
     void saveRegisteredUser(User user);
 
@@ -23,7 +26,7 @@ public interface IUserService {
 
     String validatePasswordResetToken(String token);
 
-    Optional<User> banUser(long id);
+    UserDto banUser(long id);
 
-    void deleteUser(long id);
+    ApiResponse deleteUser(long id, WebRequest request);
 }

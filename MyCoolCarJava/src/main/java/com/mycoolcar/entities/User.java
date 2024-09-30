@@ -1,6 +1,7 @@
 package com.mycoolcar.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mycoolcar.enums.AppUserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,13 +45,7 @@ public class User implements UserDetails, Serializable {
 
     private boolean enabled;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable(name = "user_roles",
-            joinColumns =
-            @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns =
-            @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles = new HashSet<>();
+    private Set<AppUserRole> roles = new HashSet<>();
 
     @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
     private List<Car> userCars = new ArrayList<>();
@@ -63,16 +58,24 @@ public class User implements UserDetails, Serializable {
             @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
     private List<CarClub> userClubs = new ArrayList<>();
 
-   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-   @JoinTable(name = "user_subscribed_cars",
-           joinColumns =
-           @JoinColumn(name = "user_id", referencedColumnName = "id"),
-           inverseJoinColumns =
-           @JoinColumn(name = "car_id", referencedColumnName = "id"))
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "user_subscribed_cars",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "car_id", referencedColumnName = "id"))
     private List<Car> subscribedCars = new ArrayList<>();
 
+    public User(String firstName, String lastName,
+                String email, String password, Set<AppUserRole> roles) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
 
-   /* public User() {
+/* public User() {
         super();
         this.enabled = false;
     }*/
@@ -82,7 +85,7 @@ public class User implements UserDetails, Serializable {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<SimpleGrantedAuthority> authorities = new HashSet<>();
         if (roles != null) {
-            authorities = roles.stream().map(p -> new SimpleGrantedAuthority("ROLE_" + p.getRoleName()))
+            authorities = roles.stream().map(p -> new SimpleGrantedAuthority("ROLE_" + p.name()))
                     .collect(Collectors.toUnmodifiableSet());
         }
         return authorities;
@@ -107,12 +110,10 @@ public class User implements UserDetails, Serializable {
     }
 
 
-
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
 
 
     @Override

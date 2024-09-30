@@ -11,6 +11,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.UUID;
 
@@ -47,12 +48,12 @@ public class ResetPasswordListener implements ApplicationListener<OnResetPasswor
     }
 
 
-    private SimpleMailMessage constructEmailMessage(final OnResetPasswordEvent event,
-                                                    final User user, final String token) {
+    private SimpleMailMessage constructEmailMessage(final OnResetPasswordEvent event, final User user,
+                                                    final String token) {
 
         final String recipientAddress = user.getEmail();
         final String subject = "Reset password";
-        final String confirmationUrl = event.getAppUrl() + "/password/change?token=" + token;
+        final String confirmationUrl = getAppUrl(event.getRequest()) + "/password/change?token=" + token;
 
         final String message = messageSourceHandler
                 .getLocalMessage("message.resetPassword", event.getRequest(),
@@ -64,6 +65,10 @@ public class ResetPasswordListener implements ApplicationListener<OnResetPasswor
         email.setText(message + " \r\n" + confirmationUrl);
         email.setFrom(env.getProperty("support.email"));
         return email;
+    }
+
+    private String getAppUrl(WebRequest request) {
+        return request.getHeader("Origin") + request.getContextPath();
     }
 
 }

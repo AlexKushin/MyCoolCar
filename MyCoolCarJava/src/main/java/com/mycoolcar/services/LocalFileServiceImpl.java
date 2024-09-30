@@ -1,5 +1,6 @@
 package com.mycoolcar.services;
 
+import com.mycoolcar.entities.Car;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -75,5 +76,10 @@ public class LocalFileServiceImpl implements FileService {
         return "http://localhost:" + serverPort + "/getImages/" + uniqueFileName;
 
 
+    }
+
+    @Override
+    public Car generateCarImagesToPreassignedUrls(Car car) {
+        return car;
     }
 }

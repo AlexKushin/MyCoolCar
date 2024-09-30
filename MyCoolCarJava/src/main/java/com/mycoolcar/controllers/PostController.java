@@ -1,14 +1,11 @@
 package com.mycoolcar.controllers;
 
-import com.mycoolcar.dtos.CarLogPostDto;
-import com.mycoolcar.dtos.ClubPostDto;
+import com.mycoolcar.dtos.PostCreationDto;
+import com.mycoolcar.dtos.PostDto;
 import com.mycoolcar.entities.*;
 import com.mycoolcar.util.ApiResponse;
-import com.mycoolcar.repositories.CarClubRepository;
-import com.mycoolcar.repositories.CarLogbookRepository;
 import com.mycoolcar.services.PostService;
 import com.mycoolcar.services.UserService;
-import com.mycoolcar.util.MessageSourceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -27,100 +22,59 @@ import java.util.Optional;
 public class PostController {
 
     private final PostService postService;
-    private final CarLogbookRepository carLogbookRepository;
-    private final CarClubRepository carClubRepository;
 
     private final UserService userService;
 
-    private final MessageSourceHandler messageSourceHandler;
-
     @Autowired
-    public PostController(PostService postService, CarLogbookRepository carLogbookRepository,
-                          CarClubRepository carClubRepository, UserService userService,
-                          MessageSourceHandler messageSourceHandler) {
+    public PostController(PostService postService, UserService userService) {
         this.postService = postService;
-        this.carLogbookRepository = carLogbookRepository;
-        this.carClubRepository = carClubRepository;
         this.userService = userService;
-        this.messageSourceHandler = messageSourceHandler;
     }
 
     @PostMapping("car-logbook/{carLogbookId}/car-log-posts/new")
-    public ResponseEntity<CarLogPost> postCarLog(@PathVariable Long carLogbookId,
-                                                 @RequestBody CarLogPostDto carLogPostDto) {
-        Optional<CarLogbook> carLogbook = carLogbookRepository.findById(carLogbookId);
-        CarLogPost newCarLogPost = new CarLogPost();
-        if (carLogbook.isPresent()) {
-            newCarLogPost.setTopic(carLogPostDto.topic());
-            newCarLogPost.setDescription(carLogPostDto.description());
-            newCarLogPost.setCarLogbook(carLogbook.get());
-            newCarLogPost.setCreatedTime(LocalDateTime.now());
-            postService.post(newCarLogPost);
-        }
-        return carLogbook.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
-                : new ResponseEntity<>(newCarLogPost, HttpStatus.CREATED);
+    public ResponseEntity<PostDto> postCarLog(@PathVariable Long carLogbookId,
+                                              @RequestBody PostCreationDto postCreationDto) {
+        PostDto newCarLogPost = postService.postCarLogbookPost(carLogbookId, postCreationDto);
+        return new ResponseEntity<>(newCarLogPost, HttpStatus.CREATED);
 
     }
 
-    @PostMapping("club-posts/new")
-    public ResponseEntity<ClubPost> postClubPost(@RequestBody ClubPostDto clubPostDto) {
-        Optional<CarClub> carClub = carClubRepository.findById(clubPostDto.carClubId());
-        ClubPost newClubPost = new ClubPost();
-        if(carClub.isPresent()){
-            newClubPost.setCarClub(carClub.get());
-            newClubPost.setTopic(clubPostDto.clubPostTopic());
-            newClubPost.setDescription(clubPostDto.description());
-            newClubPost.setCreatedTime(LocalDateTime.now());
-            postService.post(newClubPost);
-        }
-        return carClub.isEmpty() ? new ResponseEntity<>(HttpStatus.CONFLICT)
-                : new ResponseEntity<>(newClubPost, HttpStatus.CREATED);
-
+    @PostMapping("car-club/{carClubId}/club-posts/new")
+    public ResponseEntity<PostDto> postClubPost(@PathVariable Long carClubId,
+                                                @RequestBody PostCreationDto postCreationDto) {
+        PostDto newClubPost = postService.postCarClubPost(carClubId, postCreationDto);
+        return new ResponseEntity<>(newClubPost, HttpStatus.CREATED);
     }
 
     @GetMapping("user/news")
     public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
-        Optional<User> user = userService.getByUsername(principal.getName());
-        return user.map(value -> new ResponseEntity<>(postService.getNewPosts(value), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
+        //principal.getName() returns user's email
+        User user = userService.getUserByEmail(principal.getName());
+        return  new ResponseEntity<>(postService.getNewPosts(user), HttpStatus.OK) ;
     }
 
     @DeleteMapping({"/car-club-posts/{id}"})
     public ResponseEntity<ApiResponse> deleteCarClubPost(@PathVariable long id, WebRequest request) {
-        postService.deleteCarClubPost(id);
-        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
-                messageSourceHandler
-                        .getLocalMessage("message.deletePost", request,
-                                "Post has been deleted")), HttpStatus.OK);
+        ApiResponse response = postService.deleteCarClubPost(id, request);
+        return new ResponseEntity<>(response, response.statusCode());
     }
-    @DeleteMapping({"/car-logbook-posts/{id}"})
-    public ResponseEntity<ApiResponse> deleteCarLogBookPost(@PathVariable long id,  WebRequest request) {
-        postService.deleteCarLogPost(id);
-        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK,
-                messageSourceHandler
-                        .getLocalMessage("message.deletePost", request,
-                                "Post has been deleted")), HttpStatus.OK);
 
+    @DeleteMapping({"/car-logbook-posts/{id}"})
+    public ResponseEntity<ApiResponse> deleteCarLogBookPost(@PathVariable long id, WebRequest request) {
+        ApiResponse response = postService.deleteCarLogPost(id, request);
+        return new ResponseEntity<>(response, response.statusCode());
     }
 
     @PutMapping({"/car-logbook-posts/{id}"})
-    public ResponseEntity<CarLogPost> editCarLogbookPost(@PathVariable long id,
-                                                         @RequestBody CarLogPostDto carLogPostDto) {
-        Optional<CarLogPost> editedCarLogbookPost = postService.editCarLogbookPost( id, carLogPostDto);
-        return editedCarLogbookPost.map(carLogPost ->
-                new ResponseEntity<>(carLogPost, HttpStatus.OK)).orElseGet(() ->
-                new ResponseEntity<>(HttpStatus.CONFLICT));
+    public ResponseEntity<PostDto> editCarLogbookPost(@PathVariable long id,
+                                                      @RequestBody PostCreationDto postCreationDto) {
+        PostDto editedCarLogbookPost = postService.editCarLogbookPost(id, postCreationDto);
+        return new ResponseEntity<>(editedCarLogbookPost, HttpStatus.OK);
     }
-
-
-
 
     @GetMapping({"/cars/{carId}/logbook"})
     public ResponseEntity<CarLogbook> getCarLogbookByCarId(@PathVariable Long carId) {
-        Optional<CarLogbook> carLogbook = carLogbookRepository.findByCar_Id(carId);
-        return carLogbook.map(logbook ->
-                new ResponseEntity<>(logbook, HttpStatus.OK)).orElseGet(() ->
-                new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        CarLogbook carLogbook = postService.getCarLogbookByCarId(carId);
+        return new ResponseEntity<>(carLogbook, HttpStatus.OK);
     }
-
 }
