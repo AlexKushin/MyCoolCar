@@ -1,10 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
-
-import * as fromCarLogbook from "../store/car-logbook.reducer";
-import * as CarLogbookActions from '../store/car-logbook.actions'
 import {ActivatedRoute} from "@angular/router";
+import * as CarLogbookActions from '../store/car-logbook.actions'
+import * as fromApp from '../../../store/app.reducer';
 
 
 @Component({
@@ -19,7 +18,7 @@ import {ActivatedRoute} from "@angular/router";
 export class NewCarLogbookPostComponent implements OnInit {
 
   constructor(
-    private store: Store<{ carLogbookState: fromCarLogbook.State }>,
+    private store: Store<fromApp.AppState>,
     private route: ActivatedRoute
   ) {
   }
@@ -45,15 +44,8 @@ export class NewCarLogbookPostComponent implements OnInit {
   }
 
   saveCarLogbookPost() {
-    console.log("Car Logbook Post ")
-    console.log(this.carLogbookPostForm.value)
-
     const snapshot = this.route.snapshot;
     const carLogbookId = +snapshot.paramMap.get('car-logbookId');
-
-
-    console.log("carLogbookId")
-    console.log(carLogbookId)
 
     this.store.dispatch(new CarLogbookActions.AddCarLogbookPost(
         {

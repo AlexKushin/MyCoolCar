@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from "../../store/cars.reducer";
-import * as UserCarsActions from '../../store/cars.actions'
 import {Car} from "../../../../models/car";
 import {NgForOf} from "@angular/common";
+import * as UserCarsActions from '../../store/cars.actions'
+import * as fromApp from '../../../../store/app.reducer';
 
 @Component({
   selector: 'app-edit-car',
@@ -19,7 +19,7 @@ import {NgForOf} from "@angular/common";
 export class EditCarComponent implements OnInit {
 
   constructor(
-    private store: Store<{ userCarsState: fromUserCars.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 

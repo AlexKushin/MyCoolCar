@@ -4,24 +4,23 @@ import {Car} from "../../models/car";
 import {Actions, ofType} from "@ngrx/effects";
 import {map, switchMap, take} from "rxjs/operators";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from "./store/cars.reducer";
-import * as UserCarsActions from './store/cars.actions'
-
 import {of} from "rxjs";
+import * as fromApp from '../../store/app.reducer';
+import * as UserCarsActions from './store/cars.actions'
 
 @Injectable({providedIn: 'root'})
 export class UserCarsResolverService implements Resolve<Car[]> {
 
   constructor(
-    private store: Store<{ userCarsState: fromUserCars.State }>,
+    private store: Store<fromApp.AppState>,
     private actions$: Actions
   ) {
   }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return this.store.select('userCarsState').pipe(
+    return this.store.select('userCars').pipe(
       take(1),
-      map(userCarsState => {
+      map((userCarsState) => {
         console.log("UserCarsResolverService")
         console.log(userCarsState)
         return userCarsState.userCars;

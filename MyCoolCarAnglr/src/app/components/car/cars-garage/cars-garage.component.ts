@@ -1,12 +1,12 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CarsListComponent} from "./cars-list/cars-list.component";
 import {NewCarComponent} from "./new-car/new-car.component";
-import {ActivatedRoute, Router, RouterLink} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from "../store/cars.reducer";
 import {NgIf} from "@angular/common";
 import {map, Subscription} from "rxjs";
 import {Car} from "../../../models/car";
+import * as fromApp from '../../../store/app.reducer';
 
 @Component({
   selector: 'app-cars-garage',
@@ -28,16 +28,17 @@ export class CarsGarageComponent implements OnInit, OnDestroy {
   subscription: Subscription;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
-    private store: Store<{ userCarsState: fromUserCars.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 
   ngOnInit(): void {
-    this.subscription = this.store.select('userCarsState')
+    this.subscription = this.store.select('userCars')
       .pipe(map(userCarsState => userCarsState.userCars))
-      .subscribe((userCars: Car[]) => this.userCars = userCars)
+      .subscribe((userCars: Car[]) => {
+        this.userCars = userCars
+      })
   }
 
   ngOnDestroy(): void {

@@ -2,8 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from "../../store/cars.reducer";
 import * as UserCarsActions from '../../store/cars.actions'
+import * as fromApp from '../../../../store/app.reducer';
 
 @Component({
   selector: 'new-car',
@@ -15,7 +15,7 @@ import * as UserCarsActions from '../../store/cars.actions'
 export class NewCarComponent implements OnInit {
 
   constructor(
-    private store: Store<{ userCarsState: fromUserCars.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 
