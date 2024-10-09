@@ -1,8 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
-import {UserService} from "../../../services/user.service";
+import {ActivatedRoute} from "@angular/router";
+import {Store} from "@ngrx/store";
+import * as fromApp from "../../../store/app.reducer";
+import * as AuthActions from '../../login/store/auth.actions'
+
 
 @Component({
   selector: 'app-password-change',
@@ -13,13 +16,11 @@ import {UserService} from "../../../services/user.service";
 })
 export class PasswordChangeComponent implements OnInit {
 
-  // @ts-ignore
   newPasswordForm: FormGroup;
   token: string = '';
 
   constructor(private route: ActivatedRoute,
-              private userService: UserService,
-              private router: Router) {
+              private store: Store<fromApp.AppState>) {
   }
 
 
@@ -34,25 +35,8 @@ export class PasswordChangeComponent implements OnInit {
   }
 
   onSubmit() {
-    let formData: any = new FormData();
     if (this.newPasswordForm) {
-      // @ts-ignore
-      let token = this.newPasswordForm.get('token').value
-      console.log('token= ' + token)
-      // @ts-ignore
-      let password = this.newPasswordForm.get('password').value
-      console.log('password= ' + password)
-      // @ts-ignore
-      let matchingPassword = this.newPasswordForm.get('matchingPassword').value
-      console.log('passwordConfirm= ' + matchingPassword)
-      this.userService.updatePassword(this.newPasswordForm.value).subscribe(result => {
-          console.log(result.message)
-          this.router.navigate(['login'])
-        },
-        error => {
-          console.log(error.message)
-          this.router.navigate(['login'])
-        });
+      this.store.dispatch(new AuthActions.PasswordChange(this.newPasswordForm.value))
       console.log('token= ' + this.newPasswordForm.value)
     }
   }
