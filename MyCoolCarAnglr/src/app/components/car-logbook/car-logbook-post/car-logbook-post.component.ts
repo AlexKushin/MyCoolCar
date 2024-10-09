@@ -2,10 +2,10 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CarLogbookPost} from "../../../models/carLogbookPost";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromCarLogbook from "../store/car-logbook.reducer";
-import * as CarLogbookActions from "../store/car-logbook.actions"
 import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
+import * as CarLogbookActions from "../store/car-logbook.actions"
+import * as fromApp from '../../../store/app.reducer';
 
 
 @Component({
@@ -19,7 +19,7 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private store: Store<{ carLogbookState: fromCarLogbook.State }>,
+    private store: Store<fromApp.AppState>,
     private router: Router,
   ) {
   }
@@ -34,7 +34,7 @@ export class CarLogbookPostComponent implements OnInit, OnDestroy {
       }),
       switchMap(id => {
         this.logbookPostId = id;
-        return this.store.select('carLogbookState')
+        return this.store.select('carLogbook')
       }),
       map(carLogbookState => {
         return carLogbookState.carLogbook.carLogPosts.find((logbookPost) => {

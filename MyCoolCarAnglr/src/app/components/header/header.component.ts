@@ -2,10 +2,10 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {Store} from "@ngrx/store";
-import * as fromAuth from "../login/store/auth.reducer";
-import * as AuthActions from '../login/store/auth.actions'
 import {map, Subscription} from "rxjs";
 import {User} from "../../models/user";
+import * as AuthActions from '../login/store/auth.actions'
+import * as fromApp from '../../store/app.reducer';
 
 @Component({
   selector: 'app-menu',
@@ -20,7 +20,7 @@ export class HeaderComponent implements OnInit {
   private userSub: Subscription;
 
   constructor(
-    private store: Store<{ auth: fromAuth.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 
@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
     console.log('isAuthenticated before')
     console.log(this.isUserAuthenticated)
     this.userSub = this.store
-       .select('auth')
+      .select('auth')
       .pipe(map(userState => userState.user))
       .subscribe((user: User) => {
         this.isUserAuthenticated = !!user;

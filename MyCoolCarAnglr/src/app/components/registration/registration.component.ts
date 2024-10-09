@@ -3,11 +3,11 @@ import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm, ReactiveFormsModule} from "@angular/forms";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromAuth from "../login/store/auth.reducer";
-import * as AuthActions from '../login/store/auth.actions'
 import {PlaceholderDirective} from "../shared/placeholder/placeholder.directive";
 import {Subscription} from "rxjs";
 import {WarningComponent} from "../shared/warning/warning.component";
+import * as AuthActions from '../login/store/auth.actions'
+import * as fromApp from '../../store/app.reducer';
 
 @Component({
   selector: 'app-registration',
@@ -24,8 +24,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   private storeSub: Subscription;
 
   constructor(
-    private router: Router,
-    private store: Store<{ auth: fromAuth.State }>,
+    private store: Store<fromApp.AppState>,
     private injector: Injector
   ) {
   }

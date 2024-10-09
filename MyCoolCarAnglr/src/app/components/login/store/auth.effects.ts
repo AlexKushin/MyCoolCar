@@ -10,6 +10,7 @@ import {API_URL} from "../../../app.constants";
 import {User} from "../../../models/user";
 import {Store} from "@ngrx/store";
 import * as fromAuth from "./auth.reducer";
+import {Response} from "../../../models/response";
 
 export interface AuthResponseData {
   token: string,
@@ -95,12 +96,67 @@ export class AuthEffects {
           .pipe(
             map(() => {
               this.router.navigate(['/registration/confirm']);
-              return new AuthActions.RegistrationConfirm();
+              return new AuthActions.RegistrationStartSuccess();
+            }),
+            catchError((errorRes) => handleError(errorRes))
+          );
+      })
+    ),
+  //  {dispatch: false}
+  );
+
+  confirmRegistration = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.REGISTRATION_CONFIRM_START),
+      switchMap((regConfirmData: AuthActions.RegistrationStart) => {
+        return this.http.get(`${API_URL}/api/registration/confirm?token=`+ regConfirmData.payload)
+          .pipe(
+            map(() => {
+              this.router.navigate(['/login']);
+              return new AuthActions.RegistrationConfirmSuccess();
             }),
             catchError((errorRes) => handleError(errorRes))
           );
       })
     )
+  );
+
+  passwordReset = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.PASSWORD_RESET),
+      switchMap((passwordResetData: AuthActions.PasswordReset) => {
+        //return this.http.get(`${API_URL}/api/registration/confirm?token=`+ regConfirmData.payload)
+
+        return this.http.post<Response>(`${API_URL}/api/user/resetPassword?email=` + passwordResetData.payload, null)
+          .pipe(
+            map(() => {
+              this.router.navigate(['password/change'])
+            //  return new AuthActions.RegistrationConfirmSuccess();
+            }),
+            catchError((errorRes) => handleError(errorRes))
+          );
+      })
+    ),
+    {dispatch: false}
+  );
+
+  passwordChange = createEffect(() =>
+      this.actions$.pipe(
+        ofType(AuthActions.PASSWORD_CHANGE),
+        switchMap((passwordChangeData: AuthActions.PasswordChange) => {
+          return this.http.post<Response>(`${API_URL}/api/user/savePassword`, passwordChangeData.payload)
+
+         // return this.http.post<Response>(`${API_URL}/api/user/resetPassword?email=` + passwordChangeData.payload, null)
+            .pipe(
+              map(() => {
+                this.router.navigate(['login'])
+                //  return new AuthActions.RegistrationConfirmSuccess();
+              }),
+              catchError((errorRes) => handleError(errorRes))
+            );
+        })
+      ),
+    {dispatch: false}
   );
 
   authRedirect = createEffect(

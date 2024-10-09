@@ -2,12 +2,12 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Car} from "../../models/car";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from "./store/cars.reducer";
-import * as UserCarsActions from "./store/cars.actions"
 import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {NgForOf, NgIf} from "@angular/common";
 import {CarLogbookComponent} from "../car-logbook/car-logbook.component";
+import * as UserCarsActions from "./store/cars.actions"
+import * as fromApp from '../../store/app.reducer';
 
 @Component({
   selector: 'app-car',
@@ -26,7 +26,7 @@ export class CarComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private store: Store<{ userCarsState: fromUserCars.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 
@@ -40,7 +40,8 @@ export class CarComponent implements OnInit, OnDestroy {
       }),
       switchMap(id => {
         this.id = id;
-        return this.store.select('userCarsState')
+        //return this.store.select('userCarsState')
+        return this.store.select('userCars')
       }),
       map(userCarsState => {
         return userCarsState.userCars.find((car) => {

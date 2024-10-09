@@ -1,8 +1,10 @@
 import {Component, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
-import {UserService} from "../../../services/user.service";
+import {ActivatedRoute} from "@angular/router";
+import {Store} from "@ngrx/store";
+import * as fromApp from "../../../store/app.reducer";
+import * as AuthActions from '../../login/store/auth.actions'
 
 @Component({
   selector: 'app-confirm-registration',
@@ -11,16 +13,14 @@ import {UserService} from "../../../services/user.service";
   templateUrl: './confirm-registration.component.html',
   styleUrls: ['./confirm-registration.component.css']
 })
-export class ConfirmRegistrationComponent implements OnInit{
+export class ConfirmRegistrationComponent implements OnInit {
 
-  // @ts-ignore
   confirmRegistrationForm: FormGroup;
-  token:string = '';
-
+  token: string = '';
 
   constructor(private route: ActivatedRoute,
-              private userService: UserService,
-              private router: Router) { }
+              private store: Store<fromApp.AppState>) {
+  }
 
 
   ngOnInit(): void {
@@ -33,17 +33,10 @@ export class ConfirmRegistrationComponent implements OnInit{
     this.initForm();
   }
 
-  onSubmit(){
-    let formData: any = new FormData();
-    if(this.confirmRegistrationForm) {
-     // @ts-ignore
-      let tokenCode =  this.confirmRegistrationForm.get('tokenCode').value
-      this.userService.confirmRegistration(tokenCode).subscribe(result =>{
-        console.log(result.message)
-        console.log('result= ' + result.error)
-        this.router.navigate(['login'])
-      });
-      console.log('token= '+ tokenCode)
+  onSubmit() {
+    if (this.confirmRegistrationForm) {
+      let tokenCode = this.confirmRegistrationForm.get('tokenCode').value
+      this.store.dispatch(new AuthActions.RegistrationConfirmStart(tokenCode))
     }
   }
 

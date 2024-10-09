@@ -4,11 +4,11 @@ import {catchError, switchMap, tap} from "rxjs/operators";
 import {map, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {Store} from "@ngrx/store";
-import * as fromUserCars from './cars.reducer'
-import * as UserCarsActions from './cars.actions'
 import {Car} from "../../../models/car";
 import {API_URL} from "../../../app.constants";
 import {Router} from "@angular/router";
+import * as UserCarsActions from './cars.actions'
+import * as fromApp from '../../../store/app.reducer';
 
 const handleError = (errorRes: any) => {
 
@@ -131,7 +131,7 @@ export class UserCarsEffects {
     private actions$: Actions,
     private http: HttpClient,
     private router: Router,
-    private store: Store<fromUserCars.State>
+    private store: Store<fromApp.AppState>
   ) {
   }
 }

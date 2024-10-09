@@ -2,12 +2,9 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {ActivatedRoute} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromCarLogbook from "../store/car-logbook.reducer";
-import * as CarLogbookActions from '../store/car-logbook.actions'
-
-
 import {CarLogbookPost} from "../../../models/carLogbookPost";
-
+import * as CarLogbookActions from '../store/car-logbook.actions'
+import * as fromApp from '../../../store/app.reducer';
 
 @Component({
   selector: 'app-edit-car-logbook-post',
@@ -27,7 +24,7 @@ export class EditCarLogbookPostComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private store: Store<{ carLogbookState: fromCarLogbook.State }>
+    private store: Store<fromApp.AppState>
   ) {
   }
 

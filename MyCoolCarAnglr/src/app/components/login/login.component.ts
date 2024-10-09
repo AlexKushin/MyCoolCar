@@ -6,12 +6,12 @@ import {Car} from "../../models/car";
 import {CarService} from "../../services/car.service";
 import {CarCardComponent} from "../car/car-card/car-card.component";
 import {CarCardSliderComponent} from "../car/car-card-slider/car-card-slider.component";
-import * as fromAuth from './store/auth.reducer'
 import {Store} from "@ngrx/store";
-import * as AuthActions from './store/auth.actions'
 import {PlaceholderDirective} from "../shared/placeholder/placeholder.directive";
 import {Subscription} from "rxjs";
 import {WarningComponent} from "../shared/warning/warning.component";
+import * as AuthActions from './store/auth.actions'
+import * as fromApp from '../../store/app.reducer';
 
 @Component({
   selector: 'app-login',
@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   constructor(
     private carService: CarService,
-    private store: Store<{ auth: fromAuth.State }>,
+    private store: Store<fromApp.AppState>,
     private injector: Injector
   ) {
   }

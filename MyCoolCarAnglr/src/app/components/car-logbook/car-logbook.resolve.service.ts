@@ -2,18 +2,19 @@ import {Injectable} from "@angular/core";
 import {ActivatedRouteSnapshot, Resolve, RouterStateSnapshot} from "@angular/router";
 import {CarLogbook} from "../../models/carLogbook";
 import {Store} from "@ngrx/store";
-import * as fromCarLogbook from "./store/car-logbook.reducer";
-import * as CarLogbookActions from './store/car-logbook.actions'
 import {Actions, ofType} from "@ngrx/effects";
 import {map, switchMap, take} from "rxjs/operators";
 import {of} from "rxjs";
+import * as fromCarLogbook from "./store/car-logbook.reducer";
+import * as CarLogbookActions from './store/car-logbook.actions'
+import * as fromApp from '../../store/app.reducer';
 
 @Injectable({providedIn: 'root'})
 export class CarLogbookResolverService implements Resolve<CarLogbook> {
 
 
   constructor(
-    private store: Store<{ carLogbookState: fromCarLogbook.State }>,
+    private store: Store<fromApp.AppState>,
     private actions$: Actions
   ) {
   }
@@ -22,7 +23,7 @@ export class CarLogbookResolverService implements Resolve<CarLogbook> {
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
 
     const carId = +route.paramMap.get('id');
-    return this.store.select('carLogbookState').pipe(
+    return this.store.select('carLogbook').pipe(
       take(1),
       map((carLogbookState: fromCarLogbook.State) => {
         return carLogbookState.carLogbook;
