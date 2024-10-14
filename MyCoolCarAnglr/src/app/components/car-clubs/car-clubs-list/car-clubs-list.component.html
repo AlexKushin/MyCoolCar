@@ -1,0 +1,7 @@
+<h2>{{ header }}</h2>
+<div class="row" style="display: flex;">
+  <app-car-club
+    *ngFor=" let carClub of carClubs"
+    [carClub]="carClub">
+  </app-car-club>
+</div>

@@ -1,0 +1,23 @@
+<div class="col-md-12 text-center">
+</div>
+
+
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group" style="margin-top: 50px">
+      <button type="button" class="btn btn-light active" (click)="showMyCarsClubs()">My Car Clubs</button>
+      <hr>
+      <button type="button" class="btn btn-light active" (click)="showClubs()">Clubs</button>
+      <hr>
+
+      <!--@if-->
+      <button  (click)="createNewCarClub()" class="btn btn-success">Create Car Club</button>
+    </div>
+  </div>
+  <div class="col-md-9">
+
+    <app-car-clubs-list [carClubs]="isMyCars?userCarClubs:carClubs"
+                   [header]="isMyCars? 'My Car Clubs' : 'Car Clubs'"></app-car-clubs-list>
+  </div>
+</div>

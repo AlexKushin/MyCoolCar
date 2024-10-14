@@ -17,6 +17,7 @@ import {UserCarsEffects} from "./app/components/car/store/cars.effects";
 import {CarLogbookEffects} from "./app/components/car-logbook/store/car-logbook.effects";
 import {appReducer, metaReducers} from "./app/store/app.reducer";
 import {HydrationEffects} from "./app/store/hydration/hydration.effects";
+import {CarClubEffects} from "./app/components/car-clubs/store/car-club.effects";
 
 
 bootstrapApplication(AppComponent, {
@@ -39,7 +40,7 @@ bootstrapApplication(AppComponent, {
       ),
       {provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorAuthService, multi: true},
       {provide: ToastrService, useClass: ToastrService},
-      provideEffects([AuthEffects, UserCarsEffects, CarLogbookEffects, HydrationEffects]),
+      provideEffects([AuthEffects, UserCarsEffects, CarLogbookEffects, HydrationEffects,CarClubEffects ]),
     ],
   }
 )

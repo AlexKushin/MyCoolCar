@@ -1,5 +1,7 @@
 package com.mycoolcar.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mycoolcar.enums.CarClubAccessType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +25,17 @@ public class CarClub implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     private String description;
+
+    private CarClubAccessType accessType;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "club_owner_id")
+    private User clubOwner;
+
     @OneToMany(targetEntity = ClubPost.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "carClub")
     private List<ClubPost> clubPosts;
 

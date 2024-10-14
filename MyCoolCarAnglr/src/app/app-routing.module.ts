@@ -22,6 +22,9 @@ import {CarLogbookPostComponent} from "./components/car-logbook/car-logbook-post
 import {
   EditCarLogbookPostComponent
 } from "./components/car-logbook/edit-car-logbook-post/edit-car-logbook-post.component";
+import {CarClubsComponent} from "./components/car-clubs/car-clubs.component";
+import {CarClubsResolverService} from "./components/car-clubs/car-clubs-resolve.service";
+import {UserCarClubsResolverService} from "./components/car-clubs/user-car-clubs-resolve.service";
 
 
 const routes: Routes = [
@@ -42,9 +45,26 @@ const routes: Routes = [
     resolve: [CarLogbookResolverService, UserCarsResolverService],
     canActivate: [authGuard]
   },
-  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/new", component: NewCarLogbookPostComponent, canActivate: [authGuard]},
-  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId", component: CarLogbookPostComponent, canActivate: [authGuard]},
-  {path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId/edit", component:  EditCarLogbookPostComponent, canActivate: [authGuard]},
+  {
+    path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/new",
+    component: NewCarLogbookPostComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId",
+    component: CarLogbookPostComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: "cars/:id/car-logbook/:car-logbookId/car-logbook-posts/:car-logbook-postId/edit",
+    component: EditCarLogbookPostComponent,
+    canActivate: [authGuard]
+  },
+
+  {
+    path: "car_clubs", component: CarClubsComponent,
+    resolve: [CarClubsResolverService, UserCarClubsResolverService],
+  },
 
   {path: "**", component: ErrorComponent}
 ];

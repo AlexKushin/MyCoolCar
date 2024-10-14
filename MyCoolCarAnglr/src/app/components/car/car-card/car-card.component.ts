@@ -1,5 +1,5 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, Input} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {Car} from "../../../models/car";
 import {MatCardModule} from "@angular/material/card";
 import {RouterLink} from "@angular/router";
@@ -13,9 +13,7 @@ import {RouterLink} from "@angular/router";
 })
 export class CarCardComponent {
 
-  @Input() car!: Car;
-
-
+  @Input() car: Car;
 
 
 }
