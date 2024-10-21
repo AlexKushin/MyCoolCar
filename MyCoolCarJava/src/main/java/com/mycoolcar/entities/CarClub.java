@@ -9,8 +9,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Table(name = "car_clubs")
 @AllArgsConstructor
@@ -29,7 +32,16 @@ public class CarClub implements Serializable {
 
     private String description;
 
+    private String location;
+
+    private LocalDateTime createdTime;
+
     private CarClubAccessType accessType;
+
+    //Many to Many Bidirectional
+    @JsonIgnore
+    @ManyToMany(mappedBy = "userClubs")
+    private Set<User> members = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne
@@ -38,6 +50,17 @@ public class CarClub implements Serializable {
 
     @OneToMany(targetEntity = ClubPost.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "carClub")
     private List<ClubPost> clubPosts;
+
+    public void addCarClubMember(User user) {
+        this.members.add(user);
+        user.getUserClubs().add(this);
+    }
+
+    public void removeCarClubMember(User user){
+        this.members.remove(user);
+        user.getUserClubs().remove(this);
+    }
+
 
     @Override
     public boolean equals(Object o) {

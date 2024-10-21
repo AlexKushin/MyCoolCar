@@ -67,7 +67,7 @@ export class UserCarsEffects {
 
   addNewUserCar = createEffect(() => this.actions$.pipe(
     ofType(UserCarsActions.ADD_NEW_USER_CAR),
-    switchMap((car: UserCarsActions.AddUserCar) => {
+    switchMap((car: UserCarsActions.AddNewUserCar) => {
       return this.http.post<Car>(`${API_URL}/api/cars/new`, car.payload)
     }),
     map(userCar => {

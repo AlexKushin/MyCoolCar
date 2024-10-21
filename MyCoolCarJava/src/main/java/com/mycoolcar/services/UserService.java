@@ -9,6 +9,7 @@ import com.mycoolcar.enums.AppUserRole;
 import com.mycoolcar.exceptions.ResourceNotFoundException;
 import com.mycoolcar.exceptions.UserAlreadyExistException;
 import com.mycoolcar.exceptions.UserNotFoundException;
+import com.mycoolcar.mapper.UserDtoMapper;
 import com.mycoolcar.registration.OnRegistrationCompleteEvent;
 import com.mycoolcar.registration.OnResetPasswordEvent;
 import com.mycoolcar.repositories.UserRepository;
@@ -43,6 +44,7 @@ public class UserService implements IUserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSourceHandler messageSourceHandler;
+    private final UserDtoMapper userDtoMapper;
 
 
     @Autowired
@@ -50,13 +52,14 @@ public class UserService implements IUserService {
                        PasswordEncoder passwordEncoder,
                        VerificationTokenRepository verificationTokenRepository,
                        ApplicationEventPublisher eventPublisher,
-                       MessageSourceHandler messageSourceHandler) {
+                       MessageSourceHandler messageSourceHandler,
+                       UserDtoMapper userDtoMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenRepository = verificationTokenRepository;
         this.eventPublisher = eventPublisher;
         this.messageSourceHandler = messageSourceHandler;
-
+        this.userDtoMapper = userDtoMapper;
     }
 
     public void initRolesAndUsers() {
@@ -100,7 +103,7 @@ public class UserService implements IUserService {
     public UserDto getUserDtoByEmail(String email) {
         log.info("Getting user DTO by email: {}", email);
         User user = getUserByEmail(email);
-        return mapUserToDto(user);
+        return userDtoMapper.apply(user);
     }
 
 
@@ -131,7 +134,7 @@ public class UserService implements IUserService {
         User registeredUser = saveUser(userCreationDto);
 
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser, request));
-        return mapUserToDto(registeredUser);
+        return userDtoMapper.apply(registeredUser);
     }
 
     private User saveUser(UserCreationDto userCreationDto) {
@@ -247,7 +250,7 @@ public class UserService implements IUserService {
         user.setBan(!user.isBan());
         User bannedUser = userRepository.save(user);
         log.info("User with ID: {} banned/unbanned successfully", id);
-        return mapUserToDto(bannedUser);
+        return userDtoMapper.apply(bannedUser);
     }
 
     @Override
@@ -270,12 +273,5 @@ public class UserService implements IUserService {
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
         log.info("Password changed successfully for user with email: {}", user.getEmail());
-    }
-
-    private UserDto mapUserToDto(User user) {
-        return new UserDto(user.getId(), user.isBan(),
-                user.getRegistered(), user.getFirstName(),
-                user.getLastName(), user.getEmail(),
-                user.isEnabled());
     }
 }

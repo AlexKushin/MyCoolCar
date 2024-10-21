@@ -25,7 +25,7 @@ export class FetchUserCars implements Action {
   readonly type = FETCH_CARS;
 }
 
-export class AddUserCar implements Action {
+export class AddNewUserCar implements Action {
   readonly type = ADD_NEW_USER_CAR;
 
   constructor(public payload: any) {
@@ -82,7 +82,7 @@ export type UserCarsActions =
   | SetUserCars
   | SetUserCar
   | FetchUserCars
-  | AddUserCar
+  | AddNewUserCar
   | UpdateUserCar
   | DeleteUserCar
   | StoreUserCar

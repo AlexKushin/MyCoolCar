@@ -1,0 +1,19 @@
+
+<div class="row">
+  <!-- Left column for image -->
+  <div class="col-md-6">
+    <a routerLink="{{carClub.id}}" routerLinkActive="active" style="cursor: pointer;">
+      <img class="slide" style="height: 150px; width: 150px;"
+           src="https://scontent-waw2-2.xx.fbcdn.net/v/t39.30808-6/305846247_613129667181520_1592642947995063410_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=7yM28yQsTVgQ7kNvgGHuTMX&_nc_ht=scontent-waw2-2.xx&_nc_gid=A1eTGYHJshxVzHW6QrjSW6E&oh=00_AYAo1LxuakS-rBho8P9PwqqS8LIuwGLFUunhU7RZr5dljw&oe=6714B6FA"
+           alt="...">
+    </a>
+  </div>
+
+  <!-- Right column for text -->
+  <div class="col-md-6">
+    <p class="text-uppercase">ID: {{ carClub.id }}</p>
+    <p class="text-uppercase">Name: {{ carClub.name }}</p>
+    <p class="text-uppercase">Description: {{ carClub.description }}</p>
+    <button>Subscribe</button>
+  </div>
+</div>

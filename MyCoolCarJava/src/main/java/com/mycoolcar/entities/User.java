@@ -40,6 +40,7 @@ public class User implements UserDetails, Serializable {
 
     private String email;
 
+    @JsonIgnore
     @Column(length = 60)
     private String password;
 
@@ -47,17 +48,21 @@ public class User implements UserDetails, Serializable {
 
     private Set<AppUserRole> roles = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(targetEntity = Car.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
     private List<Car> userCars = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    //Many to Many Bidirectional
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_clubs",
             joinColumns =
             @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "car_club_id", referencedColumnName = "id"))
-    private List<CarClub> userClubs = new ArrayList<>();
+    private Set<CarClub> userClubs = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(name = "user_subscribed_cars",
             joinColumns =
@@ -74,11 +79,6 @@ public class User implements UserDetails, Serializable {
         this.password = password;
         this.roles = roles;
     }
-
-/* public User() {
-        super();
-        this.enabled = false;
-    }*/
 
     @JsonIgnore
     @Override

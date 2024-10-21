@@ -1,7 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CarsListComponent} from "../car/cars-garage/cars-list/cars-list.component";
 import {NgIf} from "@angular/common";
-import {Car} from "../../models/car";
 import {map, Subscription} from "rxjs";
 import {Router} from "@angular/router";
 import {Store} from "@ngrx/store";
@@ -55,7 +54,7 @@ export class CarClubsComponent implements OnInit, OnDestroy {
   }
 
   createNewCarClub() {
-    //this.router.navigate(['cars/new'])
+    this.router.navigate(['car_clubs/new'])
   }
 
   showMyCarsClubs() {

@@ -40,7 +40,6 @@ export class CarComponent implements OnInit, OnDestroy {
       }),
       switchMap(id => {
         this.id = id;
-        //return this.store.select('userCarsState')
         return this.store.select('userCars')
       }),
       map(userCarsState => {

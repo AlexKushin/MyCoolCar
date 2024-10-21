@@ -25,7 +25,11 @@ export function carClubReducer(state = initialState, action: CarClubsActions.Car
         ...state,
         userCarClubs: [...action.payload]
       }
-
+    case CarClubsActions.SET_USER_CAR_CLUB:
+      return {
+        ...state,
+        userCarClubs: [...state.userCarClubs, action.payload]
+      }
     default:
       return state
   }

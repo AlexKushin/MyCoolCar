@@ -46,12 +46,12 @@ public class PostController {
         return new ResponseEntity<>(newClubPost, HttpStatus.CREATED);
     }
 
-    @GetMapping("user/news")
+    /*@GetMapping("user/news")
     public ResponseEntity<List<Post>> getNewPosts(Principal principal) {
         //principal.getName() returns user's email
         User user = userService.getUserByEmail(principal.getName());
         return  new ResponseEntity<>(postService.getNewPosts(user), HttpStatus.OK) ;
-    }
+    }*/
 
     @DeleteMapping({"/car-club-posts/{id}"})
     public ResponseEntity<ApiResponse> deleteCarClubPost(@PathVariable long id, WebRequest request) {

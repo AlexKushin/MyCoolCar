@@ -70,7 +70,7 @@ public class PostService {
 
 
 
-    public List<Post> getNewPosts(User user) {
+ /*   public List<Post> getNewPosts(User user) {
         log.info("Fetching new posts for user: {}", user.getId());
         List<CarLogbook> carLogbooks = carLogbookRepository.findAllByCarIn(user.getSubscribedCars());
         List<Post> newPosts = Stream.concat(
@@ -79,7 +79,7 @@ public class PostService {
                 .toList();
         log.info("Fetched {} new posts for user: {}", newPosts.size(), user.getId());
         return newPosts;
-    }
+    }*/
 
     public ApiResponse deleteCarLogPost(long id, WebRequest request) {
         log.info("Deleting CarLogPost with ID: {}", id);

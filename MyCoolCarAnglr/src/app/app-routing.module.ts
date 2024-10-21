@@ -25,6 +25,8 @@ import {
 import {CarClubsComponent} from "./components/car-clubs/car-clubs.component";
 import {CarClubsResolverService} from "./components/car-clubs/car-clubs-resolve.service";
 import {UserCarClubsResolverService} from "./components/car-clubs/user-car-clubs-resolve.service";
+import {NewCarClubComponent} from "./components/car-clubs/new-car-club/new-car-club.component";
+import {CarClubComponent} from "./components/car-clubs/car-clubs-list/car-club/car-club.component";
 
 
 const routes: Routes = [
@@ -65,6 +67,8 @@ const routes: Routes = [
     path: "car_clubs", component: CarClubsComponent,
     resolve: [CarClubsResolverService, UserCarClubsResolverService],
   },
+  {path: "car_clubs/:id", component: CarClubComponent},
+  {path: "car_clubs/new", component: NewCarClubComponent },
 
   {path: "**", component: ErrorComponent}
 ];
