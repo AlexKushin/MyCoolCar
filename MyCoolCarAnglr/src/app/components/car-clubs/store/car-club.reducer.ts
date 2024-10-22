@@ -30,6 +30,26 @@ export function carClubReducer(state = initialState, action: CarClubsActions.Car
         ...state,
         userCarClubs: [...state.userCarClubs, action.payload]
       }
+
+    // Handle the action to update the specific CarClub in carClubs array
+    case CarClubsActions.UPDATE_CAR_CLUB_IN_CAR_CLUBS:
+      return {
+        ...state,
+        carClubs: state.carClubs.map(club =>
+          club.id === action.payload.id ? action.payload : club
+        ) // Update the specific CarClub in carClubs array
+      };
+
+    case CarClubsActions.ADD_CAR_CLUB_TO_USER_CAR_CLUBS:
+      return {
+        ...state,
+        userCarClubs: [...state.userCarClubs, action.payload]  // Add the CarClub to userCarClubs
+      };
+    case CarClubsActions.REMOVE_CAR_CLUB_FROM_USER_CAR_CLUBS:
+      return {
+        ...state,
+        userCarClubs: state.userCarClubs.filter(club => club.id !== action.payload)  // Remove the CarClub
+      };
     default:
       return state
   }

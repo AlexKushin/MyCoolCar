@@ -12,8 +12,9 @@
   <div class="col-md-6">
     <p class="text-uppercase">ID: {{ carClub.id }}</p>
     <p class="text-uppercase">Name: {{ carClub.name }}</p>
-    <p class="text-uppercase">Description: {{ carClub.description }}</p>
-    <button *ngIf="!(carClubExistsInUserCarClubs$ | async)">Subscribe</button>
-    <button *ngIf="(carClubExistsInUserCarClubs$ | async)">Unsubscribe</button>
+    <p class="text-uppercase">Location: {{ carClub.location }}</p>
+    <p class="text-uppercase">Club Owner Id: {{ carClub.clubOwnerId }}</p>
+    <button *ngIf="!(carClubExistsInUserCarClubs$ | async)" (click)="onJoinCarClub()">Join</button>
+    <button *ngIf="(showLeaveButton$ | async)" (click)="onLeaveCarClub()">Leave</button>
   </div>
 </div>

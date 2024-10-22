@@ -42,14 +42,14 @@ public class CarClubController {
     }
 
     @PostMapping("car_clubs/{id}/join")
-    public ResponseEntity<CarClub> joinCarClub(@PathVariable long id, Principal principal) {
-        carClubService.addCarClubMember(principal.getName(), id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<CarClubDto> joinCarClub(@PathVariable long id, Principal principal) {
+        CarClubDto updatedCarClub = carClubService.addCarClubMember(principal.getName(), id);
+        return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
     }
 
     @PostMapping("car_clubs/{id}/leave")
-    public ResponseEntity<CarClub> leaveCarClub(@PathVariable long id, Principal principal) {
-        carClubService.removeCarClubMember(principal.getName(), id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<CarClubDto> leaveCarClub(@PathVariable long id, Principal principal) {
+        CarClubDto updatedCarClub = carClubService.removeCarClubMember(principal.getName(), id);
+        return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
     }
 }

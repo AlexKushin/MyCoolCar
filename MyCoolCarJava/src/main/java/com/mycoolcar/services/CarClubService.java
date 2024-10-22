@@ -72,18 +72,18 @@ public class CarClubService {
         return carClub.get();
     }
 
-    public void addCarClubMember(String email, Long carClubId){
+    public CarClubDto addCarClubMember(String email, Long carClubId){
         CarClub carClub = getCarClubById(carClubId);
         User user = userService.getUserByEmail(email);
         carClub.addCarClubMember(user);
-        carClubRepository.save(carClub);
+        return carClubDtoMapper.apply(carClubRepository.save(carClub));
     }
 
-    public void removeCarClubMember(String email, Long carClubId){
+    public CarClubDto removeCarClubMember(String email, Long carClubId){
         CarClub carClub = getCarClubById(carClubId);
         User user = userService.getUserByEmail(email);
         carClub.removeCarClubMember(user);
-        carClubRepository.save(carClub);
+        return carClubDtoMapper.apply(carClubRepository.save(carClub));
     }
 
     public Set<CarClubDto> getUserCarClubs(String email) {

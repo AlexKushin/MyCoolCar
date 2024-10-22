@@ -1,15 +1,14 @@
-import {map} from "rxjs";
+import {map, withLatestFrom} from "rxjs";
 import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import {switchMap, tap} from "rxjs/operators";
 import {API_URL} from "../../../app.constants";
 import {HttpClient} from "@angular/common/http";
 import {Router} from "@angular/router";
-import {Store} from "@ngrx/store";
+import {select, Store} from "@ngrx/store";
 import * as fromApp from "../../../store/app.reducer";
 import * as CarClubsActions from "./car-club.actions"
 import {CarClub} from "../../../models/carClub";
-import {CarClubActions} from "./car-club.actions";
 
 @Injectable()
 export class CarClubEffects {
@@ -57,6 +56,51 @@ export class CarClubEffects {
     })
   ));
 
+  joinCarClub = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CarClubsActions.JOIN_CAR_CLUB),
+      switchMap((action: CarClubsActions.JoinCarClub) => {
+        return this.http.post<CarClub>(`${API_URL}/api/car_clubs/${action.payload}/join`, {}).pipe(
+          // Use `withLatestFrom` to get the current `carClubs` from the store
+          withLatestFrom(this.store.pipe(select(state => state.carClubs.carClubs))),
+          switchMap(([updatedCarClub, carClubs]) => {
+            // First action: Update the carClubs array with the updated CarClub
+            const updateCarClubsAction = new CarClubsActions.UpdateCarClubInCarClubs(updatedCarClub);
+            // Second action: Add this CarClub to the userCarClubs array
+            const addCarClubToUserAction = new CarClubsActions.AddCarClubToUserCarClubs(updatedCarClub);
+            // Dispatch both actions sequentially
+            return [
+              updateCarClubsAction,
+              addCarClubToUserAction
+            ];
+          })
+        );
+      })
+    )
+  );
+
+  leaveCarClub = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CarClubsActions.LEAVE_CAR_CLUB),
+      switchMap((action: CarClubsActions.LeaveCarClub) => {
+        return this.http.post<CarClub>(`${API_URL}/api/car_clubs/${action.payload}/leave`, {}).pipe(
+          // Use `withLatestFrom` to get the current `carClubs` from the store
+          withLatestFrom(this.store.pipe(select(state => state.carClubs.carClubs))),
+          switchMap(([updatedCarClub, carClubs]) => {
+            // First action: Update the carClubs array with the updated CarClub
+            const updateCarClubsAction = new CarClubsActions.UpdateCarClubInCarClubs(updatedCarClub);
+            // Second action: Add this CarClub to the userCarClubs array
+            const leaveCarClubFromUserCarClubsAction = new CarClubsActions.RemoveCarClubFromUserCarClubs(action.payload);
+            // Dispatch both actions sequentially
+            return [
+              updateCarClubsAction,
+              leaveCarClubFromUserCarClubsAction
+            ];
+          })
+        );
+      })
+    )
+  );
 
   redirectAfterCarClubManipulating$ = createEffect(
     () =>
