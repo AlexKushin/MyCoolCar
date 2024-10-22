@@ -1,4 +1,3 @@
-
 <div class="row">
   <!-- Left column for image -->
   <div class="col-md-6">
@@ -14,6 +13,7 @@
     <p class="text-uppercase">ID: {{ carClub.id }}</p>
     <p class="text-uppercase">Name: {{ carClub.name }}</p>
     <p class="text-uppercase">Description: {{ carClub.description }}</p>
-    <button>Subscribe</button>
+    <button *ngIf="!(carClubExistsInUserCarClubs$ | async)">Subscribe</button>
+    <button *ngIf="(carClubExistsInUserCarClubs$ | async)">Unsubscribe</button>
   </div>
 </div>

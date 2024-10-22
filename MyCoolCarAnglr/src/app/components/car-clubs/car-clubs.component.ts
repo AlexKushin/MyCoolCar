@@ -20,7 +20,7 @@ import {CarClubsListComponent} from "./car-clubs-list/car-clubs-list.component";
   styleUrl: './car-clubs.component.css'
 })
 export class CarClubsComponent implements OnInit, OnDestroy {
-  isMyCars = true;
+  isMyCarClubs = true;
 
   public userCarClubs: CarClub[];
   public carClubs: CarClub[];
@@ -58,10 +58,10 @@ export class CarClubsComponent implements OnInit, OnDestroy {
   }
 
   showMyCarsClubs() {
-    this.isMyCars = true
+    this.isMyCarClubs = true
   }
 
   showClubs() {
-    this.isMyCars = false
+    this.isMyCarClubs = false
   }
 }

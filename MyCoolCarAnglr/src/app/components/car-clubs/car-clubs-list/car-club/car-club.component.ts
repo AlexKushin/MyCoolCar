@@ -3,7 +3,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
 import * as fromApp from "../../../../store/app.reducer";
 import * as CarClubActions from "../../store/car-club.actions"
-import {Car} from "../../../../models/car";
+
 import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {CarClub} from "../../../../models/carClub";
