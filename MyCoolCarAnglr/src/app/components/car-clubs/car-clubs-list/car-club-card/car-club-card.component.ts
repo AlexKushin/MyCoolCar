@@ -22,6 +22,8 @@ export class CarClubCardComponent implements OnInit, OnDestroy {
   carClubExistsInUserCarClubs$: Observable<boolean>;
   isUserOwner: boolean = false
   showLeaveButton$: Observable<boolean>;
+  showJoinButton$: Observable<boolean>;
+  showSendReqToJoinButton$: Observable<boolean>;
 
 
   constructor(
@@ -46,12 +48,21 @@ export class CarClubCardComponent implements OnInit, OnDestroy {
     this.showLeaveButton$ = combineLatest([this.carClubExistsInUserCarClubs$, this.isUserOwner$()]).pipe(
       map(([exists, isOwner]) => exists && !isOwner)
     );
-
+    this.showJoinButton$ = combineLatest([this.carClubExistsInUserCarClubs$, this.isCarClubPublic$()]).pipe(
+      map(([exists, isPublic]) => !exists && isPublic)
+    );
+    this.showSendReqToJoinButton$ = combineLatest([this.carClubExistsInUserCarClubs$, this.isCarClubPublic$()]).pipe(
+      map(([exists, isPublic]) => !exists && !isPublic)
+    );
   }
 
   // Helper function to expose isUserOwner as an observable
   private isUserOwner$(): Observable<boolean> {
     return of(this.isUserOwner);
+  }
+
+  private isCarClubPublic$(): Observable<boolean> {
+    return of(this.carClub.accessType === 'PUBLIC');
   }
 
   onJoinCarClub() {
@@ -60,6 +71,11 @@ export class CarClubCardComponent implements OnInit, OnDestroy {
 
   onLeaveCarClub() {
     this.store.dispatch(new CarClubsActions.LeaveCarClub(this.carClub.id))
+  }
+
+  onSendReqToJoinCarClub(){
+    console.log("onSendReqToJoinCarClub")
+    this.store.dispatch(new CarClubsActions.SendRequestToJoinCarClub(this.carClub.id))
   }
 
   ngOnDestroy(): void {

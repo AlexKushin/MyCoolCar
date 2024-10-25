@@ -10,10 +10,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Table(name = "car_clubs")
 @AllArgsConstructor
@@ -38,7 +35,15 @@ public class CarClub implements Serializable {
 
     private CarClubAccessType accessType;
 
-    //Many to Many Bidirectional
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "car_club_waitlist",
+            joinColumns = @JoinColumn(name = "car_club_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
+    )
+    private List<User> waitList = new ArrayList<>();
+
     @JsonIgnore
     @ManyToMany(mappedBy = "userClubs")
     private Set<User> members = new HashSet<>();
@@ -50,6 +55,16 @@ public class CarClub implements Serializable {
 
     @OneToMany(targetEntity = ClubPost.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "carClub")
     private List<ClubPost> clubPosts;
+
+    public void addToWaitlist(User user) {
+        if(!this.waitList.contains(user)) {
+            this.waitList.add(user);
+        }
+    }
+
+    public void removeFromWaitlist(User user) {
+        this.waitList.remove(user);
+    }
 
     public void addCarClubMember(User user) {
         this.members.add(user);

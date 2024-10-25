@@ -1,8 +1,23 @@
-<div class="col-md-6">
-  <p class="text-uppercase">ID: {{ carClub.id }}</p>
-  <p class="text-uppercase">Name: {{ carClub.name }}</p>
-  <p class="text-uppercase">Description: {{ carClub.description }}</p>
-  <p class="text-uppercase">Location: {{ carClub.location }}</p>
-  <p class="text-uppercase">Club Owner Id: {{ carClub.clubOwnerId }}</p>
-  <p class="text-uppercase">Members count: {{ carClub.members.length }}</p>
+<div class="club-container">
+  <div class="col-md-6 car-club-info">
+    <H1>Club info: </H1>
+    <p class="text-uppercase">ID: {{ carClub.id }}</p>
+    <p class="text-uppercase">Name: {{ carClub.name }}</p>
+    <p class="text-uppercase">Description: {{ carClub.description }}</p>
+    <p class="text-uppercase">Location: {{ carClub.location }}</p>
+    <p class="text-uppercase">Club Owner Id: {{ carClub.clubOwnerId }}</p>
+    <p class="text-uppercase">Members count: {{ carClub.members.length }}</p>
+  </div>
+
+  <!-- Wait List on the right -->
+  <div class="col-md-6 wait-list">
+    <h2>Wait List:</h2>
+    <div *ngFor="let waitUser of carClub.waitList" class="user-action-container">
+      <h4 class="user-name">{{ waitUser.firstName }}</h4>
+      <div class="button-group">
+        <button (click)="onConfirmMember(waitUser.id)" class="btn btn-success">Confirm member</button>
+        <button (click)="onRefuseMember(waitUser.id)" class="btn btn-danger">Refuse member</button>
+      </div>
+    </div>
+  </div>
 </div>

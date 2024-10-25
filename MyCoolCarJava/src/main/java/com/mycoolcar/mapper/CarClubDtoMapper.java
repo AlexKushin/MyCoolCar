@@ -5,6 +5,7 @@ import com.mycoolcar.entities.CarClub;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Function;
+
 @Service
 public class CarClubDtoMapper implements Function<CarClub, CarClubDto> {
     @Override
@@ -15,6 +16,7 @@ public class CarClubDtoMapper implements Function<CarClub, CarClubDto> {
                 carClub.getLocation(),
                 carClub.getCreatedTime(),
                 carClub.getAccessType(),
+                carClub.getWaitList(),
                 carClub.getMembers(),
                 carClub.getClubPosts(),
                 carClub.getClubOwner().getId());

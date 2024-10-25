@@ -102,6 +102,56 @@ export class CarClubEffects {
     )
   );
 
+  sendRequestToJoinCarClub = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CarClubsActions.SEND_REQUEST_TO_JOIN_CAR_CLUB),
+      switchMap((action: CarClubsActions.SendRequestToJoinCarClub) => {
+        return this.http.post<CarClub>(`${API_URL}/api/car_clubs/${action.payload}/join/private`, {}).pipe(
+          map((updatedCarClub: CarClub) => {
+            // Dispatch only the action to update carClubs array with the updated CarClub
+            return new CarClubsActions.UpdateCarClubInCarClubs(updatedCarClub);
+          })
+        )
+      })
+    ))
+
+  confirmCarClubMember = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CarClubsActions.CONFIRM_CAR_CLUB_MEMBER),
+      switchMap((action: CarClubsActions.ConfirmCarClubMember) => {
+        return this.http.post<CarClub>(
+          `${API_URL}/api/car_clubs/${action.payload.carClubId}/members/confirm?userId=${action.payload.waitUserId}`, {})
+          .pipe(
+            switchMap((updatedCarClub: CarClub) => {
+              // Dispatch both actions: update in carClubs array and userCarClubs array
+              return [
+                new CarClubsActions.UpdateCarClubInCarClubs(updatedCarClub),
+                new CarClubsActions.UpdateCarClubInUserCarClubs(updatedCarClub) // Dispatch action to update userCarClubs
+              ];
+            })
+          )
+      })
+    ))
+
+
+  refuseCarClubMember = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CarClubsActions.REFUSE_CAR_CLUB_MEMBER),
+      switchMap((action: CarClubsActions.RefuseCarClubMember) => {
+        return this.http.post<CarClub>(
+          `${API_URL}/api/car_clubs/${action.payload.carClubId}/members/refuse?userId=${action.payload.waitUserId}`, {})
+          .pipe(
+            switchMap((updatedCarClub: CarClub) => {
+              // Dispatch both actions: update in carClubs array and userCarClubs array
+              return [
+                new CarClubsActions.UpdateCarClubInCarClubs(updatedCarClub),
+                new CarClubsActions.UpdateCarClubInUserCarClubs(updatedCarClub) // Dispatch action to update userCarClubs
+              ];
+            })
+          )
+      })
+    ))
+
   redirectAfterCarClubManipulating$ = createEffect(
     () =>
       this.actions$.pipe(

@@ -67,8 +67,8 @@ const routes: Routes = [
     path: "car_clubs", component: CarClubsComponent,
     resolve: [CarClubsResolverService, UserCarClubsResolverService],
   },
-  {path: "car_clubs/:id", component: CarClubComponent},
   {path: "car_clubs/new", component: NewCarClubComponent },
+  {path: "car_clubs/:id", component: CarClubComponent},
 
   {path: "**", component: ErrorComponent}
 ];

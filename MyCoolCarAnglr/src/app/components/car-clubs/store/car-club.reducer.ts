@@ -39,7 +39,14 @@ export function carClubReducer(state = initialState, action: CarClubsActions.Car
           club.id === action.payload.id ? action.payload : club
         ) // Update the specific CarClub in carClubs array
       };
-
+// Handle the action to update the specific CarClub in userCarClubs array
+    case CarClubsActions.UPDATE_CAR_CLUB_IN_USER_CAR_CLUBS:
+      return {
+        ...state,
+        userCarClubs: state.userCarClubs.map(club =>
+          club.id === action.payload.id ? action.payload : club
+        ) // Update the specific CarClub in userCarClubs array
+      };
     case CarClubsActions.ADD_CAR_CLUB_TO_USER_CAR_CLUBS:
       return {
         ...state,

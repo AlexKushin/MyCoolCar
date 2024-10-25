@@ -1,3 +1,5 @@
+import {User} from "./user";
+
 export class CarClub {
 
   constructor(
@@ -5,8 +7,10 @@ export class CarClub {
     public name: string,
     public description: string,
     public location: string,
-    public members: [],
-    public clubOwnerId: number
+    public waitList: User [],
+    public members: User [],
+    public clubOwnerId: number,
+    public accessType: string
   ) {
   }
 

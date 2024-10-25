@@ -43,13 +43,33 @@ public class CarClubController {
 
     @PostMapping("car_clubs/{id}/join")
     public ResponseEntity<CarClubDto> joinCarClub(@PathVariable long id, Principal principal) {
-        CarClubDto updatedCarClub = carClubService.addCarClubMember(principal.getName(), id);
+        CarClubDto updatedCarClub = carClubService.addMemberToPublicCarClub(principal.getName(), id);
         return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
     }
 
     @PostMapping("car_clubs/{id}/leave")
     public ResponseEntity<CarClubDto> leaveCarClub(@PathVariable long id, Principal principal) {
         CarClubDto updatedCarClub = carClubService.removeCarClubMember(principal.getName(), id);
+        return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
+    }
+
+    @PostMapping("car_clubs/{id}/join/private")
+    public ResponseEntity<CarClubDto> joinToPrivateCarClub(@PathVariable long id, Principal principal) {
+        CarClubDto updatedCarClub = carClubService.addUserToPrivateCarClubWaitList(principal.getName(), id);
+        return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
+    }
+
+    @PostMapping("car_clubs/{carClubId}/members/confirm")
+    public ResponseEntity<CarClubDto> confirmCarClubMember(@PathVariable long carClubId, Principal principal,
+                                                           @RequestParam long userId) {
+        CarClubDto updatedCarClub = carClubService.confirmUserMembership(carClubId, principal.getName(), userId);
+        return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
+    }
+
+    @PostMapping("car_clubs/{carClubId}/members/refuse")
+    public ResponseEntity<CarClubDto> refuseCarClubMember(@PathVariable long carClubId, Principal principal,
+                                                          @RequestParam long userId) {
+        CarClubDto updatedCarClub = carClubService.refuseUserMembership(carClubId, principal.getName(), userId);
         return new ResponseEntity<>(updatedCarClub, HttpStatus.OK);
     }
 }

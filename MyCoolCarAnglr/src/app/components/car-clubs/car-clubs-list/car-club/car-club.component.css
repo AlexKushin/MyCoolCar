@@ -1,0 +1,30 @@
+.club-container {
+  display: flex; /* Creates a flex container */
+  justify-content: space-between; /* Ensures items are spread out between the left and right */
+  align-items: flex-start; /* Align items at the start vertically */
+  gap: 20px; /* Adds some spacing between the two columns */
+}
+
+.car-club-info {
+  flex: 1; /* Takes up equal space on the left */
+}
+
+.wait-list {
+  flex: 1; /* Takes up equal space on the right */
+}
+
+.user-action-container {
+  display: flex;
+  justify-content: space-between; /* Place name on the left and buttons on the right */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.user-name {
+  margin: 0;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px; /* Adds space between buttons */
+}

@@ -1,17 +1,19 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import * as fromApp from "../../../../store/app.reducer";
-import * as CarClubActions from "../../store/car-club.actions"
-
 import {map, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {CarClub} from "../../../../models/carClub";
+import {NgForOf} from "@angular/common";
+import * as fromApp from "../../../../store/app.reducer";
+import * as CarClubsActions from "../../store/car-club.actions";
 
 @Component({
   selector: 'app-car-club',
   standalone: true,
-  imports: [],
+  imports: [
+    NgForOf
+  ],
   templateUrl: './car-club.component.html',
   styleUrl: './car-club.component.css'
 })
@@ -39,12 +41,10 @@ export class CarClubComponent implements OnInit, OnDestroy {
       map(carClubsState => {
         // First, check if the carClub is in userCarClubs
         let carClub = carClubsState.userCarClubs.find((carClub) => carClub.id === this.id);
-
         // If it's not in userCarClubs, fallback to checking the main carClubs array
         if (!carClub) {
           carClub = carClubsState.carClubs.find((carClub) => carClub.id === this.id);
         }
-
         return carClub; // Return the found carClub or undefined
       })
     )
@@ -64,6 +64,20 @@ export class CarClubComponent implements OnInit, OnDestroy {
 
 
   deleteCarClub() {
-   //delete logic
+    //delete logic
+  }
+
+  onConfirmMember(waitUserId: number) {
+    this.store.dispatch(new CarClubsActions.ConfirmCarClubMember({
+      carClubId: this.carClub.id,
+      waitUserId: waitUserId
+    }))
+  }
+
+  onRefuseMember(waitUserId: number) {
+    this.store.dispatch(new CarClubsActions.RefuseCarClubMember({
+      carClubId: this.carClub.id,
+      waitUserId: waitUserId
+    }))
   }
 }

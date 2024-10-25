@@ -12,6 +12,10 @@ export const LEAVE_CAR_CLUB = '[Car Clubs] Leave Car Club';
 export const ADD_CAR_CLUB_TO_USER_CAR_CLUBS = '[CarClub] Add Car Club to User Car Clubs';
 export const REMOVE_CAR_CLUB_FROM_USER_CAR_CLUBS = '[CarClub] Remove Car Club from User Car Clubs';
 export const UPDATE_CAR_CLUB_IN_CAR_CLUBS = '[CarClub] Update Car Club In Car Clubs';
+export const UPDATE_CAR_CLUB_IN_USER_CAR_CLUBS = '[CarClub] Update Car Club In User Car Clubs';
+export const SEND_REQUEST_TO_JOIN_CAR_CLUB = '[CarClub] Send Request To Join Car Club';
+export const CONFIRM_CAR_CLUB_MEMBER = '[CarClub] Confirm Car Club Member';
+export const REFUSE_CAR_CLUB_MEMBER = '[CarClub] Refuse Car Club Member';
 
 export class FetchCarClubs implements Action {
   readonly type = FETCH_CAR_CLUBS;
@@ -85,6 +89,34 @@ export class UpdateCarClubInCarClubs implements Action {
   }
 }
 
+export class UpdateCarClubInUserCarClubs implements Action {
+  readonly type = UPDATE_CAR_CLUB_IN_USER_CAR_CLUBS;
+
+  constructor(public payload: CarClub) {
+  }
+}
+
+export class SendRequestToJoinCarClub implements Action {
+  readonly type = SEND_REQUEST_TO_JOIN_CAR_CLUB;
+
+  constructor(public payload: number) {
+  }
+}
+
+export class ConfirmCarClubMember implements Action {
+  readonly type = CONFIRM_CAR_CLUB_MEMBER;
+
+  constructor(public payload: { carClubId: number, waitUserId: number }) {
+  }
+}
+
+export class RefuseCarClubMember implements Action {
+  readonly type = REFUSE_CAR_CLUB_MEMBER;
+
+  constructor(public payload: { carClubId: number, waitUserId: number }) {
+  }
+}
+
 export type CarClubActions =
   | FetchCarClubs
   | FetchUserCarClubs
@@ -97,4 +129,8 @@ export type CarClubActions =
   | LeaveCarClub
   | RemoveCarClubFromUserCarClubs
   | UpdateCarClubInCarClubs
+  | UpdateCarClubInUserCarClubs
+  | SendRequestToJoinCarClub
+  | ConfirmCarClubMember
+  | RefuseCarClubMember
 
