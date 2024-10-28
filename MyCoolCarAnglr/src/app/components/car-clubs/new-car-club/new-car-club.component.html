@@ -4,7 +4,7 @@
 
   <form [formGroup]="carClubCreatingForm" (ngSubmit)="createCarClub()" enctype="multipart/form-data">
     <div class="form-group">
-      <label>Topic</label>
+      <label>Club Name</label>
       <input type="text"
              id="name"
              formControlName="name"
@@ -36,15 +36,25 @@
              required="required"
              minlength="5">
     </div>
-    <!-- <div class="form-group">
-       <h2>Upload main Image</h2>
-       <input type="file"
-              id="mainImage"
-              name="mainImage"
-              formControlName="mainImage"
-              class="form-control"
-              (change)="uploadMainImage($event)">
-     </div>-->
+    <div class="form-group">
+      <label>Location</label>
+      <input type="text"
+             id="location"
+             formControlName="location"
+             name="location"
+             class="form-control"
+             required="required"
+             minlength="2">
+    </div>
+    <div class="form-group">
+      <h2>Upload main Image</h2>
+      <input type="file"
+             id="mainImage"
+             name="mainImage"
+             formControlName="mainImage"
+             class="form-control"
+             (change)="uploadMainImage($event)">
+    </div>
     <!--  <div class="form-group">
         <h2>Upload Images</h2>
         <input type="file"

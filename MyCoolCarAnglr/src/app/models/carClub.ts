@@ -10,7 +10,8 @@ export class CarClub {
     public waitList: User [],
     public members: User [],
     public clubOwnerId: number,
-    public accessType: string
+    public accessType: string,
+    public mainImageUrl: string
   ) {
   }
 

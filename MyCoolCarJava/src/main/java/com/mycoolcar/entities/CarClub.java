@@ -35,6 +35,8 @@ public class CarClub implements Serializable {
 
     private CarClubAccessType accessType;
 
+    private String mainImageUrl;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(
@@ -56,8 +58,23 @@ public class CarClub implements Serializable {
     @OneToMany(targetEntity = ClubPost.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "carClub")
     private List<ClubPost> clubPosts;
 
+    public CarClub(String name,
+                   String description,
+                   String location,
+
+                   User clubOwner) {
+        this.name = name;
+        this.description = description;
+        this.location = location;
+        this.createdTime = LocalDateTime.now();
+        this.accessType = CarClubAccessType.PUBLIC;
+        this.clubOwner = clubOwner;
+        addCarClubMember(clubOwner);
+
+    }
+
     public void addToWaitlist(User user) {
-        if(!this.waitList.contains(user)) {
+        if (!this.waitList.contains(user)) {
             this.waitList.add(user);
         }
     }
@@ -71,7 +88,7 @@ public class CarClub implements Serializable {
         user.getUserClubs().add(this);
     }
 
-    public void removeCarClubMember(User user){
+    public void removeCarClubMember(User user) {
         this.members.remove(user);
         user.getUserClubs().remove(this);
     }

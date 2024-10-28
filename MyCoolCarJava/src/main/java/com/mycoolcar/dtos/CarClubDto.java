@@ -19,5 +19,6 @@ public record CarClubDto(Long id,
                          Set<User> members,
                          List<ClubPost> posts,
                          //User clubOwner?
-                         long clubOwnerId) {
+                         long clubOwnerId,
+                         String mainImageUrl) {
 }

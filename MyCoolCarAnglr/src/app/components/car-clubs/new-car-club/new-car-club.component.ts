@@ -24,6 +24,7 @@ export class NewCarClubComponent implements OnInit {
   }
 
   carClubCreatingForm: FormGroup;
+  mainImage: any;
 
   ngOnInit(): void {
     this.initForm()
@@ -34,29 +35,37 @@ export class NewCarClubComponent implements OnInit {
     let carClubName = '';
     let carClubDescription = '';
     let carClubAccessType = '';
+    let carClubLocation = '';
 
 
     this.carClubCreatingForm = new FormGroup({
       'name': new FormControl(carClubName, Validators.required),
       'description': new FormControl(carClubDescription, Validators.required),
       'accessType': new FormControl(carClubAccessType, Validators.required),
-      // 'mainImage': new FormControl(this.mainImage, Validators.required),
+      'location': new FormControl(carClubLocation, Validators.required),
+      'mainImage': new FormControl(this.mainImage, Validators.required),
       // 'file': new FormControl(this.images, Validators.required)
     });
   }
 
   createCarClub() {
-   /* const snapshot = this.route.snapshot;
-    //const carLogbookId = +snapshot.paramMap.get('car-logbookId');
 
-    this.store.dispatch(new CarLogbookActions.AddCarLogbookPost(
-        {
-          carLogbookId: carLogbookId,
-          logbookPost: this.carLogbookPostForm.value
+    let formData: any = new FormData();
+    Object.keys(this.carClubCreatingForm.controls).forEach((formControlName: string) => {
+
+      if (formControlName === 'mainImage') {
+        formData.append('mainImage', this.mainImage)
+      } else {
+        const formControl = this.carClubCreatingForm.get(formControlName);
+        if (formControl) {
+          formData.append(formControlName, formControl.value);
         }
-      )
-    )*/
-    console.log(this.carClubCreatingForm.value)
-    this.store.dispatch(new CarClubsActions.CreateCarClub(this.carClubCreatingForm.value))
+      }
+    });
+    this.store.dispatch(new CarClubsActions.CreateCarClub(formData))
+  }
+
+  uploadMainImage(event: any) {
+    this.mainImage = event.target.files[0];
   }
 }

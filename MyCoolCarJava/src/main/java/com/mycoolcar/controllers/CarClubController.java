@@ -2,13 +2,14 @@ package com.mycoolcar.controllers;
 
 import com.mycoolcar.dtos.CarClubCreationDto;
 import com.mycoolcar.dtos.CarClubDto;
-import com.mycoolcar.entities.CarClub;
 import com.mycoolcar.services.CarClubService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
@@ -24,9 +25,11 @@ public class CarClubController {
         this.carClubService = carClubService;
     }
 
-    @PostMapping("car_clubs/new")
-    public ResponseEntity<CarClub> postCarClub(Principal principal, @RequestBody CarClubCreationDto carClubCreationDto) {
-        CarClub carClub = carClubService.saveNewCarClub(carClubCreationDto, principal.getName());
+    @PostMapping(path = "car_clubs/new")
+    public ResponseEntity<CarClubDto> postCarClub(Principal principal,
+                                                  @RequestPart("mainImage") MultipartFile mainImage,
+                                                  @ModelAttribute CarClubCreationDto carClubCreationDto) throws IOException {
+        CarClubDto carClub = carClubService.saveNewCarClub(carClubCreationDto, mainImage, principal.getName());
         return new ResponseEntity<>(carClub, HttpStatus.CREATED);
     }
 

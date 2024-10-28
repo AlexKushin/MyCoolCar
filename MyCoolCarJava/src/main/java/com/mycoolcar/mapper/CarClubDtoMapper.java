@@ -19,6 +19,7 @@ public class CarClubDtoMapper implements Function<CarClub, CarClubDto> {
                 carClub.getWaitList(),
                 carClub.getMembers(),
                 carClub.getClubPosts(),
-                carClub.getClubOwner().getId());
+                carClub.getClubOwner().getId(),
+                carClub.getMainImageUrl());
     }
 }

@@ -13,10 +13,9 @@ import com.mycoolcar.repositories.CarClubRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,49 +28,47 @@ public class CarClubService {
     private final CarClubPostRepository carClubPostRepository;
     private final UserService userService;
     private final CarClubDtoMapper carClubDtoMapper;
+    private final FileService fileService;
 
 
     @Autowired
     public CarClubService(CarClubRepository carClubRepository,
                           CarClubPostRepository carClubPostRepository,
                           UserService userService,
-                          CarClubDtoMapper carClubDtoMapper) {
+                          CarClubDtoMapper carClubDtoMapper,
+                          FileService fileService) {
         this.carClubRepository = carClubRepository;
         this.carClubPostRepository = carClubPostRepository;
         this.userService = userService;
         this.carClubDtoMapper = carClubDtoMapper;
+        this.fileService = fileService;
     }
 
-    public CarClub saveNewCarClub(CarClubCreationDto carClubCreationDto, String email) {
+    public CarClubDto saveNewCarClub(CarClubCreationDto carClubCreationDto,
+                                     MultipartFile mainImage, String email) throws IOException {
         User user = userService.getUserByEmail(email);
-
-        CarClub carClub = new CarClub();
-        carClub.setName(carClubCreationDto.name());
-        carClub.setDescription(carClubCreationDto.description());
+        CarClub carClub = new CarClub(carClubCreationDto.name(), carClubCreationDto.description(),
+                carClubCreationDto.location(), user);
         if (carClubCreationDto.accessType().equalsIgnoreCase("private")) {
             carClub.setAccessType(CarClubAccessType.PRIVATE);
-        } else {
-            carClub.setAccessType(CarClubAccessType.PUBLIC);
         }
-        carClub.setCreatedTime(LocalDateTime.now());
-        carClub.setLocation(carClubCreationDto.location());
-        carClub.setClubOwner(user);
-        carClub.addCarClubMember(user);
-        return carClubRepository.save(carClub);
+        if (!mainImage.isEmpty()) {
+            log.info("Uploading main image for the new car club");
+            String mainImageUrl = fileService.uploadFile(mainImage);
+            carClub.setMainImageUrl(mainImageUrl);
+        }
+        return carClubDtoMapper.apply(carClubRepository.save(carClub));
     }
 
     public List<CarClubDto> getCarClubs() {
         return carClubRepository.findAll().stream().map(carClubDtoMapper).collect(Collectors.toList());
     }
 
-
     public CarClub getCarClubById(Long carClubId) {
         log.info("Getting CarClub by id: {}", carClubId);
         Optional<CarClub> carClub = carClubRepository.findById(carClubId);
-        if (carClub.isEmpty()) {
-            throw new ResourceNotFoundException("User with email " + carClub + " not found");
-        }
-        return carClub.get();
+        return carClub.orElseThrow(() -> new ResourceNotFoundException("Car Club with email " + carClub + " not found"));
+
     }
 
     public CarClubDto addMemberToPublicCarClub(String email, Long carClubId) {
