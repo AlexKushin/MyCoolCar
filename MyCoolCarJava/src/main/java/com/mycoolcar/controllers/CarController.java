@@ -1,5 +1,6 @@
 package com.mycoolcar.controllers;
 
+import com.mycoolcar.dtos.CarCreationDto;
 import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.dtos.CarEditDto;
 import com.mycoolcar.entities.Car;
@@ -41,15 +42,9 @@ public class CarController {
     public ResponseEntity<CarDto> postCar(Principal principal,
                                           @RequestPart("files[]") MultipartFile[] images,
                                           @RequestPart("mainImage") MultipartFile mainImage,
-                                          @RequestParam("brand") String carBrand,
-                                          @RequestParam("model") String carModel,
-                                          @RequestParam("productYear") Integer carProductYear,
-                                          @RequestParam("description") String carDescription) throws IOException {
-
+                                          @ModelAttribute CarCreationDto carCreationDto) throws IOException {
         User user = userService.getUserByEmail(principal.getName());
-
-        CarDto newCar = carService.saveNewCar(user, images, mainImage, carBrand,
-                carModel, carProductYear, carDescription);
+        CarDto newCar = carService.saveNewCar(user, images, mainImage, carCreationDto);
         return new ResponseEntity<>(newCar, HttpStatus.CREATED);
     }
 

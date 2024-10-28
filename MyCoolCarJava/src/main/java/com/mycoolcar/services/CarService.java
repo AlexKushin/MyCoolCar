@@ -1,5 +1,6 @@
 package com.mycoolcar.services;
 
+import com.mycoolcar.dtos.CarCreationDto;
 import com.mycoolcar.dtos.CarDto;
 import com.mycoolcar.dtos.CarEditDto;
 import com.mycoolcar.entities.Car;
@@ -42,11 +43,13 @@ public class CarService {
         return carRepository.findAllByRateIsGreaterThanEqualOrderByRateAsc(rate);
     }
 
-    public CarDto saveNewCar(User user, MultipartFile[] images, MultipartFile mainImage, String carBrand,
-                             String carModel, Integer carProductYear, String carDescription) throws IOException {
+    public CarDto saveNewCar(User user, MultipartFile[] images, MultipartFile mainImage,
+                             CarCreationDto carCreationDto) throws IOException {
 
         log.info("Adding a new car for user: {}", user.getUsername());
-        Car newCar = new Car(user, carBrand, carModel, carProductYear, carDescription);
+        log.debug("CAR CRATING DTO: {}", carCreationDto);
+        Car newCar = new Car(user, carCreationDto.brand(), carCreationDto.model(),
+                carCreationDto.productYear(), carCreationDto.description());
         if (!mainImage.isEmpty()) {
             log.info("Uploading main image for the new car");
             String mainImageUrl = fileService.uploadFile(mainImage);
