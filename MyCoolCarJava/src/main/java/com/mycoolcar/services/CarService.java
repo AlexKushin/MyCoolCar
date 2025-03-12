@@ -17,8 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -57,10 +59,12 @@ public class CarService {
         }
         if (images.length > 0) {
             log.info("Uploading {} additional images for the new car", images.length);
-            List<String> imagesUrls = new ArrayList<>();
+            /*List<String> imagesUrls = new ArrayList<>();
             for (MultipartFile image : images) {
                 imagesUrls.add(fileService.uploadFile(image));
-            }
+            }*/
+            List<String> imagesUrls = Arrays.stream(images).map(fileService::uploadFile)
+                    .peek(System.out::println).collect(Collectors.toList());
             newCar.setImagesUrl(imagesUrls);
         }
         CarLogbook carLogbook = new CarLogbook();

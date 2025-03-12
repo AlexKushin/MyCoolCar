@@ -57,10 +57,14 @@ public class AwsS3ServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile multipartFile) throws IOException {
+    public String uploadFile(MultipartFile multipartFile)  {
         String uniqueFileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
         log.info("Uploading file: {}", uniqueFileName);
-        s3client.putObject(bucketName, uniqueFileName, multipartFile.getInputStream(), null);
+        try {
+            s3client.putObject(bucketName, uniqueFileName, multipartFile.getInputStream(), null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         log.info("File uploaded successfully: {}", uniqueFileName);
         return uniqueFileName;
     }

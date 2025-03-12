@@ -31,7 +31,6 @@ public class LocalFileServiceImpl implements FileService {
     @Override
     public ByteArrayResource downloadFile(String fileName) throws IOException {
         Path imagePath = Path.of(uploadDirectory, fileName);
-
         if (Files.exists(imagePath)) {
             return new ByteArrayResource(Files.readAllBytes(imagePath));
         } else {
@@ -60,26 +59,36 @@ public class LocalFileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
+    public String uploadFile(MultipartFile file) {//todo OCP book page 632
         String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path uploadPath = Path.of(uploadDirectory);
         Path filePath = uploadPath.resolve(uniqueFileName);
         log.info("upload directory {}", uploadDirectory);
         //todo add opportunity to create folders for every user, by user name/login/nickname
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
+        createDirectories(uploadPath);
         log.info("image has been stored by path {}", filePath);
-
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        uploadFileToDirectory(file, filePath);
         return "http://localhost:" + serverPort + "/getImages/" + uniqueFileName;
-
-
     }
 
     @Override
     public Car generateCarImagesToPreassignedUrls(Car car) {
         return car;
+    }
+
+    private void uploadFileToDirectory(MultipartFile file, Path filePath) {
+        try {
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void createDirectories(Path path) {
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -53,7 +53,7 @@ export class CarClubsComponent implements OnInit, OnDestroy {
     this.subscription1.unsubscribe();
   }
 
-  createNewCarClub() {
+  onCreateNewCarClub() {
     this.router.navigate(['car_clubs/new'])
   }
 

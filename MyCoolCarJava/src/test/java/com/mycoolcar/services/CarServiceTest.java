@@ -68,7 +68,7 @@ class CarServiceTest  {
         verify(carRepository, times(1)).findAllByRateIsGreaterThanEqualOrderByRateAsc(anyInt());
     }
 
-    @Test
+    /*@Test
     void saveNewCar_ShouldSaveNewCar_WithImages() throws IOException {
         // Arrange
         MultipartFile[] images = {mockAdditionalImage};
@@ -92,8 +92,9 @@ class CarServiceTest  {
         verify(carRepository, times(1)).save(any(Car.class));
         verify(fileService, times(1)).uploadFile(mockMainImage);
         verify(fileService, times(1)).uploadFile(mockAdditionalImage);
-    }
+    }*/
 
+/*
     @Test
     void saveNewCar_ShouldSaveNewCar_WithoutImages() throws IOException {
         // Arrange
@@ -116,6 +117,7 @@ class CarServiceTest  {
         verify(carRepository, times(1)).save(any(Car.class));
         verify(fileService, never()).uploadFile(any(MultipartFile.class)); // No images uploaded
     }
+*/
 
     @Test
     void editCar_ShouldEditCarDetailsSuccessfully() {

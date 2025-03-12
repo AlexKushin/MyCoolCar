@@ -1,18 +1,24 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {Store} from "@ngrx/store";
-import {map, Subscription} from "rxjs";
+import {map, Observable, of, Subscription} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {CarClub} from "../../../../models/carClub";
-import {NgForOf} from "@angular/common";
+import {AsyncPipe, NgForOf, NgIf, NgOptimizedImage} from "@angular/common";
 import * as fromApp from "../../../../store/app.reducer";
-import * as CarClubsActions from "../../store/car-club.actions";
+import {CarClubCardComponent} from "../car-club-card/car-club-card.component";
+import {CarClubAdminPageComponent} from "./car-club-admin-page/car-club-admin-page.component";
 
 @Component({
   selector: 'app-car-club',
   standalone: true,
   imports: [
-    NgForOf
+    NgForOf,
+    NgOptimizedImage,
+    NgIf,
+    AsyncPipe,
+    CarClubCardComponent,
+    CarClubAdminPageComponent
   ],
   templateUrl: './car-club.component.html',
   styleUrl: './car-club.component.css'
@@ -29,10 +35,15 @@ export class CarClubComponent implements OnInit, OnDestroy {
 
   carClub: CarClub;
   id: number;
-  subscription: Subscription
+  carClubSubscription: Subscription
+  isUserOwner$: Observable<boolean>;
 
   ngOnInit(): void {
-    this.subscription = this.route.params.pipe(
+    // Observable for checking if user is the car club owner
+    this.isUserOwner$ = this.store.select('auth').pipe(
+      map(authState => authState.user && this.carClub ? this.carClub.clubOwnerId === authState.user.id : false)
+    );
+    this.carClubSubscription = this.route.params.pipe(
       map(params => +params['id']), // Get the id from the route params
       switchMap(id => {
         this.id = id;
@@ -54,30 +65,11 @@ export class CarClubComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.carClubSubscription.unsubscribe();
   }
 
 
-  editCarClub() {
-    //edit logic
-  }
-
-
-  deleteCarClub() {
-    //delete logic
-  }
-
-  onConfirmMember(waitUserId: number) {
-    this.store.dispatch(new CarClubsActions.ConfirmCarClubMember({
-      carClubId: this.carClub.id,
-      waitUserId: waitUserId
-    }))
-  }
-
-  onRefuseMember(waitUserId: number) {
-    this.store.dispatch(new CarClubsActions.RefuseCarClubMember({
-      carClubId: this.carClub.id,
-      waitUserId: waitUserId
-    }))
+  onManageCarClub() {
+    this.router.navigate(['admin_page'], {relativeTo: this.route/*,state: {data: this.carClub}*/})
   }
 }

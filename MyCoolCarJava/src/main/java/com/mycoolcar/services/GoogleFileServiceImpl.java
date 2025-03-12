@@ -37,7 +37,6 @@ public class GoogleFileServiceImpl implements FileService {
     }
 
 
-
     @Override
     public List<String> listOfFiles() {
         log.info("Listing all files in bucket: {}", bucketName);
@@ -89,14 +88,19 @@ public class GoogleFileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
+    public String uploadFile(MultipartFile file) {
         String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         log.info("Uploading file: {} to bucket: {}", uniqueFileName, bucketName);
         BlobId blobId = BlobId.of(bucketName, uniqueFileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(file.getContentType())
                 .build();
-        Blob blob = storage.create(blobInfo, file.getBytes());
+        Blob blob = null;
+        try {
+            blob = storage.create(blobInfo, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         String fileLink = blob.getMediaLink();
         if (fileLink == null) {
             log.warn("Failed to get media link for uploaded file: {}", uniqueFileName);

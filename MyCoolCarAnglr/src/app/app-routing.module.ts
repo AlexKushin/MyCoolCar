@@ -27,6 +27,9 @@ import {CarClubsResolverService} from "./components/car-clubs/car-clubs-resolve.
 import {UserCarClubsResolverService} from "./components/car-clubs/user-car-clubs-resolve.service";
 import {NewCarClubComponent} from "./components/car-clubs/new-car-club/new-car-club.component";
 import {CarClubComponent} from "./components/car-clubs/car-clubs-list/car-club/car-club.component";
+import {
+  CarClubAdminPageComponent
+} from "./components/car-clubs/car-clubs-list/car-club/car-club-admin-page/car-club-admin-page.component";
 
 
 const routes: Routes = [
@@ -69,6 +72,7 @@ const routes: Routes = [
   },
   {path: "car_clubs/new", component: NewCarClubComponent },
   {path: "car_clubs/:id", component: CarClubComponent},
+  {path: "car_clubs/:id/admin_page", component: CarClubAdminPageComponent},
 
   {path: "**", component: ErrorComponent}
 ];

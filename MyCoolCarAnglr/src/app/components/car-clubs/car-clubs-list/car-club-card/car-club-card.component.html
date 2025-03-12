@@ -15,6 +15,7 @@
     <p class="text-uppercase">Name: {{ carClub.name }}</p>
     <p class="text-uppercase">Location: {{ carClub.location }}</p>
     <p class="text-uppercase">Club Owner Id: {{ carClub.clubOwnerId }}</p>
+    <p class="text-uppercase">Members number: {{ carClub.members.length}}</p>
     <!--<button *ngIf="!(carClubExistsInUserCarClubs$ | async)" (click)="onJoinCarClub()">Join</button>-->
     <button *ngIf="(showJoinButton$ | async)" (click)="onJoinCarClub()">Join</button>
     <button *ngIf="(showLeaveButton$ | async)" (click)="onLeaveCarClub()">Leave</button>

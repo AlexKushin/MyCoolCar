@@ -15,7 +15,7 @@ public interface FileService {
 
     boolean deleteFile(String fileName) throws IOException;
 
-    String uploadFile(MultipartFile file) throws IOException;
+    String uploadFile(MultipartFile file);
 
     Car generateCarImagesToPreassignedUrls(Car car);
 }
